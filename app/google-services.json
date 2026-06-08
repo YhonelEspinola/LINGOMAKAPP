@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "34864639200",
+    "project_id": "lingomakapp",
+    "storage_bucket": "lingomakapp.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:34864639200:android:cfd3774f0b09c3d2f63485",
+        "android_client_info": {
+          "package_name": "com.lingomak.lingomakapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC81UZUncfvKVnZSwGRZK5Mj1usbAsYAGA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
