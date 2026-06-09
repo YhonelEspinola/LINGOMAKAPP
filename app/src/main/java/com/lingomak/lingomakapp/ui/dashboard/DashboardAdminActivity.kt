@@ -2,7 +2,10 @@ package com.lingomak.lingomakapp.ui.dashboard
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import com.lingomak.lingomakapp.R
 import com.lingomak.lingomakapp.databinding.DashboardAdminBinding
+import com.lingomak.lingomakapp.ui.dashboard.home.HomeAdminFragment
+import com.lingomak.lingomakapp.ui.dashboard.perfil.PerfilFragment
 
 class DashboardAdminActivity : AppCompatActivity() {
 
@@ -13,5 +16,45 @@ class DashboardAdminActivity : AppCompatActivity() {
 
         binding = DashboardAdminBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        if(savedInstanceState == null){
+            supportFragmentManager.beginTransaction()
+                .replace(
+                    R.id.fragmentContainerAdmin,
+                    HomeAdminFragment() )
+                .commit()
+        }
+
+        configurarBottomNavigation()
+
     }
+
+    private fun configurarBottomNavigation(){
+        binding.bottomNavigationAdmin.setOnItemSelectedListener { item ->
+            when(item.itemId){
+                R.id.nav_home -> {
+                    supportFragmentManager.beginTransaction()
+                        .replace(R.id.fragmentContainerAdmin, HomeAdminFragment())
+                        .commit()
+                    true
+                }
+                R.id.nav_inventario -> {
+                    true
+                }
+                R.id.nav_mantenimiento -> {
+                    true
+                }
+                R.id.nav_perfil -> {
+                    supportFragmentManager.beginTransaction()
+                        .replace(R.id.fragmentContainerAdmin,
+                    PerfilFragment())
+                    .commit()
+                    true
+                }
+                else -> false
+            }
+
+        }
+    }
+
 }
