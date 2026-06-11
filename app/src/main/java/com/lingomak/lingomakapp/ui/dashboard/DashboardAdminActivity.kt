@@ -6,6 +6,7 @@ import com.lingomak.lingomakapp.R
 import com.lingomak.lingomakapp.databinding.DashboardAdminBinding
 import com.lingomak.lingomakapp.ui.dashboard.home.HomeAdminFragment
 import com.lingomak.lingomakapp.ui.dashboard.perfil.PerfilFragment
+import com.lingomak.lingomakapp.ui.usuarios.UsuariosFragment
 
 class DashboardAdminActivity : AppCompatActivity() {
 
@@ -27,6 +28,9 @@ class DashboardAdminActivity : AppCompatActivity() {
 
         configurarBottomNavigation()
 
+        configurarTollbar()
+
+        configurarNavigationDrawer()
     }
 
     private fun configurarBottomNavigation(){
@@ -57,4 +61,28 @@ class DashboardAdminActivity : AppCompatActivity() {
         }
     }
 
+    private fun configurarTollbar(){
+        binding.toolbarAdmin.setNavigationOnClickListener {
+            binding.drawerLayoutAdmin.open()
+        }
+    }
+
+    private fun configurarNavigationDrawer(){
+        binding.navigationViewAdmin.setNavigationItemSelectedListener { item ->
+            when (item.itemId){
+                R.id.drawer_usuarios ->{
+                    supportFragmentManager.beginTransaction()
+                        .replace(
+                            R.id.fragmentContainerAdmin,
+                            UsuariosFragment()
+                        )
+                        .commit()
+
+                    binding.drawerLayoutAdmin.close()
+                    true
+                }
+                else -> false
+            }
+        }
+    }
 }
