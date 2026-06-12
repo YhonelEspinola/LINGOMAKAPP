@@ -15,14 +15,12 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Perfil del Administrador"
+            android:text="Perfil del Operario"
             android:textColor="@color/secondary"
             android:textSize="22sp"
             android:textStyle="bold"
             android:gravity="center"
-            android:layout_marginBottom="24dp" >
-
-        </TextView>
+            android:layout_marginBottom="24dp" />
 
 
         <com.google.android.material.card.MaterialCardView
@@ -37,52 +35,49 @@
                 android:orientation="vertical"
                 android:padding="20dp">
 
-
                 <TextView
-                    android:id="@+id/tvNombreUsuario"
+                    android:id="@+id/tvNombreOperario"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Nombre: Administrador"
+                    android:text="Nombre:"
                     android:textColor="@color/text_primary"
                     android:textSize="16sp"
-                    android:layout_marginBottom="12dp">
-
-                </TextView>
-
+                    android:layout_marginBottom="12dp" />
 
                 <TextView
-                    android:id="@+id/tvCorreoUsuario"
+                    android:id="@+id/tvCorreoOperario"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Correo: admin@lingomak.com"
+                    android:text="Correo:"
                     android:textColor="@color/text_primary"
                     android:textSize="16sp"
-                    android:layout_marginBottom="12dp" >
-
-                </TextView>
-
+                    android:layout_marginBottom="12dp" />
 
                 <TextView
-                    android:id="@+id/tvRolUsuario"
+                    android:id="@+id/tvRolOperario"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Rol: ADMIN"
+                    android:text="Rol:"
                     android:textColor="@color/text_primary"
                     android:textSize="16sp"
-                    android:layout_marginBottom="24dp" >
-
-                </TextView>
-
+                    android:layout_marginBottom="24dp" />
 
                 <Button
-                    android:id="@+id/btnCerrarSesion"
+                    android:id="@+id/btnCambiarPassword"
+                    android:layout_width="match_parent"
+                    android:layout_height="55dp"
+                    android:text="Cambiar Contraseña"
+                    android:textColor="@color/white"
+                    android:background="@drawable/bg_button_primary"
+                    android:layout_marginBottom="12dp" />
+
+                <Button
+                    android:id="@+id/btnCerrarSesionOperario"
                     android:layout_width="match_parent"
                     android:layout_height="55dp"
                     android:text="Cerrar Sesión"
-                    android:textColor="@android:color/white"
-                    android:background="@drawable/bg_button_primary" >
-
-                </Button>
+                    android:textColor="@color/white"
+                    android:background="@drawable/bg_button_primary" />
 
             </LinearLayout>
 

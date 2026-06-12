@@ -1,0 +1,28 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/nav_op_inventario"
+        android:title="Inventario"
+        android:icon="@drawable/inventario" />
+
+    <item
+        android:id="@+id/nav_op_movimientos"
+        android:title="Movimientos"
+        android:icon="@drawable/movimiento" />
+
+    <item
+        android:id="@+id/nav_op_qr"
+        android:title="QR"
+        android:icon="@drawable/qr" />
+
+    <item
+        android:id="@+id/nav_op_mantenimiento"
+        android:title="Mant."
+        android:icon="@drawable/maintenance" />
+
+    <item
+        android:id="@+id/nav_op_alertas"
+        android:title="Alertas"
+        android:icon="@drawable/alert" />
+
+</menu>
