@@ -15,7 +15,7 @@
             android:id="@+id/tvBienvenida"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Bienvenido, Administrador"
+            android:text="Bienvenido"
             android:textColor="@color/primary"
             android:textSize="20sp"
             android:textStyle="bold"
