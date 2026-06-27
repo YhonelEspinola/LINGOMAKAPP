@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -10,12 +9,12 @@
         android:id="@+id/scrollMantenimiento"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:fillViewport="true"
         android:clipToPadding="false"
-        app:layout_constraintTop_toTopOf="parent"
+        android:fillViewport="true"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintTop_toTopOf="parent">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -23,176 +22,138 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <TextView
-                android:id="@+id/tvTituloMantenimiento"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Mantenimientos"
-                android:textColor="@color/text_primary"
-                android:textSize="30sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/tvSubtituloMantenimiento"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Gestión preventiva, correctiva y predictiva"
-                android:textColor="@color/text_secondary"
-                android:textSize="14sp"
-                android:layout_marginTop="4dp" />
-
             <EditText
                 android:id="@+id/etBuscarMantenimiento"
                 android:layout_width="match_parent"
-                android:layout_height="55dp"
-                android:layout_marginTop="20dp"
-                android:background="@drawable/bg_edit_text"
-                android:drawableStart="@android:drawable/ic_menu_search"
-                android:drawablePadding="10dp"
-                android:hint="Buscar máquina o código"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:hint="Buscar maquinaria o código"
                 android:inputType="text"
-                android:paddingHorizontal="16dp"
                 android:singleLine="true" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
                 android:text="TIPO DE MANTENIMIENTO"
                 android:textColor="@color/text_primary"
-                android:textStyle="bold"
                 android:textSize="12sp"
-                android:layout_marginTop="20dp" />
+                android:textStyle="bold" />
 
             <HorizontalScrollView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:scrollbars="none"
-                android:layout_marginTop="8dp">
+                android:layout_marginTop="8dp"
+                android:scrollbars="none">
 
-                <com.google.android.material.button.MaterialButtonToggleGroup
-                    android:id="@+id/toggleTipoMantenimiento"
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/chipGroupTipoMantenimiento"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    app:singleSelection="true"
-                    app:selectionRequired="true">
+                    android:orientation="horizontal"
+                    app:selectionRequired="true"
+                    app:singleSelection="true">
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnTipoTodos"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipTipoTodos"
+                        style="@style/Widget.MaterialComponents.Chip.Choice"
                         android:layout_width="wrap_content"
-                        android:layout_height="42dp"
-                        android:text="Todos"
-                        android:textSize="12sp"
-                        android:textStyle="bold"
-                        app:cornerRadius="16dp" />
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="4dp"
+                        android:checked="true"
+                        android:text="TODOS" />
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnTipoPreventivo"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipTipoPreventivo"
+                        style="@style/Widget.MaterialComponents.Chip.Choice"
                         android:layout_width="wrap_content"
-                        android:layout_height="42dp"
-                        android:text="Preventivo"
-                        android:textSize="12sp"
-                        android:textStyle="bold"
-                        app:cornerRadius="16dp" />
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="4dp"
+                        android:text="PREVENTIVO" />
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnTipoCorrectivo"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipTipoCorrectivo"
+                        style="@style/Widget.MaterialComponents.Chip.Choice"
                         android:layout_width="wrap_content"
-                        android:layout_height="42dp"
-                        android:text="Correctivo"
-                        android:textSize="12sp"
-                        android:textStyle="bold"
-                        app:cornerRadius="16dp" />
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="4dp"
+                        android:text="CORRECTIVO" />
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnTipoPredictivo"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipTipoPredictivo"
+                        style="@style/Widget.MaterialComponents.Chip.Choice"
                         android:layout_width="wrap_content"
-                        android:layout_height="42dp"
-                        android:text="Predictivo"
-                        android:textSize="12sp"
-                        android:textStyle="bold"
-                        app:cornerRadius="16dp" />
+                        android:layout_height="wrap_content"
+                        android:text="PREDICTIVO" />
 
-                </com.google.android.material.button.MaterialButtonToggleGroup>
+                </com.google.android.material.chip.ChipGroup>
 
             </HorizontalScrollView>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
                 android:text="ESTADO"
                 android:textColor="@color/text_primary"
-                android:textStyle="bold"
                 android:textSize="12sp"
-                android:layout_marginTop="18dp" />
+                android:textStyle="bold" />
 
             <HorizontalScrollView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:scrollbars="none"
-                android:layout_marginTop="8dp">
+                android:layout_marginTop="8dp"
+                android:scrollbars="none">
 
-                <com.google.android.material.button.MaterialButtonToggleGroup
-                    android:id="@+id/toggleEstadoMantenimiento"
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/chipGroupEstadoMantenimiento"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    app:singleSelection="true"
-                    app:selectionRequired="true">
+                    android:orientation="horizontal"
+                    app:selectionRequired="true"
+                    app:singleSelection="true">
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnEstadoTodos"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipEstadoTodos"
+                        style="@style/Widget.MaterialComponents.Chip.Choice"
                         android:layout_width="wrap_content"
-                        android:layout_height="42dp"
-                        android:text="Todos"
-                        android:textSize="12sp"
-                        android:textStyle="bold"
-                        app:cornerRadius="16dp" />
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="4dp"
+                        android:checked="true"
+                        android:text="TODOS" />
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnEstadoPendiente"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipEstadoPendiente"
+                        style="@style/Widget.MaterialComponents.Chip.Choice"
                         android:layout_width="wrap_content"
-                        android:layout_height="42dp"
-                        android:text="Pendiente"
-                        android:textSize="12sp"
-                        android:textStyle="bold"
-                        app:cornerRadius="16dp" />
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="4dp"
+                        android:text="PENDIENTE" />
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnEstadoProceso"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipEstadoProceso"
+                        style="@style/Widget.MaterialComponents.Chip.Choice"
                         android:layout_width="wrap_content"
-                        android:layout_height="42dp"
-                        android:text="En proceso"
-                        android:textSize="12sp"
-                        android:textStyle="bold"
-                        app:cornerRadius="16dp" />
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="4dp"
+                        android:text="EN PROCESO" />
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnEstadoFinalizado"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipEstadoFinalizado"
+                        style="@style/Widget.MaterialComponents.Chip.Choice"
                         android:layout_width="wrap_content"
-                        android:layout_height="42dp"
-                        android:text="Finalizado"
-                        android:textSize="12sp"
-                        android:textStyle="bold"
-                        app:cornerRadius="16dp" />
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="4dp"
+                        android:text="FINALIZADO" />
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnEstadoVencido"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipEstadoVencido"
+                        style="@style/Widget.MaterialComponents.Chip.Choice"
                         android:layout_width="wrap_content"
-                        android:layout_height="42dp"
-                        android:text="Vencido"
-                        android:textSize="12sp"
-                        android:textStyle="bold"
-                        app:cornerRadius="16dp" />
+                        android:layout_height="wrap_content"
+                        android:text="VENCIDO" />
 
-                </com.google.android.material.button.MaterialButtonToggleGroup>
+                </com.google.android.material.chip.ChipGroup>
 
             </HorizontalScrollView>
 
@@ -200,58 +161,15 @@
                 android:id="@+id/layoutResumenMantenimiento"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
                 android:orientation="horizontal"
-                android:weightSum="4"
-                android:layout_marginTop="20dp">
+                android:weightSum="3">
 
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="0dp"
-                    android:layout_height="110dp"
-                    android:layout_weight="1"
+                    android:layout_height="100dp"
                     android:layout_marginEnd="4dp"
-                    app:cardBackgroundColor="#EFF6FF"
-                    app:cardCornerRadius="16dp"
-                    app:cardElevation="2dp"
-                    app:strokeColor="#DBEAFE"
-                    app:strokeWidth="1dp">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:gravity="center"
-                        android:orientation="vertical">
-
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:src="@android:drawable/ic_menu_sort_by_size"
-                            app:tint="@color/primary" />
-
-                        <TextView
-                            android:id="@+id/tvTotalMantenimientos"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="0"
-                            android:textColor="@color/primary"
-                            android:textSize="26sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Total"
-                            android:textColor="@color/text_primary"
-                            android:textSize="11sp" />
-
-                    </LinearLayout>
-
-                </com.google.android.material.card.MaterialCardView>
-
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="0dp"
-                    android:layout_height="110dp"
                     android:layout_weight="1"
-                    android:layout_marginHorizontal="4dp"
                     app:cardBackgroundColor="#FFF7ED"
                     app:cardCornerRadius="16dp"
                     app:cardElevation="2dp"
@@ -276,13 +194,13 @@
                             android:layout_height="wrap_content"
                             android:text="0"
                             android:textColor="@android:color/holo_orange_dark"
-                            android:textSize="26sp"
+                            android:textSize="22sp"
                             android:textStyle="bold" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Pend."
+                            android:text="Pendientes"
                             android:textColor="@color/text_primary"
                             android:textSize="11sp" />
 
@@ -292,9 +210,9 @@
 
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="0dp"
-                    android:layout_height="110dp"
-                    android:layout_weight="1"
+                    android:layout_height="100dp"
                     android:layout_marginHorizontal="4dp"
+                    android:layout_weight="1"
                     app:cardBackgroundColor="#FEF2F2"
                     app:cardCornerRadius="16dp"
                     app:cardElevation="2dp"
@@ -319,13 +237,13 @@
                             android:layout_height="wrap_content"
                             android:text="0"
                             android:textColor="@android:color/holo_red_dark"
-                            android:textSize="26sp"
+                            android:textSize="22sp"
                             android:textStyle="bold" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Venc."
+                            android:text="Vencidos"
                             android:textColor="@color/text_primary"
                             android:textSize="11sp" />
 
@@ -335,9 +253,9 @@
 
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="0dp"
-                    android:layout_height="110dp"
-                    android:layout_weight="1"
+                    android:layout_height="100dp"
                     android:layout_marginStart="4dp"
+                    android:layout_weight="1"
                     app:cardBackgroundColor="#F0FDF4"
                     app:cardCornerRadius="16dp"
                     app:cardElevation="2dp"
@@ -362,13 +280,13 @@
                             android:layout_height="wrap_content"
                             android:text="0"
                             android:textColor="@android:color/holo_green_dark"
-                            android:textSize="26sp"
+                            android:textSize="22sp"
                             android:textStyle="bold" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Final."
+                            android:text="Finalizados"
                             android:textColor="@color/text_primary"
                             android:textSize="11sp" />
 
@@ -377,6 +295,15 @@
                 </com.google.android.material.card.MaterialCardView>
 
             </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvTotalMantenimientos"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="0 en total."
+                android:textColor="@color/text_primary"
+                android:textSize="14sp" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvMantenimientos"
@@ -394,12 +321,12 @@
         android:id="@+id/fabAgregarMantenimiento"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Programar"
-        android:textColor="@android:color/white"
-        app:icon="@android:drawable/ic_input_add"
+        android:layout_margin="16dp"
+        android:text="PROGRAMAR"
+        android:textColor="@color/white"
         app:backgroundTint="@color/primary"
-        app:tint="@android:color/white"
-        android:layout_margin="20dp"
+        app:icon="@android:drawable/ic_input_add"
+        app:iconTint="@color/white"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 

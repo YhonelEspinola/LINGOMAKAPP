@@ -6,9 +6,14 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
+import android.text.Spannable
+import android.text.SpannableStringBuilder
+import android.text.style.ForegroundColorSpan
+import android.text.style.StyleSpan
+import androidx.core.content.ContextCompat
+import com.lingomak.lingomakapp.R
 import com.lingomak.lingomakapp.data.model.MantenimientoModel
 import com.lingomak.lingomakapp.databinding.FragmentMantenimientoBinding
-import com.lingomak.lingomakapp.R
 
 
 class MantenimientoFragment : Fragment() {
@@ -159,8 +164,20 @@ class MantenimientoFragment : Fragment() {
 
         adapter.actualizarLista(lista)
 
+        actualizarResumen(lista)
+    }
 
-        binding.tvTotalMantenimientos.text = lista.size.toString()
+    private fun actualizarResumen(lista: List<MantenimientoModel>) {
+        val total = lista.size
+        val text = "$total en total."
+        val ssb = SpannableStringBuilder(text)
+        val colorPrimary = ContextCompat.getColor(requireContext(), R.color.primary)
+        
+        val end = total.toString().length
+        ssb.setSpan(StyleSpan(android.graphics.Typeface.BOLD), 0, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+        ssb.setSpan(ForegroundColorSpan(colorPrimary), 0, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+        
+        binding.tvTotalMantenimientos.text = ssb
 
         binding.tvPendientesMantenimiento.text =
             lista.count { it.estado == "PENDIENTE" }.toString()
