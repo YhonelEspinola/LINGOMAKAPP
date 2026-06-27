@@ -7,6 +7,7 @@ import com.lingomak.lingomakapp.databinding.DashboardAdminBinding
 import com.lingomak.lingomakapp.ui.dashboard.home.HomeAdminFragment
 import com.lingomak.lingomakapp.ui.dashboard.perfil.PerfilFragment
 import com.lingomak.lingomakapp.ui.mantenimiento.MantenimientoFragment
+import com.lingomak.lingomakapp.ui.repuestos.InventarioFragment
 import com.lingomak.lingomakapp.ui.usuarios.UsuariosFragment
 
 class DashboardAdminActivity : AppCompatActivity() {
@@ -44,6 +45,9 @@ class DashboardAdminActivity : AppCompatActivity() {
                     true
                 }
                 R.id.nav_inventario -> {
+                    supportFragmentManager.beginTransaction()
+                        .replace(R.id.fragmentContainerAdmin, InventarioFragment())
+                        .commit()
                     true
                 }
                 R.id.nav_mantenimiento -> {
@@ -94,6 +98,17 @@ class DashboardAdminActivity : AppCompatActivity() {
                         )
                         .commit()
 
+                    binding.drawerLayoutAdmin.close()
+                    true
+                }
+
+                R.id.drawer_inventario -> {
+                    supportFragmentManager.beginTransaction()
+                        .replace(
+                            R.id.fragmentContainerAdmin,
+                            InventarioFragment()
+                        )
+                        .commit()
                     binding.drawerLayoutAdmin.close()
                     true
                 }

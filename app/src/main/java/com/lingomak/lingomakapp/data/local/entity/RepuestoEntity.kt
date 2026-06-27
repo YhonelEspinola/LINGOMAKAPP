@@ -24,7 +24,10 @@ import androidx.room.PrimaryKey
  *   para resolver conflictos con estrategia "último que escribe gana"
  *   al comparar contra el timestamp remoto de Firestore.
  */
-@Entity(tableName = "repuestos")
+@Entity(
+    tableName = "repuestos",
+    indices = [androidx.room.Index(value = ["codigoInterno"], unique = true)]
+)
 data class RepuestoEntity(
     @PrimaryKey
     val uid: String,
@@ -39,6 +42,8 @@ data class RepuestoEntity(
     val ubicacionAlmacen: String = "",
     val imagenUrl: String = "",
     val codigoQR: String = "",
+    val imagenLocalPath: String? = null, // Path local de la imagen para subir en background
+    val qrLocalPath: String? = null, // Path local del QR para subir en background
     val estado: String = "ACTIVO",
     val fechaRegistro: Long? = null, // epoch millis (Room no mapea Date nativamente sin un TypeConverter)
     val fechaActualizacion: Long? = null,

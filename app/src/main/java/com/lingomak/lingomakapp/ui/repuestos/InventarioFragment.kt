@@ -9,7 +9,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.lingomak.lingomakapp.data.model.RepuestoModel
 import com.lingomak.lingomakapp.databinding.FragmentInventarioBinding
@@ -34,7 +34,7 @@ class InventarioFragment : Fragment() {
 
     private val binding get() = _binding!!
 
-    private val viewModel: InventarioViewModel by viewModels()
+    private val viewModel: InventarioViewModel by activityViewModels()
 
     private lateinit var adapter: RepuestosAdapter
 
@@ -65,6 +65,7 @@ class InventarioFragment : Fragment() {
 
         observarViewModel()
 
+        // Forzar sincronización con Firestore al entrar para asegurar datos frescos
         viewModel.listarRepuestos()
 
         configurarEventos()
@@ -167,34 +168,34 @@ class InventarioFragment : Fragment() {
             }
         }
 
-        // Filtros rápidos de criticidad.
-        binding.chipTodosCriticidad.setOnClickListener {
-            viewModel.filtrarPorCriticidad(InventarioViewModel.NivelCriticidad.TODOS)
+        // Filtros rápidos de criticidad (Selección Única)
+        binding.chipTodosCriticidad.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) viewModel.filtrarPorCriticidad(InventarioViewModel.NivelCriticidad.TODOS)
         }
 
-        binding.chipEnStock.setOnClickListener {
-            viewModel.filtrarPorCriticidad(InventarioViewModel.NivelCriticidad.EN_STOCK)
+        binding.chipEnStock.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) viewModel.filtrarPorCriticidad(InventarioViewModel.NivelCriticidad.EN_STOCK)
         }
 
-        binding.chipBajoStock.setOnClickListener {
-            viewModel.filtrarPorCriticidad(InventarioViewModel.NivelCriticidad.BAJO_STOCK)
+        binding.chipBajoStock.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) viewModel.filtrarPorCriticidad(InventarioViewModel.NivelCriticidad.BAJO_STOCK)
         }
 
-        binding.chipSinStock.setOnClickListener {
-            viewModel.filtrarPorCriticidad(InventarioViewModel.NivelCriticidad.SIN_STOCK)
+        binding.chipSinStock.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) viewModel.filtrarPorCriticidad(InventarioViewModel.NivelCriticidad.SIN_STOCK)
         }
 
-        // Filtros rápidos de estado.
-        binding.chipTodosEstado.setOnClickListener {
-            viewModel.filtrarPorEstado(null)
+        // Filtros rápidos de estado (Selección Única)
+        binding.chipTodosEstado.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) viewModel.filtrarPorEstado(null)
         }
 
-        binding.chipActivos.setOnClickListener {
-            viewModel.filtrarPorEstado("ACTIVO")
+        binding.chipActivos.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) viewModel.filtrarPorEstado("ACTIVO")
         }
 
-        binding.chipInactivos.setOnClickListener {
-            viewModel.filtrarPorEstado("INACTIVO")
+        binding.chipInactivos.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) viewModel.filtrarPorEstado("INACTIVO")
         }
 
         // Botón para ir a la pantalla de Agregar Repuesto.

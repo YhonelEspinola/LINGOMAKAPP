@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.lingomak.lingomakapp.R
 import com.lingomak.lingomakapp.data.model.RepuestoModel
 import com.lingomak.lingomakapp.databinding.ItemRepuestoBinding
@@ -22,15 +23,27 @@ class RepuestosAdapter(
             binding.tvStockActual.text = repuesto.stockActual.toString()
             binding.tvEstado.text = repuesto.estado
 
-            // Lógica de criticidad de color
+            // Cargar imagen con Glide
+            if (repuesto.imagenUrl.isNotEmpty()) {
+                Glide.with(binding.root.context)
+                    .load(repuesto.imagenUrl)
+                    .placeholder(android.R.drawable.ic_menu_gallery)
+                    .error(android.R.drawable.ic_menu_gallery)
+                    .into(binding.ivRepuesto)
+            } else {
+                binding.ivRepuesto.setImageResource(android.R.drawable.ic_menu_gallery)
+            }
+
+            // Lógica de criticidad de color para el indicador lateral
             val colorRes = when {
                 repuesto.stockActual == 0 -> R.color.danger
                 repuesto.stockActual <= repuesto.stockMinimo -> R.color.warning
                 else -> R.color.success
             }
 
-            binding.viewEstadoColor.backgroundTintList = 
-                ContextCompat.getColorStateList(binding.root.context, colorRes)
+            binding.viewIndicator.setBackgroundColor(
+                ContextCompat.getColor(binding.root.context, colorRes)
+            )
 
             binding.root.setOnClickListener {
                 onItemClick(repuesto)

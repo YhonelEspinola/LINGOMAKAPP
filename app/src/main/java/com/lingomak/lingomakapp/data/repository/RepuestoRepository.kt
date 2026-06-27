@@ -66,6 +66,10 @@ class RepuestoRepository(context: Context) {
         }
     }
 
+    suspend fun obtenerRepuestoPorUid(uid: String): RepuestoModel? {
+        return repuestoDao.obtenerPorUid(uid)?.aModel()
+    }
+
     // ===================================================================
     // ESCRITURA LOCAL (Room) — instantánea, funciona offline
     // ===================================================================
@@ -78,13 +82,17 @@ class RepuestoRepository(context: Context) {
     suspend fun guardarRepuesto(
         repuesto: RepuestoModel,
         esNuevo: Boolean,
+        imagenLocalPath: String? = null,
+        qrLocalPath: String? = null,
         onSuccess: () -> Unit,
         onFailure: (Exception) -> Unit
     ) {
         try {
             val entity = repuesto.aEntity(
                 estadoSync = if (esNuevo) "PENDIENTE_CREAR" else "PENDIENTE_ACTUALIZAR",
-                timestampLocal = System.currentTimeMillis()
+                timestampLocal = System.currentTimeMillis(),
+                imagenLocalPath = imagenLocalPath,
+                qrLocalPath = qrLocalPath
             )
 
             repuestoDao.insertarOActualizar(entity)
@@ -142,7 +150,7 @@ class RepuestoRepository(context: Context) {
         onFailure: (Exception) -> Unit
     ) {
         try {
-            repuestoDao.ajustarStockLocal(uid, delta)
+            repuestoDao.ajustarStockLocal(uid, delta, System.currentTimeMillis())
 
             SincronizacionRepuestosWorker.encolar(appContext)
 
@@ -170,6 +178,42 @@ class RepuestoRepository(context: Context) {
 
         for (entity in pendientes) {
             try {
+                var modeloParaSubir = entity.aModel()
+                var huboCambioLocal = false
+
+                // Si tiene una imagen local pendiente de subir
+                if (!entity.imagenLocalPath.isNullOrEmpty()) {
+                    try {
+                        val urlDescarga = subirImagenDesdeArchivo(entity.uid, entity.imagenLocalPath, esQR = false)
+                        modeloParaSubir = modeloParaSubir.copy(imagenUrl = urlDescarga)
+                        huboCambioLocal = true
+                    } catch (e: Exception) {
+                        continue
+                    }
+                }
+
+                // Si tiene un QR local pendiente de subir
+                if (!entity.qrLocalPath.isNullOrEmpty()) {
+                    try {
+                        val urlDescarga = subirImagenDesdeArchivo(entity.uid, entity.qrLocalPath, esQR = true)
+                        modeloParaSubir = modeloParaSubir.copy(codigoQR = urlDescarga)
+                        huboCambioLocal = true
+                    } catch (e: Exception) {
+                        continue
+                    }
+                }
+
+                if (huboCambioLocal) {
+                    // Actualizamos localmente para limpiar los paths locales y guardar las URLs
+                    val entityActualizada = entity.copy(
+                        imagenUrl = modeloParaSubir.imagenUrl,
+                        codigoQR = modeloParaSubir.codigoQR,
+                        imagenLocalPath = if (entity.imagenLocalPath != null && modeloParaSubir.imagenUrl.isNotEmpty()) null else entity.imagenLocalPath,
+                        qrLocalPath = if (entity.qrLocalPath != null && modeloParaSubir.codigoQR.isNotEmpty()) null else entity.qrLocalPath
+                    )
+                    repuestoDao.insertarOActualizar(entityActualizada)
+                }
+
                 val docRemoto = repuestosCollection.document(entity.uid).get().await()
 
                 val timestampRemoto = docRemoto.getTimestamp("fechaActualizacion")
@@ -177,14 +221,13 @@ class RepuestoRepository(context: Context) {
 
                 // Last-write-wins: si el remoto es más nuevo que nuestro
                 // cambio local, el remoto gana y descartamos la subida
-                // (la bajada de datos remotos la hace otra función).
                 if (docRemoto.exists() && timestampRemoto > entity.timestampLocal) {
                     repuestoDao.marcarComoSincronizado(entity.uid)
                     continue
                 }
 
                 repuestosCollection.document(entity.uid)
-                    .set(entity.aModel())
+                    .set(modeloParaSubir)
                     .await()
 
                 repuestoDao.marcarComoSincronizado(entity.uid)
@@ -193,6 +236,13 @@ class RepuestoRepository(context: Context) {
                 // de WorkManager (con backoff) lo reintentará.
             }
         }
+    }
+
+    private suspend fun subirImagenDesdeArchivo(uid: String, path: String, esQR: Boolean): String {
+        val fileUri = android.net.Uri.fromFile(java.io.File(path))
+        val archivoRef = if (esQR) qrStorageRef.child("$uid.png") else imagenesStorageRef.child("$uid.jpg")
+        archivoRef.putFile(fileUri).await()
+        return archivoRef.downloadUrl.await().toString()
     }
 
     /**
@@ -204,8 +254,17 @@ class RepuestoRepository(context: Context) {
         val snapshot = repuestosCollection.get().await()
         val remotos = snapshot.toObjects(RepuestoModel::class.java)
 
+        val contadorDao = AppDatabase.getInstance(appContext).contadorDao()
+
         for (modelo in remotos) {
             val local = repuestoDao.obtenerPorUid(modelo.uid)
+
+            // Actualizar contador basado en el código remoto si es válido
+            val prefijo = com.lingomak.lingomakapp.utils.CodigoInternoGenerator.extraerPrefijo(modelo.codigoInterno)
+            if (prefijo != null) {
+                val numero = com.lingomak.lingomakapp.utils.CodigoInternoGenerator.extraerNumero(modelo.codigoInterno)
+                contadorDao.actualizarSiEsMayor(prefijo, numero)
+            }
 
             // Si hay un cambio local pendiente más reciente, no lo
             // pisamos con el remoto todavía (se subirá en el próximo
@@ -270,7 +329,7 @@ class RepuestoRepository(context: Context) {
 // MAPPERS — conversión entre las 3 representaciones (Model/Entity/Long-Date)
 // =======================================================================
 
-private fun RepuestoModel.aEntity(estadoSync: String, timestampLocal: Long): RepuestoEntity {
+private fun RepuestoModel.aEntity(estadoSync: String, timestampLocal: Long, imagenLocalPath: String? = null, qrLocalPath: String? = null): RepuestoEntity {
     return RepuestoEntity(
         uid = uid,
         codigoInterno = codigoInterno,
@@ -284,6 +343,8 @@ private fun RepuestoModel.aEntity(estadoSync: String, timestampLocal: Long): Rep
         ubicacionAlmacen = ubicacionAlmacen,
         imagenUrl = imagenUrl,
         codigoQR = codigoQR,
+        imagenLocalPath = imagenLocalPath,
+        qrLocalPath = qrLocalPath,
         estado = estado,
         fechaRegistro = fechaRegistro?.time,
         fechaActualizacion = fechaActualizacion?.time,

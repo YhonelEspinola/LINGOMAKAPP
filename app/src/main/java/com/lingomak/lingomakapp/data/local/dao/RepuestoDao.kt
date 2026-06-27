@@ -53,6 +53,13 @@ interface RepuestoDao {
     suspend fun marcarComoSincronizado(uid: String)
 
     /**
+     * Busca el correlativo más alto registrado para un prefijo.
+     * Útil para reconstruir contadores tras un borrado de caché.
+     */
+    @Query("SELECT MAX(CAST(SUBSTR(codigoInterno, 9) AS INTEGER)) FROM repuestos WHERE codigoInterno LIKE 'REP-' || :prefijo || '-%'")
+    suspend fun obtenerMaxCorrelativo(prefijo: String): Int?
+
+    /**
      * Ajusta el stock localmente de forma inmediata (offline-friendly).
      * El delta puede ser positivo (entrada) o negativo (salida).
      * Marca el registro como pendiente de actualizar para que el
@@ -64,5 +71,5 @@ interface RepuestoDao {
             "timestampLocal = :timestamp " +
             "WHERE uid = :uid"
     )
-    suspend fun ajustarStockLocal(uid: String, delta: Int, timestamp: Long = System.currentTimeMillis())
+    suspend fun ajustarStockLocal(uid: String, delta: Int, timestamp: Long)
 }

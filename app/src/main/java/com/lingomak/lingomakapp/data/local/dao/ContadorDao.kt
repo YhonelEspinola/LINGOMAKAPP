@@ -19,6 +19,25 @@ interface ContadorDao {
     @Query("UPDATE contadores SET ultimoNumero = ultimoNumero + 1 WHERE prefijo = :prefijo")
     suspend fun incrementar(prefijo: String)
 
+    @Query("UPDATE contadores SET ultimoNumero = :nuevoNumero WHERE prefijo = :prefijo")
+    suspend fun actualizar(prefijo: String, nuevoNumero: Int)
+
+    @Transaction
+    suspend fun actualizarSiEsMayor(prefijo: String, numero: Int) {
+        inicializarSiNoExiste(ContadorEntity(prefijo = prefijo, ultimoNumero = 0))
+        val actual = obtenerUltimoNumero(prefijo) ?: 0
+        if (numero > actual) {
+            actualizar(prefijo, numero)
+        }
+    }
+
+    @Transaction
+    suspend fun obtenerSiguienteNumero(prefijo: String): Int {
+        inicializarSiNoExiste(ContadorEntity(prefijo = prefijo, ultimoNumero = 0))
+        val ultimo = obtenerUltimoNumero(prefijo) ?: 0
+        return ultimo + 1
+    }
+
     /**
      * Reserva el siguiente número para un prefijo dado de forma
      * atómica: si el prefijo no existe lo inicializa en 0, luego

@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
 import com.bumptech.glide.Glide
 import com.lingomak.lingomakapp.R
 import com.lingomak.lingomakapp.data.model.RepuestoModel
@@ -26,7 +26,7 @@ class DetalleRepuestoFragment : Fragment() {
     private var _binding: FragmentDetalleRepuestoBinding? = null
     private val binding get() = _binding!!
 
-    private val viewModel: InventarioViewModel by viewModels()
+    private val viewModel: InventarioViewModel by activityViewModels()
 
     private var uidRepuesto: String = ""
 

@@ -231,29 +231,24 @@ class InventarioViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     /**
-     * Genera el siguiente código interno para la categoría seleccionada
-     * y lo expone en codigoGenerado para que el Fragment lo muestre.
-     * Se llama cuando el usuario selecciona una categoría en el Spinner,
-     * de modo que el código ya esté listo antes de tocar "Guardar".
+     * Previsualiza el código interno para la categoría seleccionada
+     * SIN incrementar el contador en la base de datos.
+     * Se llama cuando el usuario selecciona una categoría en el Spinner.
      */
     fun generarCodigoInterno(categoria: String) {
         viewModelScope.launch {
-            val contadorDao = AppDatabase.getInstance(getApplication()).contadorDao()
-            val codigo = CodigoInternoGenerator.generar(categoria, contadorDao)
+            val db = AppDatabase.getInstance(getApplication())
+            val contadorDao = db.contadorDao()
+            val repuestoDao = db.repuestoDao()
+            val codigo = CodigoInternoGenerator.previsualizar(categoria, contadorDao, repuestoDao)
             _codigoGenerado.value = codigo
         }
     }
 
     /**
-     * Registra un nuevo repuesto. Se guarda en Room de inmediato (con
-     * estado "ACTIVO" y fecha de registro actual) y se encola su
-     * sincronización con Firestore. El UID se genera localmente con
-     * UUID para que funcione sin conexión (ver nota en el ViewModel
-     * de antes: con Firestore.document().id se requería red para
-     * generar el ID; con UUID no).
+     * Registra un nuevo repuesto e incrementa el contador de la categoría.
      */
     fun registrarRepuesto(
-        codigoInterno: String,
         nombre: String,
         categoria: String,
         marca: String,
@@ -261,13 +256,21 @@ class InventarioViewModel(application: Application) : AndroidViewModel(applicati
         stockActual: Int,
         stockMinimo: Int,
         stockMaximo: Int,
-        ubicacionAlmacen: String
+        ubicacionAlmacen: String,
+        imagenLocalPath: String? = null,
+        qrLocalPath: String? = null
     ) {
         viewModelScope.launch {
             _loading.value = true
 
             val currentUserUid = FirebaseAuth.getInstance().currentUser?.uid ?: ""
             val nuevoUid = java.util.UUID.randomUUID().toString()
+
+            val db = AppDatabase.getInstance(getApplication())
+            val contadorDao = db.contadorDao()
+            val repuestoDao = db.repuestoDao()
+            
+            val codigoInterno = CodigoInternoGenerator.generar(categoria, contadorDao, repuestoDao)
 
             val nuevoRepuesto = RepuestoModel(
                 uid = nuevoUid,
@@ -289,6 +292,8 @@ class InventarioViewModel(application: Application) : AndroidViewModel(applicati
             repository.guardarRepuesto(
                 repuesto = nuevoRepuesto,
                 esNuevo = true,
+                imagenLocalPath = imagenLocalPath,
+                qrLocalPath = qrLocalPath,
                 onSuccess = {
                     _loading.value = false
                     _nuevoRepuestoId.value = nuevoUid
@@ -307,7 +312,7 @@ class InventarioViewModel(application: Application) : AndroidViewModel(applicati
      * actualizadoPor. Escribe en Room de inmediato y encola la
      * sincronización.
      */
-    fun actualizarRepuesto(repuesto: RepuestoModel) {
+    fun actualizarRepuesto(repuesto: RepuestoModel, imagenLocalPath: String? = null, qrLocalPath: String? = null) {
         viewModelScope.launch {
             _loading.value = true
 
@@ -321,6 +326,8 @@ class InventarioViewModel(application: Application) : AndroidViewModel(applicati
             repository.guardarRepuesto(
                 repuesto = repuestoActualizado,
                 esNuevo = false,
+                imagenLocalPath = imagenLocalPath,
+                qrLocalPath = qrLocalPath,
                 onSuccess = {
                     _loading.value = false
                     _actualizacionExitosa.value = true
@@ -334,41 +341,13 @@ class InventarioViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     /**
-     * Sube el bitmap del QR a Storage (requiere red real) y, una vez
-     * obtenida la URL, actualiza el repuesto en Room (lo que a su vez
-     * encola la sincronización del campo codigoQR con Firestore).
+     * Limpia los estados de éxito para evitar que al volver a una pantalla
+     * se disparen los observadores de guardado/actualización previo.
      */
-    fun subirQR(uid: String, qrBitmap: Bitmap) {
-        viewModelScope.launch {
-            _loading.value = true
-
-            repository.subirImagenQR(
-                uid = uid,
-                qrBitmap = qrBitmap,
-                onSuccess = { url ->
-                    viewModelScope.launch {
-                        val actual = _repuestoSeleccionado.value
-                        if (actual != null) {
-                            repository.guardarRepuesto(
-                                repuesto = actual.copy(codigoQR = url),
-                                esNuevo = false,
-                                onSuccess = { _loading.value = false },
-                                onFailure = { exception ->
-                                    _loading.value = false
-                                    _error.value = "QR subido pero falló guardarlo: ${exception.message}"
-                                }
-                            )
-                        } else {
-                            _loading.value = false
-                        }
-                    }
-                },
-                onFailure = { exception ->
-                    _loading.value = false
-                    _error.value = "Error al subir imagen QR: ${exception.message}"
-                }
-            )
-        }
+    fun limpiarEstados() {
+        _guardadoExitoso.value = false
+        _actualizacionExitosa.value = false
+        _nuevoRepuestoId.value = null
     }
 
     override fun onCleared() {
