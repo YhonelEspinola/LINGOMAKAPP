@@ -1,0 +1,317 @@
+package com.lingomak.lingomakapp.data.repository
+
+import android.content.Context
+import android.graphics.Bitmap
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.map
+import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
+import kotlinx.coroutines.tasks.await
+import com.lingomak.lingomakapp.data.local.AppDatabase
+import com.lingomak.lingomakapp.data.local.entity.RepuestoEntity
+import com.lingomak.lingomakapp.data.model.RepuestoModel
+import com.lingomak.lingomakapp.worker.SincronizacionRepuestosWorker
+import java.io.ByteArrayOutputStream
+import java.util.Date
+
+/**
+ * Repositorio de Repuestos, OFFLINE-FIRST.
+ *
+ * Arquitectura: la UI (vía ViewModel) SIEMPRE lee y escribe contra
+ * Room (rápido, funciona sin conexión). Este repositorio nunca llama
+ * a Firestore directamente desde sus operaciones de escritura "normales"
+ * (guardar, cambiar estado, ajustar stock) — en su lugar, marca el
+ * registro local como pendiente de sincronizar y encola un trabajo de
+ * WorkManager que se encarga de subirlo cuando haya conexión.
+ *
+ * Las únicas excepciones son subirImagenQR y subirImagenRepuesto
+ * (Storage), que sí requieren red real porque no tiene sentido cachear
+ * un archivo binario grande en SQLite; si no hay conexión, esas
+ * llamadas fallan con onFailure y el Fragment debe avisar al usuario.
+ *
+ * `context` se requiere para obtener la instancia de AppDatabase y
+ * para encolar trabajos de WorkManager.
+ */
+class RepuestoRepository(context: Context) {
+
+    private val db = FirebaseFirestore.getInstance()
+    private val storage = FirebaseStorage.getInstance()
+
+    private val repuestosCollection = db.collection("repuestos")
+    private val qrStorageRef = storage.reference.child("repuestos_qr")
+    private val imagenesStorageRef = storage.reference.child("repuestos_imagenes")
+
+    private val repuestoDao = AppDatabase.getInstance(context).repuestoDao()
+    private val appContext = context.applicationContext
+
+    // ===================================================================
+    // LECTURA LOCAL (Room) — lo que observa la UI
+    // ===================================================================
+
+    /**
+     * Lista completa observable directamente desde Room. La UI se
+     * suscribe a esto; cualquier escritura local o sincronización
+     * remota actualiza la pantalla automáticamente.
+     */
+    fun obtenerRepuestosObservable(): LiveData<List<RepuestoModel>> {
+        return repuestoDao.obtenerTodosObservable().map { lista ->
+            lista.map { it.aModel() }
+        }
+    }
+
+    fun obtenerRepuestoPorUidObservable(uid: String): LiveData<RepuestoModel?> {
+        return repuestoDao.obtenerPorUidObservable(uid).map { entity ->
+            entity?.aModel()
+        }
+    }
+
+    // ===================================================================
+    // ESCRITURA LOCAL (Room) — instantánea, funciona offline
+    // ===================================================================
+
+    /**
+     * Guarda (crea o edita) un repuesto en Room de inmediato y encola
+     * la sincronización con Firestore. onSuccess se dispara apenas
+     * Room confirma la escritura local — NO espera a la red.
+     */
+    suspend fun guardarRepuesto(
+        repuesto: RepuestoModel,
+        esNuevo: Boolean,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        try {
+            val entity = repuesto.aEntity(
+                estadoSync = if (esNuevo) "PENDIENTE_CREAR" else "PENDIENTE_ACTUALIZAR",
+                timestampLocal = System.currentTimeMillis()
+            )
+
+            repuestoDao.insertarOActualizar(entity)
+
+            SincronizacionRepuestosWorker.encolar(appContext)
+
+            onSuccess()
+        } catch (exception: Exception) {
+            onFailure(exception)
+        }
+    }
+
+    /**
+     * Activa/inactiva un repuesto localmente (baja lógica) y encola
+     * la sincronización.
+     */
+    suspend fun cambiarEstadoRepuesto(
+        uid: String,
+        nuevoEstado: String,
+        actualizadoPor: String,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        try {
+            val actual = repuestoDao.obtenerPorUid(uid)
+                ?: throw IllegalStateException("Repuesto no encontrado localmente: $uid")
+
+            val actualizado = actual.copy(
+                estado = nuevoEstado,
+                actualizadoPor = actualizadoPor,
+                fechaActualizacion = System.currentTimeMillis(),
+                estadoSync = if (actual.estadoSync == "SINCRONIZADO") "PENDIENTE_ACTUALIZAR" else actual.estadoSync,
+                timestampLocal = System.currentTimeMillis()
+            )
+
+            repuestoDao.insertarOActualizar(actualizado)
+
+            SincronizacionRepuestosWorker.encolar(appContext)
+
+            onSuccess()
+        } catch (exception: Exception) {
+            onFailure(exception)
+        }
+    }
+
+    /**
+     * Ajusta el stock de forma local e inmediata (usado al registrar
+     * un movimiento de entrada/salida). delta puede ser positivo o
+     * negativo. Funciona sin conexión; se sincroniza después.
+     */
+    suspend fun ajustarStockRepuesto(
+        uid: String,
+        delta: Int,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        try {
+            repuestoDao.ajustarStockLocal(uid, delta)
+
+            SincronizacionRepuestosWorker.encolar(appContext)
+
+            onSuccess()
+        } catch (exception: Exception) {
+            onFailure(exception)
+        }
+    }
+
+    // ===================================================================
+    // SINCRONIZACIÓN CON FIRESTORE — usado SOLO por SincronizacionRepuestosWorker
+    // ===================================================================
+
+    /**
+     * Sube a Firestore todos los repuestos locales marcados como
+     * pendientes. Resuelve conflictos con estrategia "último que
+     * escribe gana", comparando timestampLocal contra la
+     * fechaActualizacion remota antes de sobreescribir.
+     *
+     * Esta función es suspend y de uso EXCLUSIVO del Worker — el
+     * ViewModel/Fragment nunca la llama directamente.
+     */
+    suspend fun sincronizarPendientesConFirestore() {
+        val pendientes = repuestoDao.obtenerPendientesDeSincronizar()
+
+        for (entity in pendientes) {
+            try {
+                val docRemoto = repuestosCollection.document(entity.uid).get().await()
+
+                val timestampRemoto = docRemoto.getTimestamp("fechaActualizacion")
+                    ?.toDate()?.time ?: 0L
+
+                // Last-write-wins: si el remoto es más nuevo que nuestro
+                // cambio local, el remoto gana y descartamos la subida
+                // (la bajada de datos remotos la hace otra función).
+                if (docRemoto.exists() && timestampRemoto > entity.timestampLocal) {
+                    repuestoDao.marcarComoSincronizado(entity.uid)
+                    continue
+                }
+
+                repuestosCollection.document(entity.uid)
+                    .set(entity.aModel())
+                    .await()
+
+                repuestoDao.marcarComoSincronizado(entity.uid)
+            } catch (exception: Exception) {
+                // Se deja el registro como pendiente; el próximo intento
+                // de WorkManager (con backoff) lo reintentará.
+            }
+        }
+    }
+
+    /**
+     * Trae todos los repuestos de Firestore y los mezcla en Room,
+     * respetando last-write-wins frente a cualquier cambio local
+     * pendiente. Se llama periódicamente / al recuperar conexión.
+     */
+    suspend fun descargarCambiosDeFirestore() {
+        val snapshot = repuestosCollection.get().await()
+        val remotos = snapshot.toObjects(RepuestoModel::class.java)
+
+        for (modelo in remotos) {
+            val local = repuestoDao.obtenerPorUid(modelo.uid)
+
+            // Si hay un cambio local pendiente más reciente, no lo
+            // pisamos con el remoto todavía (se subirá en el próximo
+            // ciclo de sincronizarPendientesConFirestore).
+            if (local != null && local.estadoSync != "SINCRONIZADO") {
+                val timestampRemoto = modelo.fechaActualizacion?.time ?: 0L
+                if (local.timestampLocal >= timestampRemoto) {
+                    continue
+                }
+            }
+
+            repuestoDao.insertarOActualizar(
+                modelo.aEntity(estadoSync = "SINCRONIZADO", timestampLocal = System.currentTimeMillis())
+            )
+        }
+    }
+
+    // ===================================================================
+    // STORAGE (Imágenes / QR) — requiere red real, no se cachea offline
+    // ===================================================================
+
+    fun subirImagenQR(
+        uid: String,
+        qrBitmap: Bitmap,
+        onSuccess: (String) -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        val baos = ByteArrayOutputStream()
+        qrBitmap.compress(Bitmap.CompressFormat.PNG, 100, baos)
+        val data = baos.toByteArray()
+
+        val archivoRef = qrStorageRef.child("$uid.png")
+
+        archivoRef.putBytes(data)
+            .addOnSuccessListener {
+                archivoRef.downloadUrl.addOnSuccessListener { uri ->
+                    onSuccess(uri.toString())
+                }.addOnFailureListener { onFailure(it) }
+            }
+            .addOnFailureListener { onFailure(it) }
+    }
+
+    fun subirImagenRepuesto(
+        uid: String,
+        imagenBytes: ByteArray,
+        onSuccess: (String) -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        val archivoRef = imagenesStorageRef.child("$uid.jpg")
+
+        archivoRef.putBytes(imagenBytes)
+            .addOnSuccessListener {
+                archivoRef.downloadUrl.addOnSuccessListener { uri ->
+                    onSuccess(uri.toString())
+                }.addOnFailureListener { onFailure(it) }
+            }
+            .addOnFailureListener { onFailure(it) }
+    }
+}
+
+// =======================================================================
+// MAPPERS — conversión entre las 3 representaciones (Model/Entity/Long-Date)
+// =======================================================================
+
+private fun RepuestoModel.aEntity(estadoSync: String, timestampLocal: Long): RepuestoEntity {
+    return RepuestoEntity(
+        uid = uid,
+        codigoInterno = codigoInterno,
+        nombre = nombre,
+        categoria = categoria,
+        marca = marca,
+        descripcion = descripcion,
+        stockActual = stockActual,
+        stockMinimo = stockMinimo,
+        stockMaximo = stockMaximo,
+        ubicacionAlmacen = ubicacionAlmacen,
+        imagenUrl = imagenUrl,
+        codigoQR = codigoQR,
+        estado = estado,
+        fechaRegistro = fechaRegistro?.time,
+        fechaActualizacion = fechaActualizacion?.time,
+        registradoPor = registradoPor,
+        actualizadoPor = actualizadoPor,
+        estadoSync = estadoSync,
+        timestampLocal = timestampLocal
+    )
+}
+
+private fun RepuestoEntity.aModel(): RepuestoModel {
+    return RepuestoModel(
+        uid = uid,
+        codigoInterno = codigoInterno,
+        nombre = nombre,
+        categoria = categoria,
+        marca = marca,
+        descripcion = descripcion,
+        stockActual = stockActual,
+        stockMinimo = stockMinimo,
+        stockMaximo = stockMaximo,
+        ubicacionAlmacen = ubicacionAlmacen,
+        imagenUrl = imagenUrl,
+        codigoQR = codigoQR,
+        estado = estado,
+        fechaRegistro = fechaRegistro?.let { Date(it) },
+        fechaActualizacion = fechaActualizacion?.let { Date(it) },
+        registradoPor = registradoPor,
+        actualizadoPor = actualizadoPor
+    )
+}
