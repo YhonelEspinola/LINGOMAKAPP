@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/opcion_ver_detalle"
+        android:title="Ver detalle" />
+
+    <item
+        android:id="@+id/opcion_editar"
+        android:title="Editar" />
+
+    <item
+        android:id="@+id/opcion_cambiar_estado"
+        android:title="Cambiar estado" />
+
+    <item
+        android:id="@+id/opcion_cancelar"
+        android:title="Cancelar mantenimiento" />
+
+</menu>
