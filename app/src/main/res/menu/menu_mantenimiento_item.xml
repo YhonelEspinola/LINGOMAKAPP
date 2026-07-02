@@ -11,10 +11,14 @@
 
     <item
         android:id="@+id/opcion_cambiar_estado"
-        android:title="Cambiar estado" />
+        android:title="Iniciar mantenimiento" />
 
     <item
         android:id="@+id/opcion_cancelar"
         android:title="Cancelar mantenimiento" />
+
+    <item
+        android:id="@+id/opcion_finalizar"
+        android:title="Finalizar mantenimiento" />
 
 </menu>

@@ -1,0 +1,491 @@
+package com.lingomak.lingomakapp.ui.maquinaria
+
+import android.net.Uri
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import com.bumptech.glide.Glide
+import com.google.firebase.auth.FirebaseAuth
+import com.lingomak.lingomakapp.data.model.MaquinariaModel
+import com.lingomak.lingomakapp.databinding.FragmentAgregarMaquinariaBinding
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import java.util.UUID
+
+class AgregarMaquinariaFragment : Fragment() {
+
+    private var _binding: FragmentAgregarMaquinariaBinding? = null
+    private val binding get() = _binding!!
+
+    private val viewModel : MaquinariaViewModel by viewModels()
+
+    private var imagenSeleccionadaUri : Uri? = null
+    private val seleccionadarImagenLauncher =
+        registerForActivityResult(ActivityResultContracts.GetContent()){ uri ->
+            if (uri != null){
+                imagenSeleccionadaUri = uri
+
+                Glide.with(this)
+                    .load(uri)
+                    .centerCrop()
+                    .into(binding.imgVistaPreviaMaquinaria)
+            }
+
+        }
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentAgregarMaquinariaBinding.inflate(inflater, container,false)
+
+        configurarSpinnerEstado()
+        configurarSpinnerTipoMaquinaria()
+        configurarSpinnerMarca()
+        configurarEventos()
+        observarViewModel()
+
+
+
+        return binding.root
+    }
+
+    private fun configurarSpinnerEstado(){
+        val estados = listOf(
+            "OPERATIVA",
+            "EN_MANTENIMIENTO",
+            "INACTIVA"
+        )
+
+        val adapter = ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_spinner_dropdown_item,
+            estados
+        )
+        binding.spEstadoMaquinaria.adapter = adapter
+    }
+
+    private fun configurarEventos(){
+        binding.btnSeleccionarImagen.setOnClickListener {
+            seleccionadarImagenLauncher.launch("image/*")
+        }
+
+        binding.btnGuardarMaquinaria.setOnClickListener {
+            validarFormulario()
+        }
+    }
+
+    private fun observarViewModel(){
+        viewModel.mensajeError.observe(viewLifecycleOwner) { mensaje ->
+            mostrarCargando(false)
+            Toast.makeText(requireContext(), mensaje, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun validarFormulario(){
+        val codigo = generarCodigoMaquinaria(binding.etNombreMaquinaria.text.toString().trim())
+        val nombre = binding.etNombreMaquinaria.text.toString().trim()
+        val tipo = binding.spTipoMaquinaria.selectedItem.toString()
+        val marca = binding.spMarcaMaquinaria.selectedItem.toString()
+        val modelo = binding.etModeloMaquinaria.text.toString().trim()
+        val placaSerie = binding.etPlacaSerie.text.toString().trim()
+        val anioTexto = binding.etAnioMaquinaria.text.toString().trim()
+        val estado = binding.spEstadoMaquinaria.selectedItem?.toString() ?: ""
+        val horometroActualTexto = binding.etHorometroActual.text.toString().trim()
+        val horometroUltimoTexto = binding.etHorometroUltimoMantenimiento.text.toString().trim()
+        val ubicacion = binding.etUbicacionActual.text.toString().trim()
+        val observaciones = binding.etObservacionesMaquinaria.text.toString().trim()
+
+
+        if (
+            nombre.isEmpty() ||
+            tipo.isEmpty() ||
+            marca.isEmpty() ||
+            modelo.isEmpty() ||
+            placaSerie.isEmpty() ||
+            anioTexto.isEmpty() ||
+            horometroActualTexto.isEmpty() ||
+            ubicacion.isEmpty()
+        ) {
+            Toast.makeText(requireContext(), "Complete los campos obligatorios", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        if (tipo == "Seleccione un tipo") {
+            Toast.makeText(
+                requireContext(),
+                "Seleccione un tipo de maquinaria",
+                Toast.LENGTH_SHORT
+            ).show()
+
+            mostrarCargando(false)
+            return
+        }
+
+        if (marca == "Seleccione una marca") {
+            Toast.makeText(
+                requireContext(),
+                "Seleccione una marca",
+                Toast.LENGTH_SHORT
+            ).show()
+
+            mostrarCargando(false)
+            return
+        }
+
+        val anio = anioTexto.toIntOrNull()
+        val horometroActual = horometroActualTexto.toIntOrNull()
+        val horometroUltimo = horometroUltimoTexto.toIntOrNull() ?: 0
+
+        if (anio == null || anio <= 0) {
+            Toast.makeText(requireContext(), "Ingrese un año válido", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        if (horometroActual == null || horometroActual < 0) {
+            Toast.makeText(requireContext(), "Ingrese un horómetro válido", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        mostrarCargando(true)
+
+        guardarMaquinaria(
+            codigo = codigo,
+            nombre = nombre,
+            tipo = tipo,
+            marca = marca,
+            modelo = modelo,
+            placaSerie = placaSerie,
+            anio = anio,
+            estado = estado,
+            horometroActual = horometroActual,
+            horometroUltimo = horometroUltimo,
+            ubicacion = ubicacion,
+            observaciones = observaciones
+        )
+    }
+
+    private fun guardarMaquinaria(
+        codigo: String,
+        nombre: String,
+        tipo: String,
+        marca: String,
+        modelo: String,
+        placaSerie: String,
+        anio: Int,
+        estado: String,
+        horometroActual: Int,
+        horometroUltimo: Int,
+        ubicacion: String,
+        observaciones: String
+    ){
+        val uid = UUID.randomUUID().toString()
+        val fechaActual = obtenerFechaActual()
+        val registradoPor = FirebaseAuth.getInstance().currentUser?.email ?: "ADMIN"
+
+        val imagenUri = imagenSeleccionadaUri
+
+        if (imagenUri != null) {
+            viewModel.subirImagenMaquinaria(
+                imagenUri = imagenUri,
+                uid = uid,
+                onSuccess = { imagenUrl ->
+                    registrarMaquinariaEnFirestore(
+                        uid = uid,
+                        codigo = codigo,
+                        nombre = nombre,
+                        tipo = tipo,
+                        marca = marca,
+                        modelo = modelo,
+                        placaSerie = placaSerie,
+                        anio = anio,
+                        estado = estado,
+                        horometroActual = horometroActual,
+                        horometroUltimo = horometroUltimo,
+                        ubicacion = ubicacion,
+                        observaciones = observaciones,
+                        imagenUrl = imagenUrl,
+                        fechaActual = fechaActual,
+                        registradoPor = registradoPor
+                    )
+                }
+            )
+        } else {
+            registrarMaquinariaEnFirestore(
+                uid = uid,
+                codigo = codigo,
+                nombre = nombre,
+                tipo = tipo,
+                marca = marca,
+                modelo = modelo,
+                placaSerie = placaSerie,
+                anio = anio,
+                estado = estado,
+                horometroActual = horometroActual,
+                horometroUltimo = horometroUltimo,
+                ubicacion = ubicacion,
+                observaciones = observaciones,
+                imagenUrl = "",
+                fechaActual = fechaActual,
+                registradoPor = registradoPor
+            )
+        }
+    }
+
+    private fun registrarMaquinariaEnFirestore(
+        uid: String,
+        codigo: String,
+        nombre: String,
+        tipo: String,
+        marca: String,
+        modelo: String,
+        placaSerie: String,
+        anio: Int,
+        estado: String,
+        horometroActual: Int,
+        horometroUltimo: Int,
+        ubicacion: String,
+        observaciones: String,
+        imagenUrl: String,
+        fechaActual: String,
+        registradoPor: String
+    ) {
+        val maquinaria = MaquinariaModel(
+            uid = uid,
+            codigoMaquinaria = codigo,
+            nombre = nombre,
+            tipo = tipo,
+            marca = marca,
+            modelo = modelo,
+            placaSerie = placaSerie,
+            anio = anio,
+            estado = estado,
+            horometroActual = horometroActual,
+            horometroUltimoMantenimiento = horometroUltimo,
+            ubicacionActual = ubicacion,
+            imagenUrl = imagenUrl,
+            observaciones = observaciones,
+            fechaRegistro = fechaActual,
+            fechaActualizacion = fechaActual,
+            registradoPor = registradoPor
+        )
+
+        viewModel.agregarMaquinaria(
+            maquinaria = maquinaria,
+            onSuccess = {
+                mostrarCargando(false)
+                Toast.makeText(
+                    requireContext(),
+                    "Maquinaria registrada correctamente",
+                    Toast.LENGTH_SHORT
+                ).show()
+
+                parentFragmentManager.popBackStack()
+            }
+        )
+    }
+
+    private fun obtenerFechaActual(): String {
+        return SimpleDateFormat(
+            "yyyy-MM-dd",
+            Locale.getDefault()
+        ).format(Date())
+    }
+
+    private fun mostrarCargando(cargando : Boolean){
+        binding.btnGuardarMaquinaria.isEnabled = !cargando
+
+        binding.btnGuardarMaquinaria.text =
+            if(cargando) "Guardando..." else "Guardar maquinaria"
+
+        binding.progressGuardarMaquinaria.visibility =
+            if(cargando) View.VISIBLE else View.GONE
+    }
+
+    private fun generarCodigoMaquinaria(nombre: String): String {
+
+        val prefijo = nombre
+            .trim()
+            .replace(" ", "")
+            .uppercase()
+            .take(3)
+            .padEnd(3, 'X')
+        val fecha = SimpleDateFormat(
+            "yyyyMMdd",
+            Locale.getDefault()
+        ).format(Date())
+
+        val numeroAleatorio = (1000..9999).random()
+
+        return "$prefijo-$fecha-$numeroAleatorio"
+    }
+
+    private fun configurarSpinnerTipoMaquinaria() {
+
+        val tiposMaquinaria = listOf(
+            "Seleccione un tipo",
+            "Excavadora",
+            "Retroexcavadora",
+            "Volquete",
+            "Cargador Frontal",
+            "Motoniveladora",
+            "Rodillo Compactador",
+            "Tractor Oruga",
+            "Camión Cisterna",
+            "Camión Grúa",
+            "Minicargador",
+            "Compresora",
+            "Generador Eléctrico",
+            "Otro"
+        )
+
+        val adapter = ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_spinner_dropdown_item,
+            tiposMaquinaria
+        )
+
+        binding.spTipoMaquinaria.adapter = adapter
+    }
+
+
+    private fun configurarSpinnerMarca() {
+
+        binding.spTipoMaquinaria.onItemSelectedListener =
+            object : AdapterView.OnItemSelectedListener {
+
+                override fun onItemSelected(
+                    parent: AdapterView<*>?,
+                    view: View?,
+                    position: Int,
+                    id: Long
+                ) {
+
+                    val tipoSeleccionado =
+                        binding.spTipoMaquinaria.selectedItem.toString()
+
+                    val marcas = when (tipoSeleccionado) {
+
+                        "Excavadora" -> listOf(
+                            "Seleccione una marca",
+                            "CAT",
+                            "Komatsu",
+                            "Hitachi",
+                            "Volvo",
+                            "Hyundai",
+                            "Doosan"
+                        )
+
+                        "Retroexcavadora" -> listOf(
+                            "Seleccione una marca",
+                            "JCB",
+                            "CAT",
+                            "Case",
+                            "John Deere"
+                        )
+
+                        "Volquete" -> listOf(
+                            "Seleccione una marca",
+                            "Volvo",
+                            "Scania",
+                            "Mercedes-Benz",
+                            "MAN",
+                            "Iveco"
+                        )
+
+                        "Cargador Frontal" -> listOf(
+                            "Seleccione una marca",
+                            "CAT",
+                            "Komatsu",
+                            "Volvo",
+                            "John Deere"
+                        )
+
+                        "Motoniveladora" -> listOf(
+                            "Seleccione una marca",
+                            "CAT",
+                            "Komatsu",
+                            "John Deere"
+                        )
+
+                        "Rodillo Compactador" -> listOf(
+                            "Seleccione una marca",
+                            "Bomag",
+                            "Dynapac",
+                            "CAT"
+                        )
+
+                        "Tractor Oruga" -> listOf(
+                            "Seleccione una marca",
+                            "CAT",
+                            "Komatsu",
+                            "John Deere"
+                        )
+
+                        "Camión Cisterna" -> listOf(
+                            "Seleccione una marca",
+                            "Volvo",
+                            "Scania",
+                            "Mercedes-Benz"
+                        )
+
+                        "Camión Grúa" -> listOf(
+                            "Seleccione una marca",
+                            "Volvo",
+                            "Scania",
+                            "Mercedes-Benz"
+                        )
+
+                        "Minicargador" -> listOf(
+                            "Seleccione una marca",
+                            "Bobcat",
+                            "CAT",
+                            "JCB"
+                        )
+
+                        "Compresora" -> listOf(
+                            "Seleccione una marca",
+                            "Atlas Copco",
+                            "Sullair",
+                            "Kaeser"
+                        )
+
+                        "Generador Eléctrico" -> listOf(
+                            "Seleccione una marca",
+                            "Caterpillar",
+                            "Cummins",
+                            "Perkins"
+                        )
+
+                        else -> listOf(
+                            "Seleccione una marca"
+                        )
+                    }
+
+                    val adapter = ArrayAdapter(
+                        requireContext(),
+                        android.R.layout.simple_spinner_dropdown_item,
+                        marcas
+                    )
+
+                    binding.spMarcaMaquinaria.adapter = adapter
+                }
+
+                override fun onNothingSelected(parent: AdapterView<*>?) {}
+            }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+}

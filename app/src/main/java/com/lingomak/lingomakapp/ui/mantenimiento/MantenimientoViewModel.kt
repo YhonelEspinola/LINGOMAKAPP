@@ -1,0 +1,116 @@
+package com.lingomak.lingomakapp.ui.mantenimiento
+
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import com.lingomak.lingomakapp.data.model.MantenimientoModel
+import com.lingomak.lingomakapp.data.repository.MantenimientoRepository
+
+class MantenimientoViewModel : ViewModel() {
+
+    private val repository = MantenimientoRepository()
+    private val _listaMantenimiento = MutableLiveData<List<MantenimientoModel>>()
+    val listaMantenimientos: LiveData<List<MantenimientoModel>> get() = _listaMantenimiento
+    private val _mensajeError = MutableLiveData<String>()
+    val mensajeError: LiveData<String> get() = _mensajeError
+
+    fun agregarMantenimiento(
+        mantenimiento: MantenimientoModel,
+        onSuccess: () -> Unit
+    ) {
+        repository.agregarMantenimiento(
+            mantenimiento = mantenimiento,
+            onSuccess = {
+                onSuccess()
+            },
+            onError = { error ->
+                _mensajeError.postValue(error)
+            }
+        )
+    }
+
+    fun listarMantenimientos() {
+        repository.listarMantenimientos(
+            onSuccess = { lista ->
+                _listaMantenimiento.postValue(lista)
+            },
+            onError = { error ->
+                _mensajeError.postValue(error)
+            }
+        )
+    }
+
+    fun cambiarEstadoMantenimiento(
+        uid: String,
+        nuevoEstado: String,
+        onSuccess: () -> Unit
+    ) {
+        repository.cambiarEstadoMantenimiento(
+            uid = uid,
+            nuevoEstado = nuevoEstado,
+            onSuccess = {
+                onSuccess()
+            },
+            onError = { error ->
+                _mensajeError.postValue(error)
+            }
+        )
+
+    }
+
+    fun actualizarMantenimiento(
+        mantenimiento: MantenimientoModel,
+        onSuccess: () -> Unit
+    ) {
+        repository.actualizarMantenimiento(
+            mantenimiento = mantenimiento,
+            onSuccess = {
+                onSuccess()
+            },
+            onError = { error ->
+                _mensajeError.postValue(error)
+            }
+        )
+    }
+
+    fun finalizarMantenimiento(
+        uid: String,
+        uidMaquinaria: String,
+        fechaRealizada: String,
+        horometroReal: Int,
+        costoReal: Double,
+        observacionesFinales: String,
+        onSuccess: () -> Unit
+    ) {
+        repository.finalizarMantenimiento(
+            uid = uid,
+            uidMaquinaria = uidMaquinaria,
+            fechaRealizada = fechaRealizada,
+            horometroReal = horometroReal,
+            costoReal = costoReal,
+            observacionesFinales = observacionesFinales,
+            onSuccess = {
+                onSuccess()
+            },
+            onError =  { error ->
+            _mensajeError.postValue(error)
+        }
+        )
+    }
+
+    fun iniciarMantenimiento(
+        uidMantenimiento: String,
+        uidMaquinaria: String,
+        onSuccess: () -> Unit
+    ) {
+        repository.iniciarMantenimiento(
+            uidMantenimiento = uidMantenimiento,
+            uidMaquinaria = uidMaquinaria,
+            onSuccess = { onSuccess() },
+            onError = { error ->
+                _mensajeError.postValue(error)
+            }
+        )
+    }
+
+}

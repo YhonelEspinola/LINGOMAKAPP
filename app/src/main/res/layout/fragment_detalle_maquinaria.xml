@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp"
+        android:paddingBottom="120dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Detalle de Maquinaria"
+            android:textAlignment="center"
+            android:textColor="@color/text_primary"
+            android:textSize="28sp"
+            android:textStyle="bold" />
+
+        <ImageView
+            android:id="@+id/imgDetalleMaquinaria"
+            android:layout_width="match_parent"
+            android:layout_height="210dp"
+            android:layout_marginTop="18dp"
+            android:background="@drawable/bg_image_placeholder"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_maquinaria_placeholder" />
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            app:cardCornerRadius="18dp"
+            app:cardElevation="4dp"
+            app:cardBackgroundColor="@android:color/white">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="18dp">
+
+                <TextView
+                    android:id="@+id/tvNombreDetalleMaquinaria"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Excavadora CAT 320"
+                    android:textColor="@color/text_primary"
+                    android:textSize="22sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvCodigoDetalleMaquinaria"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Código: EXC-20260629-1234"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="14sp"
+                    android:layout_marginTop="4dp" />
+
+                <TextView
+                    android:id="@+id/tvEstadoDetalleMaquinaria"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="OPERATIVA"
+                    android:textStyle="bold"
+                    android:textColor="@android:color/holo_green_dark"
+                    android:layout_marginTop="14dp" />
+
+                <TextView
+                    android:id="@+id/tvTipoDetalleMaquinaria"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Tipo: Excavadora"
+                    android:layout_marginTop="16dp" />
+
+                <TextView
+                    android:id="@+id/tvMarcaDetalleMaquinaria"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Marca: CAT"
+                    android:layout_marginTop="10dp" />
+
+                <TextView
+                    android:id="@+id/tvModeloDetalleMaquinaria"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Modelo: 320D"
+                    android:layout_marginTop="10dp" />
+
+                <TextView
+                    android:id="@+id/tvPlacaDetalleMaquinaria"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Placa/Serie: ABC-123"
+                    android:layout_marginTop="10dp" />
+
+                <TextView
+                    android:id="@+id/tvAnioDetalleMaquinaria"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Año: 2020"
+                    android:layout_marginTop="10dp" />
+
+                <TextView
+                    android:id="@+id/tvHorometroDetalleMaquinaria"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Horómetro actual: 3500 h"
+                    android:layout_marginTop="10dp" />
+
+                <TextView
+                    android:id="@+id/tvHorometroUltimoDetalleMaquinaria"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Último mantenimiento: 3000 h"
+                    android:layout_marginTop="10dp" />
+
+                <TextView
+                    android:id="@+id/tvUbicacionDetalleMaquinaria"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Ubicación: Obra Norte"
+                    android:layout_marginTop="10dp" />
+
+                <TextView
+                    android:id="@+id/tvObservacionesDetalleMaquinaria"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Observaciones: Sin observaciones"
+                    android:layout_marginTop="10dp" />
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

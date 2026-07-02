@@ -11,7 +11,11 @@ import com.lingomak.lingomakapp.R
 class MantenimientoAdapter(
     private var listaMantenimientos: List<MantenimientoModel>,
 
-    private val onMantenimientoClick: (MantenimientoModel) -> Unit
+    private val onMantenimientoClick: (MantenimientoModel) -> Unit,
+    private val onEditarClick: (MantenimientoModel) -> Unit,
+    private val onCambiarEstadoClick : (MantenimientoModel) -> Unit,
+    private val onCancelarClick: (MantenimientoModel) -> Unit,
+    private val onFinalizarClick : (MantenimientoModel) -> Unit
 
 ) : RecyclerView.Adapter<MantenimientoAdapter.MantenimientoViewHolder>() {
 
@@ -55,6 +59,26 @@ class MantenimientoAdapter(
                     popupMenu.menu
                 )
 
+                when (mantenimiento.estado) {
+
+                    "PENDIENTE" -> {
+                        popupMenu.menu.findItem(R.id.opcion_finalizar).isVisible = false
+                    }
+
+                    "EN_PROCESO" -> {
+                        popupMenu.menu.findItem(R.id.opcion_editar).isVisible = false
+                        popupMenu.menu.findItem(R.id.opcion_cambiar_estado).isVisible = false
+                        popupMenu.menu.findItem(R.id.opcion_cancelar).isVisible = false
+                    }
+
+                    "FINALIZADO", "VENCIDO", "CANCELADO" -> {
+                        popupMenu.menu.findItem(R.id.opcion_editar).isVisible = false
+                        popupMenu.menu.findItem(R.id.opcion_cambiar_estado).isVisible = false
+                        popupMenu.menu.findItem(R.id.opcion_cancelar).isVisible = false
+                        popupMenu.menu.findItem(R.id.opcion_finalizar).isVisible = false
+                    }
+                }
+
                 popupMenu.setOnMenuItemClickListener { item ->
 
                     when (item.itemId) {
@@ -65,15 +89,22 @@ class MantenimientoAdapter(
                         }
 
                         R.id.opcion_editar -> {
+                            onEditarClick(mantenimiento)
                             true
                         }
 
                         R.id.opcion_cambiar_estado -> {
+                            onCambiarEstadoClick(mantenimiento)
                             true
                         }
 
                         R.id.opcion_cancelar -> {
+                            onCancelarClick(mantenimiento)
+                            true
+                        }
 
+                        R.id.opcion_finalizar -> {
+                            onFinalizarClick(mantenimiento)
                             true
                         }
 

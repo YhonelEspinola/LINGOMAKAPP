@@ -7,6 +7,7 @@ import com.lingomak.lingomakapp.databinding.DashboardAdminBinding
 import com.lingomak.lingomakapp.ui.dashboard.home.HomeAdminFragment
 import com.lingomak.lingomakapp.ui.dashboard.perfil.PerfilFragment
 import com.lingomak.lingomakapp.ui.mantenimiento.MantenimientoFragment
+import com.lingomak.lingomakapp.ui.maquinaria.MaquinariaFragment
 import com.lingomak.lingomakapp.ui.usuarios.UsuariosFragment
 
 class DashboardAdminActivity : AppCompatActivity() {
@@ -98,8 +99,16 @@ class DashboardAdminActivity : AppCompatActivity() {
                     true
                 }
 
-
-
+                R.id.drawer_maquinaria ->{
+                    supportFragmentManager.beginTransaction()
+                        .replace(
+                            R.id.fragmentContainerAdmin,
+                            MaquinariaFragment()
+                        )
+                        .commit()
+                    binding.drawerLayoutAdmin.close()
+                    true
+                }
 
                 else -> false
             }

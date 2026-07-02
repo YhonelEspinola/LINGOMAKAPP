@@ -16,19 +16,19 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Programar Mantenimiento"
-            android:textColor="@color/text_primary"
+            android:text="Editar Mantenimiento"
             android:textAlignment="center"
-            android:textSize="26sp"
+            android:textColor="@color/text_primary"
+            android:textSize="28sp"
             android:textStyle="bold" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Registra un mantenimiento preventivo, correctivo o predictivo"
+            android:text="Actualiza la información del mantenimiento"
+            android:textAlignment="center"
             android:textColor="@color/text_secondary"
             android:textSize="14sp"
-            android:textAlignment="center"
             android:layout_marginTop="4dp"
             android:layout_marginBottom="20dp" />
 
@@ -49,6 +49,40 @@
 
 
                 <TextView
+                    android:id="@+id/tvCodigoMantenimientoEditar"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Código: MAN-0001"
+                    android:textColor="@color/text_primary"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvMaquinariaEditar"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Maquinaria: Excavadora CAT 320"
+                    android:textColor="@color/text_secondary"
+                    android:layout_marginTop="8dp" />
+
+                <TextView
+                    android:id="@+id/tvCodigoMaquinariaEditar"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Código maquinaria: EXC-0001"
+                    android:textColor="@color/text_secondary"
+                    android:layout_marginTop="4dp" />
+
+                <TextView
+                    android:id="@+id/tvResponsableEditar"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Responsable: Admin"
+                    android:textColor="@color/text_secondary"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginBottom="18dp" />
+
+
+                <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Tipo de mantenimiento"
@@ -56,24 +90,7 @@
                     android:textStyle="bold" />
 
                 <Spinner
-                    android:id="@+id/spTipoMantenimiento"
-                    android:layout_width="match_parent"
-                    android:layout_height="55dp"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginBottom="16dp"
-                    android:background="@drawable/bg_edit_text"
-                    android:padding="12dp" />
-
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Maquinaria"
-                    android:textColor="@color/text_primary"
-                    android:textStyle="bold" />
-
-                <Spinner
-                    android:id="@+id/spMaquinaria"
+                    android:id="@+id/spTipoMantenimientoEditar"
                     android:layout_width="match_parent"
                     android:layout_height="55dp"
                     android:layout_marginTop="8dp"
@@ -89,7 +106,7 @@
                     android:textStyle="bold" />
 
                 <RadioGroup
-                    android:id="@+id/rgPrioridad"
+                    android:id="@+id/rgPrioridadEditar"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
@@ -97,22 +114,21 @@
                     android:layout_marginBottom="16dp">
 
                     <RadioButton
-                        android:id="@+id/rbPrioridadAlta"
+                        android:id="@+id/rbPrioridadAltaEditar"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Alta" />
 
                     <RadioButton
-                        android:id="@+id/rbPrioridadMedia"
+                        android:id="@+id/rbPrioridadMediaEditar"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Media"
-                        android:checked="true" />
+                        android:text="Media" />
 
                     <RadioButton
-                        android:id="@+id/rbPrioridadBaja"
+                        android:id="@+id/rbPrioridadBajaEditar"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
@@ -120,136 +136,78 @@
 
                 </RadioGroup>
 
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Descripción"
-                    android:textColor="@color/text_primary"
-                    android:textStyle="bold" />
 
                 <EditText
-                    android:id="@+id/etDescripcion"
+                    android:id="@+id/etDescripcionEditar"
                     android:layout_width="match_parent"
                     android:layout_height="95dp"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginBottom="16dp"
                     android:background="@drawable/bg_edit_text"
                     android:gravity="top"
-                    android:hint="Ejemplo: Cambio de aceite, revisión hidráulica..."
+                    android:hint="Descripción"
                     android:inputType="textMultiLine"
                     android:padding="12dp" />
 
 
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Fecha programada"
-                    android:textColor="@color/text_primary"
-                    android:textStyle="bold" />
-
                 <EditText
-                    android:id="@+id/etFechaProgramada"
+                    android:id="@+id/etFechaProgramadaEditar"
                     android:layout_width="match_parent"
                     android:layout_height="55dp"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginBottom="16dp"
+                    android:layout_marginTop="12dp"
                     android:background="@drawable/bg_edit_text"
                     android:focusable="false"
-                    android:hint="Seleccionar fecha"
+                    android:hint="Fecha programada"
                     android:inputType="none"
                     android:padding="12dp" />
 
 
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Responsable"
-                    android:textColor="@color/text_primary"
-                    android:textStyle="bold" />
-
                 <EditText
-                    android:id="@+id/etResponsable"
+                    android:id="@+id/etHorometroProgramadoEditar"
                     android:layout_width="match_parent"
                     android:layout_height="55dp"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginBottom="16dp"
+                    android:layout_marginTop="12dp"
                     android:background="@drawable/bg_edit_text"
-                    android:hint="Nombre del responsable"
-                    android:inputType="textPersonName"
-                    android:padding="12dp" />
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Horómetro programado"
-                    android:textColor="@color/text_primary"
-                    android:textStyle="bold" />
-
-                <EditText
-                    android:id="@+id/etHorometroProgramado"
-                    android:layout_width="match_parent"
-                    android:layout_height="55dp"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginBottom="16dp"
-                    android:background="@drawable/bg_edit_text"
-                    android:hint="Ejemplo: 3500"
+                    android:hint="Horómetro programado"
                     android:inputType="number"
                     android:padding="12dp" />
 
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Costo estimado"
-                    android:textColor="@color/text_primary"
-                    android:textStyle="bold" />
 
                 <EditText
-                    android:id="@+id/etCostoEstimado"
+                    android:id="@+id/etCostoEstimadoEditar"
                     android:layout_width="match_parent"
                     android:layout_height="55dp"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginBottom="16dp"
+                    android:layout_marginTop="12dp"
                     android:background="@drawable/bg_edit_text"
-                    android:hint="Ejemplo: 250.00"
+                    android:hint="Costo estimado"
                     android:inputType="numberDecimal"
                     android:padding="12dp" />
 
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Observaciones"
-                    android:textColor="@color/text_primary"
-                    android:textStyle="bold" />
 
                 <EditText
-                    android:id="@+id/etObservaciones"
+                    android:id="@+id/etObservacionesEditar"
                     android:layout_width="match_parent"
                     android:layout_height="95dp"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginBottom="24dp"
+                    android:layout_marginTop="12dp"
                     android:background="@drawable/bg_edit_text"
                     android:gravity="top"
-                    android:hint="Observaciones opcionales"
+                    android:hint="Observaciones"
                     android:inputType="textMultiLine"
                     android:padding="12dp" />
 
-
                 <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnGuardarMantenimiento"
+                    android:id="@+id/btnGuardarCambiosMantenimiento"
                     android:layout_width="match_parent"
                     android:layout_height="56dp"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginBottom="40dp"
-                    android:text="Guardar mantenimiento"
+                    android:layout_marginTop="20dp"
+                    android:text="Guardar cambios"
                     android:textAllCaps="false"
                     android:textColor="@android:color/white"
                     android:textSize="16sp"
                     android:textStyle="bold"
-                    app:cornerRadius="14dp"
-                    app:backgroundTint="@color/primary" />
+                    app:backgroundTint="@color/primary"
+                    app:cornerRadius="14dp" />
 
                 <ProgressBar
-                    android:id="@+id/progressGuardarMantenimiento"
+                    android:id="@+id/progressEditarMantenimiento"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
