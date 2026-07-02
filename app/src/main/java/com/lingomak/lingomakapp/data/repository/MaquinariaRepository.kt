@@ -89,7 +89,6 @@ class MaquinariaRepository {
         onSuccess: (String) -> Unit,
         onError: (String) -> Unit
     ) {
-        // Ruta donde se guardará la imagen en Firebase Storage.
         val referencia = storage.reference
             .child("maquinarias")
             .child("$uid.jpg")
@@ -98,7 +97,6 @@ class MaquinariaRepository {
             .addOnSuccessListener {
                 referencia.downloadUrl
                     .addOnSuccessListener { uri ->
-                        // Retornamos la URL pública para guardarla en Firestore.
                         onSuccess(uri.toString())
                     }
                     .addOnFailureListener { exception ->

@@ -74,7 +74,6 @@ class MantenimientoRepository {
     }
 
     private fun obtenerFechaActual(): String {
-        // Retorna la fecha actual para actualizar fechaActualizacion.
         return java.text.SimpleDateFormat(
             "yyyy-MM-dd",
             java.util.Locale.getDefault()
@@ -139,17 +138,12 @@ class MantenimientoRepository {
         batch.update(
             maquinariaRef,
             mapOf(
-                // La máquina vuelve a estar disponible.
                 "estado" to "OPERATIVA",
 
-                // Guardamos el horómetro del último mantenimiento.
                 "horometroUltimoMantenimiento" to horometroReal,
 
-                // También actualizamos el horómetro actual,
-                // porque es el valor que se muestra en el listado de maquinaria.
                 "horometroActual" to horometroReal,
 
-                // Actualizamos la fecha de modificación.
                 "fechaActualizacion" to obtenerFechaActual()
             )
         )
