@@ -7,8 +7,10 @@ import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.lingomak.lingomakapp.databinding.DashboardOperarioBinding
 import android.content.Intent
+import com.lingomak.lingomakapp.ui.alertas.AlertasFragment
 import com.lingomak.lingomakapp.ui.auth.LoginActivity
 import com.lingomak.lingomakapp.ui.dashboard.perfil.PerfilOperarioFragment
+import com.lingomak.lingomakapp.ui.movimientos.MovimientosGlobalFragment
 
 class DashboardOperarioActivity : AppCompatActivity() {
 
@@ -64,13 +66,29 @@ class DashboardOperarioActivity : AppCompatActivity() {
             when (item.itemId){
                 R.id.nav_op_inventario -> true
 
-                R.id.nav_op_movimientos -> true
+                R.id.nav_op_movimientos -> {
+                    supportFragmentManager.beginTransaction()
+                        .replace(
+                            R.id.containerOperario,
+                            MovimientosGlobalFragment()
+                        )
+                        .commit()
+                    true
+                }
 
                 R.id.nav_op_qr -> true
 
                 R.id.nav_op_mantenimiento -> true
 
-                R.id.nav_op_alertas -> true
+                R.id.nav_op_alertas -> {
+                    supportFragmentManager.beginTransaction()
+                        .replace(
+                            R.id.containerOperario,
+                            AlertasFragment()
+                        )
+                        .commit()
+                    true
+                }
 
                 else -> false
             }

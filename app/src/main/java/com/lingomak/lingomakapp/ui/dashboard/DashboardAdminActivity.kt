@@ -9,6 +9,8 @@ import com.lingomak.lingomakapp.ui.dashboard.home.HomeAdminFragment
 import com.lingomak.lingomakapp.ui.dashboard.perfil.PerfilFragment
 import com.lingomak.lingomakapp.ui.mantenimiento.MantenimientoFragment
 import com.lingomak.lingomakapp.ui.maquinaria.MaquinariaFragment
+import com.lingomak.lingomakapp.ui.movimientos.MovimientosGlobalFragment
+import com.lingomak.lingomakapp.ui.repuestos.InventarioFragment
 import com.lingomak.lingomakapp.ui.usuarios.UsuariosFragment
 
 class DashboardAdminActivity : AppCompatActivity() {
@@ -46,6 +48,9 @@ class DashboardAdminActivity : AppCompatActivity() {
                     true
                 }
                 R.id.nav_inventario -> {
+                    supportFragmentManager.beginTransaction()
+                        .replace(R.id.fragmentContainerAdmin, InventarioFragment())
+                        .commit()
                     true
                 }
                 R.id.nav_mantenimiento -> {
@@ -107,11 +112,34 @@ class DashboardAdminActivity : AppCompatActivity() {
                             MaquinariaFragment()
                         )
                         .commit()
+
                     binding.drawerLayoutAdmin.close()
                     true
                 }
 
-                R.id.drawer_alertas ->{
+                R.id.drawer_inventario -> {
+                    supportFragmentManager.beginTransaction()
+                        .replace(
+                            R.id.fragmentContainerAdmin,
+                            InventarioFragment()
+                        )
+                        .commit()
+                    binding.drawerLayoutAdmin.close()
+                    true
+                }
+
+                R.id.drawer_movimientos -> {
+                    supportFragmentManager.beginTransaction()
+                        .replace(
+                            R.id.fragmentContainerAdmin,
+                            MovimientosGlobalFragment()
+                        )
+                        .commit()
+                    binding.drawerLayoutAdmin.close()
+                    true
+                }
+
+                R.id.drawer_alertas -> {
                     supportFragmentManager.beginTransaction()
                         .replace(
                             R.id.fragmentContainerAdmin,
