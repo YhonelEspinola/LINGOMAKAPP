@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="12dp"
+    android:layout_marginVertical="6dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="3dp"
+    app:strokeColor="#E5E7EB"
+    app:strokeWidth="1dp"
+    app:cardBackgroundColor="@android:color/white">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="14dp">
+
+        <!-- Indicador visual de alerta -->
+        <TextView
+            android:id="@+id/tvIconoAlerta"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
+            android:gravity="center"
+            android:text="⚠"
+            android:textSize="24sp"
+            android:background="@drawable/bg_alerta_icono" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <!-- Título de la alerta -->
+            <TextView
+                android:id="@+id/tvTituloAlerta"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Mantenimiento vencido"
+                android:textColor="@color/text_primary"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <!-- Mensaje de la alerta -->
+            <TextView
+                android:id="@+id/tvMensajeAlerta"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="La maquinaria Caterpillar tiene un mantenimiento vencido."
+                android:textColor="@color/text_secondary"
+                android:textSize="13sp"
+                android:layout_marginTop="4dp" />
+
+            <!-- Fecha relacionada -->
+            <TextView
+                android:id="@+id/tvFechaAlerta"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Fecha: 01/07/2026"
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp"
+                android:layout_marginTop="8dp" />
+
+            <!-- Prioridad -->
+            <TextView
+                android:id="@+id/tvPrioridadAlerta"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Prioridad: ALTA"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/holo_red_dark"
+                android:layout_marginTop="8dp" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

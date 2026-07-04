@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.lingomak.lingomakapp.R
 import com.lingomak.lingomakapp.databinding.DashboardAdminBinding
+import com.lingomak.lingomakapp.ui.alertas.AlertasFragment
 import com.lingomak.lingomakapp.ui.dashboard.home.HomeAdminFragment
 import com.lingomak.lingomakapp.ui.dashboard.perfil.PerfilFragment
 import com.lingomak.lingomakapp.ui.mantenimiento.MantenimientoFragment
@@ -104,6 +105,17 @@ class DashboardAdminActivity : AppCompatActivity() {
                         .replace(
                             R.id.fragmentContainerAdmin,
                             MaquinariaFragment()
+                        )
+                        .commit()
+                    binding.drawerLayoutAdmin.close()
+                    true
+                }
+
+                R.id.drawer_alertas ->{
+                    supportFragmentManager.beginTransaction()
+                        .replace(
+                            R.id.fragmentContainerAdmin,
+                            AlertasFragment()
                         )
                         .commit()
                     binding.drawerLayoutAdmin.close()
