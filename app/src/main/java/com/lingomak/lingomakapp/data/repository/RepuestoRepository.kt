@@ -253,32 +253,38 @@ class RepuestoRepository(context: Context) {
     suspend fun descargarCambiosDeFirestore() {
         val snapshot = repuestosCollection.get().await()
         val remotos = snapshot.toObjects(RepuestoModel::class.java)
+        val uidsRemotos = remotos.map { it.uid }
 
-        val contadorDao = AppDatabase.getInstance(appContext).contadorDao()
+        if (uidsRemotos.isEmpty()) {
+            repuestoDao.eliminarTodosSincronizados()
+        } else {
+            val contadorDao = AppDatabase.getInstance(appContext).contadorDao()
 
-        for (modelo in remotos) {
-            val local = repuestoDao.obtenerPorUid(modelo.uid)
+            for (modelo in remotos) {
+                val local = repuestoDao.obtenerPorUid(modelo.uid)
 
-            // Actualizar contador basado en el código remoto si es válido
-            val prefijo = com.lingomak.lingomakapp.utils.CodigoInternoGenerator.extraerPrefijo(modelo.codigoInterno)
-            if (prefijo != null) {
-                val numero = com.lingomak.lingomakapp.utils.CodigoInternoGenerator.extraerNumero(modelo.codigoInterno)
-                contadorDao.actualizarSiEsMayor(prefijo, numero)
-            }
-
-            // Si hay un cambio local pendiente más reciente, no lo
-            // pisamos con el remoto todavía (se subirá en el próximo
-            // ciclo de sincronizarPendientesConFirestore).
-            if (local != null && local.estadoSync != "SINCRONIZADO") {
-                val timestampRemoto = modelo.fechaActualizacion?.time ?: 0L
-                if (local.timestampLocal >= timestampRemoto) {
-                    continue
+                // Actualizar contador basado en el código remoto
+                val prefijo = com.lingomak.lingomakapp.utils.CodigoInternoGenerator.extraerPrefijo(modelo.codigoInterno)
+                if (prefijo != null) {
+                    val numero = com.lingomak.lingomakapp.utils.CodigoInternoGenerator.extraerNumero(modelo.codigoInterno)
+                    contadorDao.actualizarSiEsMayor(prefijo, numero)
                 }
-            }
 
-            repuestoDao.insertarOActualizar(
-                modelo.aEntity(estadoSync = "SINCRONIZADO", timestampLocal = System.currentTimeMillis())
-            )
+                // Conservar cambios locales más recientes
+                if (local != null && local.estadoSync != "SINCRONIZADO") {
+                    val timestampRemoto = modelo.fechaActualizacion?.time ?: 0L
+                    if (local.timestampLocal >= timestampRemoto) {
+                        continue
+                    }
+                }
+
+                repuestoDao.insertarOActualizar(
+                    modelo.aEntity(estadoSync = "SINCRONIZADO", timestampLocal = System.currentTimeMillis())
+                )
+            }
+            
+            // Eliminar locales sincronizados que ya no están en Firestore
+            repuestoDao.eliminarSincronizadosNoPresentes(uidsRemotos)
         }
     }
 

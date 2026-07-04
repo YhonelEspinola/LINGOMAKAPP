@@ -210,15 +210,34 @@ class EditarRepuestoFragment : Fragment() {
         }
 
         binding.btnActualizarRepuesto.setOnClickListener {
+            val stockActual = binding.etStockActual.text.toString().toIntOrNull() ?: 0
+            val stockMinimo = binding.etStockMinimo.text.toString().toIntOrNull() ?: 0
+            val stockMaximo = binding.etStockMaximo.text.toString().toIntOrNull() ?: 0
+
+            if (stockActual < 0 || stockMinimo < 0 || stockMaximo < 0) {
+                Toast.makeText(requireContext(), "Las cantidades de stock no pueden ser negativas", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            if (stockMinimo > stockMaximo) {
+                Toast.makeText(requireContext(), "El stock mínimo no puede ser mayor al máximo", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            if (stockActual > stockMaximo) {
+                Toast.makeText(requireContext(), "El stock actual no puede ser mayor al máximo", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
             val repuestoEditado = repuestoOriginal?.copy(
                 codigoInterno = binding.etCodigoInterno.text.toString(),
                 nombre = binding.etNombre.text.toString(),
                 categoria = binding.spinnerCategoria.selectedItem.toString(),
                 marca = binding.etMarca.text.toString(),
                 descripcion = binding.etDescripcion.text.toString(),
-                stockActual = binding.etStockActual.text.toString().toIntOrNull() ?: 0,
-                stockMinimo = binding.etStockMinimo.text.toString().toIntOrNull() ?: 0,
-                stockMaximo = binding.etStockMaximo.text.toString().toIntOrNull() ?: 0,
+                stockActual = stockActual,
+                stockMinimo = stockMinimo,
+                stockMaximo = stockMaximo,
                 ubicacionAlmacen = binding.etUbicacionAlmacen.text.toString()
             )
             repuestoEditado?.let { viewModel.actualizarRepuesto(it, imagenLocalPath, qrLocalPath) }

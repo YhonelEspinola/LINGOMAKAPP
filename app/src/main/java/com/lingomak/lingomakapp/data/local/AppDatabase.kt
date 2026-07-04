@@ -17,20 +17,20 @@ import com.lingomak.lingomakapp.data.local.entity.RepuestoEntity
  * mediante LiveData. La sincronización con la red ocurre en segundo
  * plano.
  */
-@Database(
-    entities = [
-        RepuestoEntity::class,
-        MovimientoEntity::class,
-        ContadorEntity::class
-    ],
-    version = 4,
-    exportSchema = false
-)
-abstract class AppDatabase : RoomDatabase() {
-
-    abstract fun repuestoDao(): RepuestoDao
-    abstract fun movimientoDao(): MovimientoDao
-    abstract fun contadorDao(): ContadorDao
+  @Database(
+      entities = [
+          RepuestoEntity::class,
+          MovimientoEntity::class,
+          ContadorEntity::class
+      ],
+      version = 6,
+      exportSchema = false
+  )
+  abstract class AppDatabase : RoomDatabase() {
+  
+      abstract fun repuestoDao(): RepuestoDao
+      abstract fun movimientoDao(): MovimientoDao
+      abstract fun contadorDao(): ContadorDao
 
     companion object {
         @Volatile

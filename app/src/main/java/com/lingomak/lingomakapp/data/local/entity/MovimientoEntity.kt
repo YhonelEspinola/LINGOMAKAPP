@@ -31,6 +31,8 @@ data class MovimientoEntity(
     val fecha: Long? = null, // epoch millis
     val registradoPor: String = "",
     val observacion: String = "",
+    val destinoSalida: String = "",
+    val ordenMantenimientoUid: String? = null,
 
     // ----- Control de sincronización -----
     val estadoSync: String = "SINCRONIZADO", // "SINCRONIZADO" o "PENDIENTE_CREAR"

@@ -200,6 +200,25 @@ class AgregarRepuestoFragment : Fragment() {
                 return@setOnClickListener
             }
 
+            val stockActual = binding.etStockInicial.text.toString().toIntOrNull() ?: 0
+            val stockMinimo = binding.etStockMinimo.text.toString().toIntOrNull() ?: 0
+            val stockMaximo = binding.etStockMaximo.text.toString().toIntOrNull() ?: 0
+
+            if (stockActual < 0 || stockMinimo < 0 || stockMaximo < 0) {
+                Toast.makeText(requireContext(), "Las cantidades de stock no pueden ser negativas", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            if (stockMinimo > stockMaximo) {
+                Toast.makeText(requireContext(), "El stock mínimo no puede ser mayor al máximo", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            if (stockActual > stockMaximo) {
+                Toast.makeText(requireContext(), "El stock inicial no puede ser mayor al máximo", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
             // Generar QR antes de registrar
             generarYGuardarQR(codigoInterno)
 
@@ -208,9 +227,9 @@ class AgregarRepuestoFragment : Fragment() {
                 categoria = categorias[categoriaPos],
                 marca = binding.etMarca.text.toString().trim(),
                 descripcion = binding.etDescripcion.text.toString().trim(),
-                stockActual = binding.etStockInicial.text.toString().toIntOrNull() ?: 0,
-                stockMinimo = binding.etStockMinimo.text.toString().toIntOrNull() ?: 0,
-                stockMaximo = binding.etStockMaximo.text.toString().toIntOrNull() ?: 0,
+                stockActual = stockActual,
+                stockMinimo = stockMinimo,
+                stockMaximo = stockMaximo,
                 ubicacionAlmacen = binding.etUbicacionAlmacen.text.toString().trim(),
                 imagenLocalPath = imagenLocalPath,
                 qrLocalPath = qrLocalPath

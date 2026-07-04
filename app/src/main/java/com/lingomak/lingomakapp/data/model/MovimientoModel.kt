@@ -9,5 +9,7 @@ data class MovimientoModel(
     val cantidad: Int = 0,
     val fecha: Date? = null,
     val registradoPor: String = "",
-    val observacion: String = ""
+    val observacion: String = "",
+    val destinoSalida: String = "", // "CONSUMO_INTERNO" o "DISTRIBUCION_EXTERNA"
+    val ordenMantenimientoUid: String? = null
 )

@@ -33,4 +33,28 @@ interface MovimientoDao {
 
     @Query("SELECT EXISTS(SELECT 1 FROM movimientos WHERE uid = :uid)")
     suspend fun existe(uid: String): Boolean
+
+    @Query("SELECT * FROM movimientos ORDER BY fecha DESC")
+    fun obtenerTodosObservable(): LiveData<List<MovimientoEntity>>
+
+    @Query("DELETE FROM movimientos WHERE estadoSync = 'SINCRONIZADO' AND uid NOT IN (:uidsMantener)")
+    suspend fun eliminarSincronizadosNoPresentes(uidsMantener: List<String>)
+
+    @Query("DELETE FROM movimientos WHERE estadoSync = 'SINCRONIZADO' AND repuestoUid = :repuestoUid AND uid NOT IN (:uidsMantener)")
+    suspend fun eliminarSincronizadosNoPresentesPorRepuesto(repuestoUid: String, uidsMantener: List<String>)
+
+    @Query("DELETE FROM movimientos WHERE estadoSync = 'SINCRONIZADO' AND repuestoUid = :repuestoUid")
+    suspend fun eliminarTodosSincronizadosPorRepuesto(repuestoUid: String)
+
+    @Query("DELETE FROM movimientos WHERE estadoSync = 'SINCRONIZADO'")
+    suspend fun eliminarTodosSincronizados()
+
+    @Query("SELECT * FROM movimientos WHERE uid = :uid LIMIT 1")
+    suspend fun obtenerPorUid(uid: String): MovimientoEntity?
+
+    @androidx.room.Delete
+    suspend fun eliminar(movimiento: MovimientoEntity)
+
+    @androidx.room.Update
+    suspend fun actualizar(movimiento: MovimientoEntity)
 }

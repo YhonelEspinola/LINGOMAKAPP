@@ -72,4 +72,10 @@ interface RepuestoDao {
             "WHERE uid = :uid"
     )
     suspend fun ajustarStockLocal(uid: String, delta: Int, timestamp: Long)
+
+    @Query("DELETE FROM repuestos WHERE estadoSync = 'SINCRONIZADO' AND uid NOT IN (:uidsMantener)")
+    suspend fun eliminarSincronizadosNoPresentes(uidsMantener: List<String>)
+
+    @Query("DELETE FROM repuestos WHERE estadoSync = 'SINCRONIZADO'")
+    suspend fun eliminarTodosSincronizados()
 }

@@ -306,6 +306,15 @@
 
 
         <Button
+            android:id="@+id/btnImprimirQR"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:layout_marginBottom="12dp"
+            android:text="Imprimir QR"
+            android:textColor="@color/white"
+            android:background="@drawable/bg_button_secondary" />
+
+        <Button
             android:id="@+id/btnEditar"
             android:layout_width="match_parent"
             android:layout_height="55dp"
