@@ -143,7 +143,9 @@ class RegistrarMovimientoGlobalFragment : Fragment() {
         viewModel.registroExitoso.observe(viewLifecycleOwner) { exitoso ->
             if (exitoso) {
                 Toast.makeText(requireContext(), "Movimiento registrado", Toast.LENGTH_SHORT).show()
-                parentFragmentManager.popBackStack()
+                
+                // Volver al listado global quitando el escáner del historial
+                parentFragmentManager.popBackStack(null, androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE)
             }
         }
 

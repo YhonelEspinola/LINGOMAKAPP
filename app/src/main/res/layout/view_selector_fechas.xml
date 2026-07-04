@@ -10,20 +10,40 @@
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/viewPager"
         android:layout_width="match_parent"
-        android:layout_height="56dp"
+        android:layout_height="48dp"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <com.google.android.material.tabs.TabLayout
-        android:id="@+id/tabDots"
+    <LinearLayout
+        android:id="@+id/layoutDots"
         android:layout_width="wrap_content"
-        android:layout_height="12dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:gravity="center"
+        android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/viewPager"
-        app:tabBackground="@drawable/selector_dot"
-        app:tabGravity="center"
-        app:tabIndicatorHeight="0dp"
-        app:tabMaxWidth="12dp"
-        app:tabRippleColor="@null" />
+        app:layout_constraintTop_toBottomOf="@id/viewPager">
+
+        <View
+            android:id="@+id/dot0"
+            android:layout_width="6dp"
+            android:layout_height="6dp"
+            android:layout_marginHorizontal="3dp"
+            android:background="@drawable/selector_dot" />
+
+        <View
+            android:id="@+id/dot1"
+            android:layout_width="6dp"
+            android:layout_height="6dp"
+            android:layout_marginHorizontal="3dp"
+            android:background="@drawable/selector_dot" />
+
+        <View
+            android:id="@+id/dot2"
+            android:layout_width="6dp"
+            android:layout_height="6dp"
+            android:layout_marginHorizontal="3dp"
+            android:background="@drawable/selector_dot" />
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

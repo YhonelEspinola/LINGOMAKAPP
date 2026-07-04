@@ -52,6 +52,12 @@
 
     </com.google.android.material.chip.ChipGroup>
 
+    <com.lingomak.lingomakapp.ui.custom.SelectorFechasView
+        android:id="@+id/selectorFechas"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/chipGroupTipo" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvMovimientos"
         android:layout_width="match_parent"
@@ -59,15 +65,9 @@
         android:layout_marginTop="8dp"
         android:clipToPadding="false"
         android:paddingBottom="8dp"
-        app:layout_constraintBottom_toTopOf="@id/selectorFechas"
-        app:layout_constraintTop_toBottomOf="@id/chipGroupTipo"
+        app:layout_constraintBottom_toTopOf="@id/layoutBotones"
+        app:layout_constraintTop_toBottomOf="@id/selectorFechas"
         tools:listitem="@layout/item_movimiento_global" />
-
-    <com.lingomak.lingomakapp.ui.custom.SelectorFechasView
-        android:id="@+id/selectorFechas"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toTopOf="@id/layoutBotones" />
 
     <LinearLayout
         android:id="@+id/layoutBotones"

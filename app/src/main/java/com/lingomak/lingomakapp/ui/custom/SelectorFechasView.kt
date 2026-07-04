@@ -12,8 +12,6 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
-import com.google.android.material.tabs.TabLayout
-import com.google.android.material.tabs.TabLayoutMediator
 import com.lingomak.lingomakapp.R
 import java.text.SimpleDateFormat
 import java.util.*
@@ -23,7 +21,7 @@ class SelectorFechasView @JvmOverloads constructor(
 ) : ConstraintLayout(context, attrs, defStyleAttr) {
 
     private val viewPager: ViewPager2
-    private val tabDots: TabLayout
+    private val dots: List<View>
     
     var onRangoSeleccionado: ((fechaInicio: Long, fechaFin: Long, etiqueta: String) -> Unit)? = null
 
@@ -60,20 +58,34 @@ class SelectorFechasView @JvmOverloads constructor(
     init {
         LayoutInflater.from(context).inflate(R.layout.view_selector_fechas, this, true)
         viewPager = findViewById(R.id.viewPager)
-        tabDots = findViewById(R.id.tabDots)
+        dots = listOf(
+            findViewById(R.id.dot0),
+            findViewById(R.id.dot1),
+            findViewById(R.id.dot2)
+        )
 
         setupViewPager()
     }
 
     private fun setupViewPager() {
         viewPager.adapter = SelectorAdapter()
-        TabLayoutMediator(tabDots, viewPager) { _, _ -> }.attach()
-        
+
+        viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+            override fun onPageSelected(position: Int) {
+                actualizarDots(position)
+            }
+        })
+
         // Empezar en Modo 1 (chips) y disparar 30D por defecto
         viewPager.post {
             viewPager.setCurrentItem(0, false)
+            actualizarDots(0)
             // Notificaremos 30D cuando el adapter esté listo o mediante interacción
         }
+    }
+
+    private fun actualizarDots(position: Int) {
+        dots.forEachIndexed { index, dot -> dot.isSelected = index == position }
     }
 
     inner class SelectorAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
@@ -276,7 +288,13 @@ class SelectorFechasView @JvmOverloads constructor(
             val cal = Calendar.getInstance()
             cal.timeInMillis = if (esInicio) customFechaInicio else customFechaFin
             
-            DatePickerDialog(context, { _, y, m, d ->
+            // Forzar Locale para los textos internos (días de la semana, meses)
+            val locale = Locale("es", "ES")
+            Locale.setDefault(locale)
+            val config = resources.configuration
+            config.setLocale(locale)
+
+            val dialog = DatePickerDialog(context, { _, y, m, d ->
                 val selection = Calendar.getInstance()
                 selection.set(y, m, d)
                 if (esInicio) {
@@ -303,7 +321,9 @@ class SelectorFechasView @JvmOverloads constructor(
                     set(Calendar.SECOND, 59)
                 }
                 onRangoSeleccionado?.invoke(customFechaInicio, calFinReal.timeInMillis, etiqueta)
-            }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)).show()
+            }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH))
+
+            dialog.show()
         }
 
         private fun actualizarBotones() {

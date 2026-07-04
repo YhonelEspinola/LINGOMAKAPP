@@ -142,34 +142,28 @@ class MantenimientoFragment : Fragment() {
     }
 
     private fun configurarFiltros(){
-        binding.toggleTipoMantenimiento.addOnButtonCheckedListener {  _, checkedId, isChecked ->
-            if(isChecked){
-                filtroTipo = when(checkedId){
-                    binding.btnTipoPreventivo.id -> "PREVENTIVO"
-                    binding.btnTipoCorrectivo.id -> "CORRECTIVO"
-                    binding.btnTipoPredictivo.id -> "PREDICTIVO"
-                    else -> "TODOS"
-                }
-                aplicarFiltros()
+        binding.chipGroupTipoMantenimiento.setOnCheckedStateChangeListener { _, checkedIds ->
+            val checkedId = checkedIds.firstOrNull() ?: View.NO_ID
+            filtroTipo = when(checkedId){
+                binding.chipTipoPreventivo.id -> "PREVENTIVO"
+                binding.chipTipoCorrectivo.id -> "CORRECTIVO"
+                binding.chipTipoPredictivo.id -> "PREDICTIVO"
+                else -> "TODOS"
             }
+            aplicarFiltros()
         }
 
-        binding.toggleEstadoMantenimiento.addOnButtonCheckedListener { _, checkedId, isChecked ->
-
-            if (isChecked) {
-                filtroEstado = when (checkedId) {
-                    binding.btnEstadoPendiente.id -> "PENDIENTE"
-                    binding.btnEstadoProceso.id -> "EN_PROCESO"
-                    binding.btnEstadoFinalizado.id -> "FINALIZADO"
-                    binding.btnEstadoVencido.id -> "VENCIDO"
-                    else -> "TODOS"
-                }
-
-                aplicarFiltros()
+        binding.chipGroupEstadoMantenimiento.setOnCheckedStateChangeListener { _, checkedIds ->
+            val checkedId = checkedIds.firstOrNull() ?: View.NO_ID
+            filtroEstado = when (checkedId) {
+                binding.chipEstadoPendiente.id -> "PENDIENTE"
+                binding.chipEstadoProceso.id -> "EN_PROCESO"
+                binding.chipEstadoFinalizado.id -> "FINALIZADO"
+                binding.chipEstadoVencido.id -> "VENCIDO"
+                else -> "TODOS"
             }
+            aplicarFiltros()
         }
-
-
     }
 
     private fun aplicarFiltros(){
