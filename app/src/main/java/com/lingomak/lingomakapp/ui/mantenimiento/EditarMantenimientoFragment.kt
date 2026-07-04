@@ -92,6 +92,17 @@ class EditarMantenimientoFragment : Fragment() {
         val costo = arguments?.getDouble("costoEstimado") ?: 0.0
         val observaciones = arguments?.getString("observaciones") ?: ""
 
+        if (estadoActual == "FINALIZADO" || estadoActual == "CANCELADO") {
+
+            Toast.makeText(
+                requireContext(),
+                "Este mantenimiento no puede editarse porque ya está $estadoActual",
+                Toast.LENGTH_LONG
+            ).show()
+
+            parentFragmentManager.popBackStack()
+            return
+        }
 
         binding.tvCodigoMantenimientoEditar.text =
             "Código: $codigoMantenimiento"

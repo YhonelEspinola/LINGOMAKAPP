@@ -20,6 +20,7 @@ class FinalizarMantenimientoFragment : Fragment() {
     private val viewModel : MantenimientoViewModel by viewModels()
 
     private var uidMantenimiento = ""
+    private var estadoMantenimiento = ""
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -38,6 +39,7 @@ class FinalizarMantenimientoFragment : Fragment() {
     private fun cargarDatos(){
         uidMantenimiento = arguments?.getString("uid") ?: ""
         uidMaquinaria = arguments?.getString("uidMaquinaria") ?: ""
+        estadoMantenimiento = arguments?.getString("estado") ?: ""
 
         val codigo = arguments?.getString("codigoMantenimiento") ?: ""
         val maquinaria = arguments?.getString("nombreMaquinaria") ?: ""
@@ -84,6 +86,16 @@ class FinalizarMantenimientoFragment : Fragment() {
 
         if(uidMantenimiento.isEmpty()){
             Toast.makeText(requireContext(), "No se encontro el mantenimiento", Toast.LENGTH_SHORT).show()
+            return
+        }
+        if (estadoMantenimiento != "EN_PROCESO") {
+
+            Toast.makeText(
+                requireContext(),
+                "Solo se puede finalizar un mantenimiento en proceso",
+                Toast.LENGTH_LONG
+            ).show()
+
             return
         }
 

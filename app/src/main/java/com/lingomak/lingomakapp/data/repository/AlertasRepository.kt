@@ -3,9 +3,7 @@ package com.lingomak.lingomakapp.data.repository
 import com.google.firebase.firestore.FirebaseFirestore
 import com.lingomak.lingomakapp.data.model.AlertaModel
 import com.lingomak.lingomakapp.data.model.MantenimientoModel
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Locale
+import com.lingomak.lingomakapp.utils.DateUtils
 
 class AlertasRepository {
 
@@ -38,17 +36,16 @@ class AlertasRepository {
 
                     if (mantenimiento != null) {
 
-                        if (
-                            mantenimiento.estado == "PENDIENTE" &&
-                            fechaYaPaso(mantenimiento.fechaProgramada)
-                        ) {
+                        if (mantenimiento.estado == "VENCIDO") {
+
                             listaAlertas.add(
                                 AlertaModel(
                                     uid = mantenimiento.uid,
                                     titulo = "Mantenimiento vencido",
-                                    mensaje = "La maquinaria ${mantenimiento.nombreMaquinaria} tiene un mantenimiento vencido.",
+                                    mensaje =
+                                        "La maquinaria ${mantenimiento.nombreMaquinaria} tiene un mantenimiento vencido.",
                                     tipo = "VENCIDO",
-                                    prioridad = "ALTA",
+                                    prioridad = mantenimiento.prioridad,
                                     fecha = mantenimiento.fechaProgramada,
                                     estadoRelacionado = mantenimiento.estado,
                                     uidMantenimiento = mantenimiento.uid,
@@ -79,7 +76,7 @@ class AlertasRepository {
 
                         if (
                             mantenimiento.estado == "PENDIENTE" &&
-                            mantenimientoProximo(mantenimiento.fechaProgramada)
+                           DateUtils.mantenimientoProximo(mantenimiento.fechaProgramada)
                         ) {
                             listaAlertas.add(
                                 AlertaModel(
@@ -100,38 +97,18 @@ class AlertasRepository {
                     }
                 }
 
-                onSuccess(listaAlertas)
+                onSuccess(
+                    listaAlertas.sortedBy { alerta ->
+                        when (alerta.tipo) {
+                            "VENCIDO" -> 1
+                            "PROXIMO" -> 2
+                            "EN_PROCESO" -> 3
+                            else -> 4
+                        }
+                    }
+                )
             }
     }
 
-    private fun fechaYaPaso(fechaTexto: String): Boolean {
-        return try {
-            val formato = SimpleDateFormat("d/M/yyyy", Locale.getDefault())
-            val fechaMantenimiento = formato.parse(fechaTexto)
 
-            val hoy = Calendar.getInstance().time
-
-            fechaMantenimiento != null && fechaMantenimiento.before(hoy)
-        } catch (e: Exception) {
-            false
-        }
-    }
-
-    private fun mantenimientoProximo(fechaTexto: String): Boolean {
-        return try {
-            val formato = SimpleDateFormat("d/M/yyyy", Locale.getDefault())
-            val fechaMantenimiento = formato.parse(fechaTexto) ?: return false
-
-            val hoy = Calendar.getInstance()
-
-            val limite = Calendar.getInstance()
-            limite.add(Calendar.DAY_OF_YEAR, 3)
-
-            fechaMantenimiento.after(hoy.time) &&
-                    fechaMantenimiento.before(limite.time)
-
-        } catch (e: Exception) {
-            false
-        }
-    }
 }

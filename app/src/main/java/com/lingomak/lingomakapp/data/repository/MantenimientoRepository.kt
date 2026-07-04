@@ -2,6 +2,7 @@ package com.lingomak.lingomakapp.data.repository
 
 import com.google.firebase.firestore.FirebaseFirestore
 import com.lingomak.lingomakapp.data.model.MantenimientoModel
+import com.lingomak.lingomakapp.utils.DateUtils
 
 class MantenimientoRepository {
 
@@ -194,6 +195,92 @@ class MantenimientoRepository {
                 onError(exception.message ?: "Error al iniciar mantenimiento")
             }
 
+    }
+
+    fun validarMantenimientoActivo(
+        uidMaquinaria: String,
+        onExiste: () -> Unit,
+        onNoExiste: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+
+        database.collection(coleccionMantenimientos)
+            .whereEqualTo("uidMaquinaria", uidMaquinaria)
+            .whereIn("estado", listOf("PENDIENTE", "EN_PROCESO"))
+            .get()
+            .addOnSuccessListener { result ->
+
+                if (result.isEmpty) {
+                    onNoExiste()
+                } else {
+                    onExiste()
+                }
+            }
+            .addOnFailureListener { exception ->
+                onError(
+                    exception.message
+                        ?: "Error al validar mantenimiento activo"
+                )
+            }
+    }
+
+    fun actualizarMantenimientosVencidos(
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+
+
+        database.collection(coleccionMantenimientos)
+            .whereEqualTo("estado", "PENDIENTE")
+            .get()
+            .addOnSuccessListener { result ->
+
+                val batch = database.batch()
+
+                var hayCambios = false
+
+                result.documents.forEach { document ->
+
+                    val mantenimiento =
+                        document.toObject(MantenimientoModel::class.java)
+
+                    if (
+                        mantenimiento != null &&
+                        DateUtils.fechaYaPaso(mantenimiento.fechaProgramada)
+                    ) {
+                        hayCambios = true
+
+                        batch.update(
+                            document.reference,
+                            mapOf(
+                                "estado" to "VENCIDO",
+                                "fechaActualizacion" to DateUtils.obtenerFechaActual()
+                            )
+                        )
+                    }
+                }
+
+                if (hayCambios) {
+                    batch.commit()
+                        .addOnSuccessListener {
+                            onSuccess()
+                        }
+                        .addOnFailureListener { exception ->
+                            onError(
+                                exception.message
+                                    ?: "Error al actualizar mantenimientos vencidos"
+                            )
+                        }
+                } else {
+                    onSuccess()
+                }
+            }
+            .addOnFailureListener { exception ->
+                onError(
+                    exception.message
+                        ?: "Error al consultar mantenimientos pendientes"
+                )
+            }
     }
 
 }

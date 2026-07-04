@@ -113,4 +113,36 @@ class MantenimientoViewModel : ViewModel() {
         )
     }
 
+    fun validarMantenimientoActivo(
+        uidMaquinaria: String,
+        onExiste: () -> Unit,
+        onNoExiste: () -> Unit
+    ) {
+        repository.validarMantenimientoActivo(
+            uidMaquinaria = uidMaquinaria,
+            onExiste = {
+                onExiste()
+            },
+            onNoExiste = {
+                onNoExiste()
+            },
+            onError = { error ->
+                _mensajeError.postValue(error)
+            }
+        )
+    }
+
+    fun actualizarMantenimientosVencidos(
+        onSuccess: () -> Unit
+    ) {
+        repository.actualizarMantenimientosVencidos(
+            onSuccess = {
+                onSuccess()
+            },
+            onError = { error ->
+                _mensajeError.postValue(error)
+            }
+        )
+    }
+
 }

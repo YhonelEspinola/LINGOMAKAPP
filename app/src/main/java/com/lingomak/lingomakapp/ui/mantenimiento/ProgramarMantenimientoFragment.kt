@@ -17,6 +17,7 @@ import com.lingomak.lingomakapp.ui.maquinaria.MaquinariaViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.lingomak.lingomakapp.data.model.MantenimientoModel
+import com.lingomak.lingomakapp.utils.DateUtils
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -91,6 +92,7 @@ class ProgramarMantenimientoFragment : Fragment() {
 
         binding.btnGuardarMantenimiento.setOnClickListener {
             validarFormulario()
+
         }
 
         binding.spMaquinaria.onItemSelectedListener =
@@ -162,7 +164,7 @@ class ProgramarMantenimientoFragment : Fragment() {
             mes,
             dia
         )
-
+        datePicker.datePicker.minDate = calendario.timeInMillis
         datePicker.show()
     }
 
@@ -222,8 +224,17 @@ class ProgramarMantenimientoFragment : Fragment() {
             return
         }
 
+        if (DateUtils.fechaEsAnteriorAHoy(fechaProgramada)) {
+            Toast.makeText(
+                requireContext(),
+                "La fecha programada no puede ser anterior a la fecha actual",
+                Toast.LENGTH_LONG
+            ).show()
+            return
+        }
 
         val horometroInt = horometro.toIntOrNull()
+
 
         if (horometroInt == null || horometroInt <= 0) {
             Toast.makeText(
@@ -231,6 +242,19 @@ class ProgramarMantenimientoFragment : Fragment() {
                 "Ingrese un horómetro válido",
                 Toast.LENGTH_SHORT
             ).show()
+            return
+        }
+        val maquinaria = maquinariaSeleccionada
+
+        if (maquinaria != null &&
+            horometroInt < maquinaria.horometroActual) {
+
+            Toast.makeText(
+                requireContext(),
+                "El horómetro programado no puede ser menor al horómetro actual (${maquinaria.horometroActual} h).",
+                Toast.LENGTH_LONG
+            ).show()
+
             return
         }
 
@@ -251,7 +275,7 @@ class ProgramarMantenimientoFragment : Fragment() {
             return
         }
 
-        val maquinaria = maquinariaSeleccionada
+
         if (maquinaria?.estado == "INACTIVA") {
 
             Toast.makeText(
@@ -300,18 +324,37 @@ class ProgramarMantenimientoFragment : Fragment() {
 
             prioridad = prioridad
         )
+
         mostrarCargando(true)
-        mantenimientoViewModel.agregarMantenimiento(
-            mantenimiento = mantenimiento,
-            onSuccess = {
+
+        mantenimientoViewModel.validarMantenimientoActivo(
+            uidMaquinaria = maquinaria.uid,
+
+            onExiste = {
                 mostrarCargando(false)
+
                 Toast.makeText(
                     requireContext(),
-                    "Mantenimiento programado correctamente",
-                    Toast.LENGTH_SHORT
+                    "La maquinaria ya tiene un mantenimiento pendiente o en proceso",
+                    Toast.LENGTH_LONG
                 ).show()
+            },
 
-                parentFragmentManager.popBackStack()
+            onNoExiste = {
+                mantenimientoViewModel.agregarMantenimiento(
+                    mantenimiento = mantenimiento,
+                    onSuccess = {
+                        mostrarCargando(false)
+
+                        Toast.makeText(
+                            requireContext(),
+                            "Mantenimiento programado correctamente",
+                            Toast.LENGTH_SHORT
+                        ).show()
+
+                        parentFragmentManager.popBackStack()
+                    }
+                )
             }
         )
 
@@ -425,6 +468,8 @@ class ProgramarMantenimientoFragment : Fragment() {
             else
                 View.GONE
     }
+
+
 
     override fun onDestroyView() {
         super.onDestroyView()

@@ -346,7 +346,18 @@ class MantenimientoFragment : Fragment() {
     }
 
     private fun mostrarDialogoCancelarMantenimiento(mantenimiento: MantenimientoModel) {
-
+        if (
+            mantenimiento.estado == "EN_PROCESO" ||
+            mantenimiento.estado == "FINALIZADO" ||
+            mantenimiento.estado == "CANCELADO"
+        ) {
+            Toast.makeText(
+                requireContext(),
+                "No se puede cancelar un mantenimiento en estado ${mantenimiento.estado}",
+                Toast.LENGTH_LONG
+            ).show()
+            return
+        }
         androidx.appcompat.app.AlertDialog.Builder(requireContext())
             .setTitle("Cancelar mantenimiento")
             .setMessage("¿Seguro que deseas cancelar este mantenimiento?")
@@ -386,6 +397,7 @@ class MantenimientoFragment : Fragment() {
             putString("codigoMantenimiento", mantenimiento.codigoMantenimiento)
             putString("nombreMaquinaria", mantenimiento.nombreMaquinaria)
             putString("descripcion", mantenimiento.descripcion)
+            putString("estado", mantenimiento.estado)
         }
 
         fragment.arguments = bundle
