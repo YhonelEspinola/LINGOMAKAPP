@@ -144,4 +144,18 @@ object DateUtils {
         return fechaYaPaso(fechaTexto)
     }
 
+    fun obtenerTimestampHaceDias(
+        dias: Int
+    ): Long {
+
+        val calendar = Calendar.getInstance()
+
+        calendar.add(
+            Calendar.DAY_OF_YEAR,
+            -dias
+        )
+
+        return calendar.timeInMillis
+    }
+
 }

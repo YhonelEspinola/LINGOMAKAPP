@@ -2,6 +2,7 @@ package com.lingomak.lingomakapp.ui.alertas
 
 import android.graphics.Color
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.lingomak.lingomakapp.data.model.AlertaModel
@@ -15,14 +16,28 @@ class AlertasAdapter(
         private val binding: ItemAlertaBinding
     ) : RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(alerta: AlertaModel) {
+        fun bind(alerta: AlertaModel,mostrarCategoria: Boolean) {
+
+            binding.tvIconoAlerta.text =
+                if (alerta.icono.isNotEmpty()) alerta.icono else "⚠"
 
             binding.tvTituloAlerta.text = alerta.titulo
             binding.tvMensajeAlerta.text = alerta.mensaje
-            binding.tvFechaAlerta.text = "Fecha: ${alerta.fecha}"
-            binding.tvPrioridadAlerta.text =
-                "Prioridad: ${alerta.prioridad}"
+            binding.tvFechaAlerta.text =
+                if (alerta.fecha.isNotEmpty()) "Fecha: ${alerta.fecha}" else alerta.categoria
 
+            binding.tvPrioridadAlerta.text =
+                "${alerta.categoria} • Prioridad: ${alerta.prioridad}"
+
+            binding.tvCategoriaAlerta.visibility =
+                if (mostrarCategoria) View.VISIBLE else View.GONE
+
+            binding.tvCategoriaAlerta.text = when (alerta.categoria) {
+                "MANTENIMIENTO" -> "🔧 MANTENIMIENTO"
+                "INVENTARIO" -> "📦 INVENTARIO"
+                "MOVIMIENTOS" -> "📈 MOVIMIENTOS"
+                else -> alerta.categoria
+            }
             aplicarEstilos(alerta.tipo)
         }
 
@@ -66,6 +81,36 @@ class AlertasAdapter(
                     )
                 }
 
+                "STOCK_AGOTADO" -> {
+                    binding.tvIconoAlerta.text = "📦"
+                    binding.tvTituloAlerta.setTextColor(Color.rgb(185, 28, 28))
+                    binding.tvPrioridadAlerta.setTextColor(Color.rgb(185, 28, 28))
+                }
+
+                "STOCK_CRITICO" -> {
+                    binding.tvIconoAlerta.text = "📦"
+                    binding.tvTituloAlerta.setTextColor(Color.rgb(234, 88, 12))
+                    binding.tvPrioridadAlerta.setTextColor(Color.rgb(234, 88, 12))
+                }
+
+                "STOCK_BAJO" -> {
+                    binding.tvIconoAlerta.text = "📦"
+                    binding.tvTituloAlerta.setTextColor(Color.rgb(180, 83, 9))
+                    binding.tvPrioridadAlerta.setTextColor(Color.rgb(180, 83, 9))
+                }
+
+                "ALTO_CONSUMO" -> {
+                    binding.tvIconoAlerta.text = "📈"
+                    binding.tvTituloAlerta.setTextColor(Color.rgb(124, 58, 237))
+                    binding.tvPrioridadAlerta.setTextColor(Color.rgb(124, 58, 237))
+                }
+
+                "SIN_ROTACION" -> {
+                    binding.tvIconoAlerta.text = "📦"
+                    binding.tvTituloAlerta.setTextColor(Color.rgb(75, 85, 99))
+                    binding.tvPrioridadAlerta.setTextColor(Color.rgb(75, 85, 99))
+                }
+
                 else -> {
                     binding.tvIconoAlerta.text = "⚠"
                 }
@@ -87,11 +132,18 @@ class AlertasAdapter(
         return AlertaViewHolder(binding)
     }
 
-    override fun onBindViewHolder(
-        holder: AlertaViewHolder,
-        position: Int
-    ) {
-        holder.bind(listaAlertas[position])
+    override fun onBindViewHolder(holder: AlertaViewHolder, position: Int) {
+
+        val alertaActual = listaAlertas[position]
+
+        val mostrarCategoria =
+            position == 0 ||
+                    listaAlertas[position - 1].categoria != alertaActual.categoria
+
+        holder.bind(
+            alerta = alertaActual,
+            mostrarCategoria = mostrarCategoria
+        )
     }
 
     override fun getItemCount(): Int {

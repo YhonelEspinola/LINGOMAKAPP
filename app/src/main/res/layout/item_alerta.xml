@@ -15,66 +15,81 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="14dp">
+        android:orientation="vertical">
 
-        <!-- Indicador visual de alerta -->
         <TextView
-            android:id="@+id/tvIconoAlerta"
-            android:layout_width="42dp"
-            android:layout_height="42dp"
-            android:gravity="center"
-            android:text="⚠"
-            android:textSize="24sp"
-            android:background="@drawable/bg_alerta_icono" />
+            android:id="@+id/tvCategoriaAlerta"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="MANTENIMIENTO"
+            android:textColor="@color/primary"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:paddingHorizontal="16dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="4dp"
+            android:visibility="gone" />
 
         <LinearLayout
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:layout_weight="1"
-            android:orientation="vertical">
+            android:orientation="horizontal"
+            android:padding="14dp">
 
-            <!-- Título de la alerta -->
             <TextView
-                android:id="@+id/tvTituloAlerta"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Mantenimiento vencido"
-                android:textColor="@color/text_primary"
-                android:textSize="16sp"
-                android:textStyle="bold" />
+                android:id="@+id/tvIconoAlerta"
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:gravity="center"
+                android:text="⚠"
+                android:textSize="24sp"
+                android:background="@drawable/bg_alerta_icono" />
 
-            <!-- Mensaje de la alerta -->
-            <TextView
-                android:id="@+id/tvMensajeAlerta"
-                android:layout_width="match_parent"
+            <LinearLayout
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="La maquinaria Caterpillar tiene un mantenimiento vencido."
-                android:textColor="@color/text_secondary"
-                android:textSize="13sp"
-                android:layout_marginTop="4dp" />
+                android:layout_marginStart="12dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
 
-            <!-- Fecha relacionada -->
-            <TextView
-                android:id="@+id/tvFechaAlerta"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Fecha: 01/07/2026"
-                android:textColor="@color/text_secondary"
-                android:textSize="12sp"
-                android:layout_marginTop="8dp" />
+                <TextView
+                    android:id="@+id/tvTituloAlerta"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Mantenimiento vencido"
+                    android:textColor="@color/text_primary"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
 
-            <!-- Prioridad -->
-            <TextView
-                android:id="@+id/tvPrioridadAlerta"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Prioridad: ALTA"
-                android:textSize="11sp"
-                android:textStyle="bold"
-                android:textColor="@android:color/holo_red_dark"
-                android:layout_marginTop="8dp" />
+                <TextView
+                    android:id="@+id/tvMensajeAlerta"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="La maquinaria Caterpillar tiene un mantenimiento vencido."
+                    android:textColor="@color/text_secondary"
+                    android:textSize="13sp"
+                    android:layout_marginTop="4dp" />
+
+                <TextView
+                    android:id="@+id/tvFechaAlerta"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Fecha: 01/07/2026"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp"
+                    android:layout_marginTop="8dp" />
+
+                <TextView
+                    android:id="@+id/tvPrioridadAlerta"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Prioridad: ALTA"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:textColor="@android:color/holo_red_dark"
+                    android:layout_marginTop="8dp" />
+
+            </LinearLayout>
 
         </LinearLayout>
 

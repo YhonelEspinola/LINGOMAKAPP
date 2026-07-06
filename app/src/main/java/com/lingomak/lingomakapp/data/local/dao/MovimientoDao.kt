@@ -57,4 +57,22 @@ interface MovimientoDao {
 
     @androidx.room.Update
     suspend fun actualizar(movimiento: MovimientoEntity)
+
+    @Query(
+        """
+    SELECT * FROM movimientos 
+    WHERE tipo = 'SALIDA' 
+    AND fecha >= :fechaInicio
+    """
+    )
+    suspend fun obtenerSalidasDesde(fechaInicio: Long): List<MovimientoEntity>
+
+    @Query(
+        """
+    SELECT * FROM movimientos
+    WHERE fecha >= :fechaInicio
+    """
+    )
+    suspend fun obtenerMovimientosDesde(fechaInicio: Long): List<MovimientoEntity>
+
 }

@@ -49,14 +49,18 @@ class AlertasFragment : Fragment() {
 
             adapter.actualizarLista(lista)
 
-            binding.tvAlertasVencidas.text =
-                lista.count { it.tipo == "VENCIDO" }.toString()
+            binding.tvAlertasCriticas.text =
+                lista.count { alerta ->
+                    alerta.prioridad == "ALTA"
+                }.toString()
 
-            binding.tvAlertasProximas.text =
-                lista.count { it.tipo == "PROXIMO" }.toString()
+            binding.tvAlertasAdvertencias.text =
+                lista.count { alerta ->
+                    alerta.prioridad == "MEDIA"
+                }.toString()
 
-            binding.tvAlertasProceso.text =
-                lista.count { it.tipo == "EN_PROCESO" }.toString()
+            binding.tvAlertasTotal.text =
+                lista.size.toString()
 
             binding.tvSinAlertas.visibility =
                 if (lista.isEmpty()) View.VISIBLE else View.GONE

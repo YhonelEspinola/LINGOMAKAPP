@@ -10,11 +10,6 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
-import android.text.Spannable
-import android.text.SpannableStringBuilder
-import android.text.style.ForegroundColorSpan
-import android.text.style.StyleSpan
-import androidx.core.content.ContextCompat
 import com.lingomak.lingomakapp.R
 import com.lingomak.lingomakapp.data.model.MantenimientoModel
 import com.lingomak.lingomakapp.databinding.FragmentMantenimientoBinding
@@ -217,7 +212,7 @@ class MantenimientoFragment : Fragment() {
 
     private fun actualizarResumen(lista: List<MantenimientoModel>) {
 
-        binding.tvTotalMantenimientos.text = lista.size.toString()
+
 
         binding.tvPendientesMantenimiento.text =
             lista.count { it.estado == "PENDIENTE" }.toString()

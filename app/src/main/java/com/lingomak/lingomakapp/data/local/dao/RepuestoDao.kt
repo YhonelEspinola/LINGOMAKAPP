@@ -78,4 +78,7 @@ interface RepuestoDao {
 
     @Query("DELETE FROM repuestos WHERE estadoSync = 'SINCRONIZADO'")
     suspend fun eliminarTodosSincronizados()
+
+    @Query("SELECT * FROM repuestos WHERE estado = 'ACTIVO'")
+    suspend fun obtenerRepuestosActivos(): List<RepuestoEntity>
 }
