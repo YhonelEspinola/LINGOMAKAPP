@@ -25,14 +25,66 @@
 
     </LinearLayout>
 
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardAlerta"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="12dp"
+        android:visibility="gone"
+        app:cardCornerRadius="14dp"
+        app:cardBackgroundColor="#FFF8E1"
+        app:strokeColor="#F59E0B"
+        app:strokeWidth="1dp"
+        app:layout_constraintTop_toBottomOf="@id/layoutHeader"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:id="@+id/tvTituloAlerta"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="⚠ Acción recomendada"
+                android:textStyle="bold"
+                android:textSize="16sp"
+                android:textColor="#B45309" />
+
+            <TextView
+                android:id="@+id/tvTipoAlerta"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Alto consumo"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary" />
+
+            <TextView
+                android:id="@+id/tvMensajeAlerta"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="El repuesto tuvo muchas salidas."
+                android:textColor="@color/text_secondary" />
+
+        </LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
     <LinearLayout
         android:id="@+id/layoutResumen"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="12dp"
         android:orientation="horizontal"
         android:weightSum="3"
-        app:layout_constraintTop_toBottomOf="@id/layoutHeader">
+        app:layout_constraintTop_toBottomOf="@id/cardAlerta">
 
         <com.google.android.material.card.MaterialCardView
             android:layout_width="0dp"

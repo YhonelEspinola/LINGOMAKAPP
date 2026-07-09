@@ -21,12 +21,16 @@ class MovimientosGlobalFragment : Fragment() {
     private val viewModel: MovimientosGlobalViewModel by viewModels()
     private lateinit var adapter: MovimientosGlobalAdapter
 
+    private var filtroInicialTexto: String = ""
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentMovimientosGlobalBinding.inflate(inflater, container, false)
-        
+
+        filtroInicialTexto = arguments?.getString("filtroTexto") ?: ""
+
         setupUI()
         observarViewModel()
         
@@ -94,6 +98,7 @@ class MovimientosGlobalFragment : Fragment() {
                 .addToBackStack(null)
                 .commit()
         }
+        filtroInicialTexto = arguments?.getString("filtroTexto") ?: ""
     }
 
 

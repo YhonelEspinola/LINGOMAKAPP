@@ -9,7 +9,8 @@ import com.lingomak.lingomakapp.data.model.AlertaModel
 import com.lingomak.lingomakapp.databinding.ItemAlertaBinding
 
 class AlertasAdapter(
-    private var listaAlertas: List<AlertaModel>
+    private var listaAlertas: List<AlertaModel>,
+    private val onTomarAccionClick: (AlertaModel) -> Unit
 ) : RecyclerView.Adapter<AlertasAdapter.AlertaViewHolder>() {
 
     inner class AlertaViewHolder(
@@ -39,6 +40,10 @@ class AlertasAdapter(
                 else -> alerta.categoria
             }
             aplicarEstilos(alerta.tipo)
+
+            binding.btnTomarAccionAlerta.setOnClickListener {
+                onTomarAccionClick(alerta)
+            }
         }
 
         private fun aplicarEstilos(tipo: String) {

@@ -283,4 +283,35 @@ class MantenimientoRepository {
             }
     }
 
+    fun obtenerMantenimientoPorUid(
+        uid: String,
+        onSuccess: (MantenimientoModel) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        /*
+         * Buscamos un mantenimiento específico por su UID.
+         * Esto nos servirá cuando el usuario presione
+         * "Tomar acción" desde una alerta.
+         */
+        database.collection(coleccionMantenimientos)
+            .document(uid)
+            .get()
+            .addOnSuccessListener { document ->
+
+                val mantenimiento =
+                    document.toObject(MantenimientoModel::class.java)
+
+                if (mantenimiento != null) {
+                    onSuccess(mantenimiento)
+                } else {
+                    onError("No se encontró el mantenimiento")
+                }
+            }
+            .addOnFailureListener { exception ->
+                onError(
+                    exception.message ?: "Error al obtener mantenimiento"
+                )
+            }
+    }
+
 }

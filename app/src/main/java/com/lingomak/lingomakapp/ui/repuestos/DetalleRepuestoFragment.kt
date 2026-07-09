@@ -44,6 +44,10 @@ class DetalleRepuestoFragment : Fragment() {
     private var uidRepuesto: String = ""
     private var repuestoActual: RepuestoModel? = null
 
+    private var origen = ""
+    private var tituloAlerta = ""
+    private var mensajeAlerta = ""
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -51,6 +55,11 @@ class DetalleRepuestoFragment : Fragment() {
     ): View {
         _binding = FragmentDetalleRepuestoBinding.inflate(inflater, container, false)
         uidRepuesto = arguments?.getString("uid") ?: ""
+
+        origen = arguments?.getString("origen") ?: ""
+        tituloAlerta = arguments?.getString("tituloAlerta") ?: ""
+        mensajeAlerta = arguments?.getString("mensajeAlerta") ?: ""
+
         observarViewModel()
         viewModel.obtenerRepuestoPorUid(uidRepuesto)
         configurarEventos()
@@ -95,6 +104,20 @@ class DetalleRepuestoFragment : Fragment() {
         } else {
             binding.ivCodigoQR.setImageResource(android.R.drawable.ic_menu_gallery)
         }
+
+        if (origen == "ALERTA") {
+
+            binding.cardAlerta.visibility = View.VISIBLE
+
+            binding.tvTipoAlerta.text = tituloAlerta
+
+            binding.tvMensajeAlerta.text = mensajeAlerta
+
+        } else {
+
+            binding.cardAlerta.visibility = View.GONE
+        }
+
     }
 
     private fun configurarEventos() {

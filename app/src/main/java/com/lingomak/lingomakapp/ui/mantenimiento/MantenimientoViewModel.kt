@@ -145,4 +145,23 @@ class MantenimientoViewModel : ViewModel() {
         )
     }
 
+    fun obtenerMantenimientoPorUid(
+        uid: String,
+        onSuccess: (MantenimientoModel) -> Unit
+    ) {
+        /*
+         * El ViewModel pide el mantenimiento al Repository.
+         * Si ocurre error, lo enviamos al LiveData de errores.
+         */
+        repository.obtenerMantenimientoPorUid(
+            uid = uid,
+            onSuccess = { mantenimiento ->
+                onSuccess(mantenimiento)
+            },
+            onError = { error ->
+                _mensajeError.postValue(error)
+            }
+        )
+    }
+
 }

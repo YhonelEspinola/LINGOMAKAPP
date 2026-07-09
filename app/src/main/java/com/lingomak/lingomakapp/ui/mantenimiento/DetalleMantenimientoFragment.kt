@@ -34,6 +34,10 @@ class DetalleMantenimientoFragment : Fragment() {
     private var horometroProgramado = 0
     private var costoEstimado = 0.0
 
+    private var origen = ""
+    private var tituloAlerta = ""
+    private var mensajeAlerta = ""
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -66,6 +70,10 @@ class DetalleMantenimientoFragment : Fragment() {
         costoEstimado = arguments?.getDouble("costoEstimado") ?: 0.0
         observaciones = arguments?.getString("observaciones") ?: ""
 
+        origen = arguments?.getString("origen") ?: ""
+        tituloAlerta = arguments?.getString("tituloAlerta") ?: ""
+        mensajeAlerta = arguments?.getString("mensajeAlerta") ?: ""
+
         binding.tvCodigoDetalle.text = codigoMantenimiento
         binding.tvTipoDetalle.text = tipoMantenimiento
         binding.tvMaquinariaDetalle.text = nombreMaquinaria
@@ -82,6 +90,8 @@ class DetalleMantenimientoFragment : Fragment() {
             observaciones.ifEmpty { "Sin observaciones" }
 
         actualizarAccionesPorEstado()
+
+        mostrarBannerAlerta()
     }
 
     private fun configurarEventos() {
@@ -91,10 +101,14 @@ class DetalleMantenimientoFragment : Fragment() {
         binding.btnEditarMantenimiento.setOnClickListener {
             abrirEditarMantenimiento()
         }
+
+        binding.btnFinalizarMantenimiento.setOnClickListener {
+            abrirFinalizarMantenimiento()
+        }
     }
 
     private fun mostrarDialogoCambiarEstado() {
-        if (estadoActual != "PENDIENTE") {
+        if (estadoActual != "PENDIENTE" && estadoActual != "VENCIDO") {
 
             Toast.makeText(
                 requireContext(),
@@ -186,20 +200,59 @@ class DetalleMantenimientoFragment : Fragment() {
 
         when (estadoActual) {
 
+            /*
+             * PENDIENTE:
+             * El administrador todavía puede editar,
+             * iniciar o cancelar desde otras opciones.
+             */
             "PENDIENTE" -> {
                 binding.btnEditarMantenimiento.visibility = View.VISIBLE
                 binding.btnCambiarEstado.visibility = View.VISIBLE
+                binding.btnFinalizarMantenimiento.visibility = View.GONE
+
                 binding.btnCambiarEstado.text = "Iniciar mantenimiento"
             }
 
+            /*
+             * VENCIDO:
+             * Todavía no se realizó.
+             * Por eso permitimos editar para reprogramar
+             * o iniciar mantenimiento.
+             */
+            "VENCIDO" -> {
+                binding.btnEditarMantenimiento.visibility = View.VISIBLE
+                binding.btnCambiarEstado.visibility = View.VISIBLE
+                binding.btnFinalizarMantenimiento.visibility = View.GONE
+
+                binding.btnCambiarEstado.text = "Iniciar mantenimiento"
+            }
+
+            /*
+             * EN_PROCESO:
+             * Ya no se debe editar.
+             * Aquí la acción correcta es finalizar.
+             */
             "EN_PROCESO" -> {
                 binding.btnEditarMantenimiento.visibility = View.GONE
                 binding.btnCambiarEstado.visibility = View.GONE
+                binding.btnFinalizarMantenimiento.visibility = View.VISIBLE
             }
 
-            "FINALIZADO", "VENCIDO", "CANCELADO" -> {
+            /*
+             * FINALIZADO / CANCELADO:
+             * Son estados históricos.
+             * Solo se permite ver detalle.
+             */
+            "FINALIZADO", "CANCELADO" -> {
                 binding.btnEditarMantenimiento.visibility = View.GONE
                 binding.btnCambiarEstado.visibility = View.GONE
+                binding.btnFinalizarMantenimiento.visibility = View.GONE
+            }
+
+            else -> {
+                binding.btnEditarMantenimiento.visibility = View.GONE
+                binding.btnCambiarEstado.visibility = View.GONE
+                binding.btnFinalizarMantenimiento.visibility = View.GONE
             }
         }
     }
@@ -207,6 +260,52 @@ class DetalleMantenimientoFragment : Fragment() {
     private fun observarViewModel() {
         viewModel.mensajeError.observe(viewLifecycleOwner) { mensaje ->
             Toast.makeText(requireContext(), mensaje, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun abrirFinalizarMantenimiento() {
+
+        /*
+         * RN05:
+         * Solo se puede finalizar un mantenimiento
+         * que está en estado EN_PROCESO.
+         */
+        if (estadoActual != "EN_PROCESO") {
+            Toast.makeText(
+                requireContext(),
+                "Solo se puede finalizar un mantenimiento en proceso",
+                Toast.LENGTH_SHORT
+            ).show()
+            return
+        }
+
+        val fragment = FinalizarMantenimientoFragment()
+
+        val bundle = Bundle().apply {
+            putString("uid", uidMantenimiento)
+            putString("uidMaquinaria", uidMaquinaria)
+            putString("codigoMantenimiento", codigoMantenimiento)
+            putString("nombreMaquinaria", nombreMaquinaria)
+            putString("descripcion", descripcion)
+            putString("estado", estadoActual)
+        }
+
+        fragment.arguments = bundle
+
+        requireActivity().supportFragmentManager
+            .beginTransaction()
+            .replace(R.id.fragmentContainerAdmin, fragment)
+            .addToBackStack(null)
+            .commit()
+    }
+
+    private fun mostrarBannerAlerta() {
+        if (origen == "ALERTA") {
+            binding.cardAlerta.visibility = View.VISIBLE
+            binding.tvTipoAlerta.text = tituloAlerta
+            binding.tvMensajeAlerta.text = mensajeAlerta
+        } else {
+            binding.cardAlerta.visibility = View.GONE
         }
     }
 

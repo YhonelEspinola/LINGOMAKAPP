@@ -25,12 +25,20 @@ class MovimientosFragment : Fragment() {
     private var nombreRepuesto: String = ""
     private var stockActual: Int = 0
 
+    private var origen = ""
+    private var tituloAlerta = ""
+    private var mensajeAlerta = ""
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentMovimientosBinding.inflate(inflater, container, false)
-        
+
+        origen = arguments?.getString("origen") ?: ""
+        tituloAlerta = arguments?.getString("tituloAlerta") ?: ""
+        mensajeAlerta = arguments?.getString("mensajeAlerta") ?: ""
+
         repuestoUid = arguments?.getString("repuestoUid") ?: ""
         nombreRepuesto = arguments?.getString("nombreRepuesto") ?: ""
         stockActual = arguments?.getInt("stockActual") ?: 0
@@ -55,6 +63,8 @@ class MovimientosFragment : Fragment() {
             binding.tvTituloRepuesto.text = etiqueta
         }
         binding.selectorFechas.dispararSeleccionActual()
+
+        mostrarBannerAlerta()
     }
 
 
@@ -74,6 +84,16 @@ class MovimientosFragment : Fragment() {
             binding.tvLabelEntradas.text = "Entradas${resumen.periodoLabel}"
             binding.tvLabelSalidas.text = "Salidas${resumen.periodoLabel}"
             binding.tvLabelPromedio.text = "Balance${resumen.periodoLabel}"
+        }
+    }
+
+    private fun mostrarBannerAlerta() {
+        if (origen == "ALERTA") {
+            binding.cardAlerta.visibility = View.VISIBLE
+            binding.tvTipoAlerta.text = tituloAlerta
+            binding.tvMensajeAlerta.text = mensajeAlerta
+        } else {
+            binding.cardAlerta.visibility = View.GONE
         }
     }
 

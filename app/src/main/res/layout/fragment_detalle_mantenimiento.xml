@@ -30,6 +30,52 @@
             android:textSize="14sp"
             android:layout_marginTop="4dp"/>
 
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardAlerta"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            android:visibility="gone"
+            app:cardCornerRadius="14dp"
+            app:cardBackgroundColor="#FFF8E1"
+            app:strokeColor="#F59E0B"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:id="@+id/tvTituloAlerta"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="⚠ Acción recomendada"
+                    android:textStyle="bold"
+                    android:textSize="16sp"
+                    android:textColor="#B45309" />
+
+                <TextView
+                    android:id="@+id/tvTipoAlerta"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Mantenimiento vencido"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary" />
+
+                <TextView
+                    android:id="@+id/tvMensajeAlerta"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="La maquinaria tiene un mantenimiento vencido."
+                    android:textColor="@color/text_secondary" />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
 
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
@@ -249,6 +295,15 @@
             android:text="Cambiar estado"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_marginTop="10dp"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnFinalizarMantenimiento"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Finalizar mantenimiento"
+            android:layout_marginTop="10dp"/>
+
+
 
     </LinearLayout>
 

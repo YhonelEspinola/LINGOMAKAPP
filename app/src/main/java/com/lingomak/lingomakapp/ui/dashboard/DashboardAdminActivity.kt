@@ -12,6 +12,7 @@ import com.lingomak.lingomakapp.ui.maquinaria.MaquinariaFragment
 import com.lingomak.lingomakapp.ui.movimientos.MovimientosGlobalFragment
 import com.lingomak.lingomakapp.ui.repuestos.InventarioFragment
 import com.lingomak.lingomakapp.ui.usuarios.UsuariosFragment
+import com.lingomak.lingomakapp.workers.AlertasWorkerManager
 
 class DashboardAdminActivity : AppCompatActivity() {
 
@@ -36,6 +37,8 @@ class DashboardAdminActivity : AppCompatActivity() {
         configurarTollbar()
 
         configurarNavigationDrawer()
+
+        AlertasWorkerManager.programarRevisionAlertas(this)
     }
 
     private fun configurarBottomNavigation(){
