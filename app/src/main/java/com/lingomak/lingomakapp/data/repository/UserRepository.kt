@@ -100,17 +100,14 @@ class UserRepository {
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {
-        // Obtenemos el usuario actualmente logueado en Firebase Authentication.
+
         val usuarioActual = FirebaseAuth.getInstance().currentUser
 
-        // Si no hay usuario logueado, no podemos llamar a la Function protegida.
         if (usuarioActual == null) {
             onError("No hay usuario autenticado en Firebase Auth")
             return
         }
 
-        // Forzamos a Firebase a obtener un token actualizado del usuario.
-        // Este token es el que Cloud Functions usa para reconocer request.auth.
         usuarioActual.getIdToken(true)
             .addOnSuccessListener {
 
@@ -120,10 +117,10 @@ class UserRepository {
                     "correo" to correo,
                     "password" to password,
                     "rol" to rol,
-                    "creadoPor" to creadoPor
+                    "creadoPor" to creadoPor,
+                    "debeCambiarPassword" to true
                 )
 
-                // Llamamos la función desplegada en us-central1.
                 FirebaseFunctions.getInstance("us-central1")
                     .getHttpsCallable("createUserAdmin")
                     .call(data)

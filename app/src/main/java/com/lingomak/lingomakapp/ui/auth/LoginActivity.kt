@@ -10,7 +10,7 @@ import android.content.Intent
 import android.view.View
 import com.lingomak.lingomakapp.ui.dashboard.DashboardAdminActivity
 import com.lingomak.lingomakapp.ui.dashboard.DashboardOperarioActivity
-import com.lingomak.lingomakapp.ui.dashboard.MainActivity
+import com.lingomak.lingomakapp.ui.auth.CambiarPasswordFragment
 import com.lingomak.lingomakapp.utils.Constants
 
 class LoginActivity : AppCompatActivity() {
@@ -67,8 +67,23 @@ class LoginActivity : AppCompatActivity() {
                 }
 
                 Constants.ROL_OPERARIO -> {
-                    startActivity(Intent(this, DashboardOperarioActivity::class.java))
-                    finish()
+                    if (usuario.debeCambiarPassword) {
+
+                        supportFragmentManager
+                            .beginTransaction()
+                            .replace(
+                                android.R.id.content,
+                                CambiarPasswordFragment()
+                            )
+                            .commit()
+
+                    } else {
+
+                        startActivity(
+                            Intent(this, DashboardOperarioActivity::class.java)
+                        )
+                        finish()
+                    }
                 }
 
                 else -> {
