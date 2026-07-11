@@ -1,6 +1,7 @@
 const {setGlobalOptions} = require("firebase-functions");
 const {onCall, HttpsError} = require("firebase-functions/v2/https");
 const admin = require("firebase-admin");
+const {onDocumentCreated} = require("firebase-functions/v2/firestore");
 
 admin.initializeApp();
 
@@ -92,3 +93,86 @@ exports.createUserAdmin = onCall(async (request) => {
     );
   }
 });
+
+exports.notificarNuevaSolicitudMantenimiento = onDocumentCreated(
+    {
+      document: "solicitudes_mantenimiento/{solicitudId}",
+      region: "us-central1",
+    },
+    async (event) => {
+      const snapshot = event.data;
+
+      if (!snapshot) {
+        console.log("La solicitud no contiene información.");
+        return;
+      }
+
+      const solicitud = snapshot.data();
+
+      if (solicitud.estadoSolicitud !== "PENDIENTE_APROBACION") {
+        return;
+      }
+
+      const nombreMaquinaria =
+          solicitud.nombreMaquinaria || "maquinarias";
+
+      const horasRestantes =
+          Number(solicitud.horasRestantes ?? 0);
+
+      let mensaje;
+
+      if (horasRestantes < 0) {
+        mensaje =
+            `${nombreMaquinaria} superó el intervalo por ` +
+            `${Math.abs(horasRestantes)} horas.`;
+      } else if (horasRestantes === 0) {
+        mensaje =
+            `${nombreMaquinaria} alcanzó el límite de mantenimiento.`;
+      } else {
+        mensaje =
+            `${nombreMaquinaria} requiere revisión. ` +
+            `Faltan ${horasRestantes} horas para mantenimiento.`;
+      }
+
+      const notificationMessage = {
+        topic: "administradores",
+
+        notification: {
+          title: "Solicitud de mantenimiento pendiente",
+          body: mensaje,
+        },
+
+        data: {
+          tipo: "SOLICITUD_MANTENIMIENTO",
+          uidSolicitud: event.params.solicitudId,
+          uidMaquinaria: solicitud.uidMaquinaria || "",
+        },
+
+        android: {
+          priority: "high",
+
+          notification: {
+            channelId: "alertas_lingomak",
+            sound: "default",
+          },
+        },
+      };
+
+      try {
+        const response =
+            await admin.messaging().send(notificationMessage);
+
+        console.log(
+            "Notificación de solicitud enviada correctamente:",
+            response
+        );
+      } catch (error) {
+        console.error(
+            "Error enviando notificación de solicitud:",
+            error
+        );
+
+        throw error;
+      }
+    }
+);
