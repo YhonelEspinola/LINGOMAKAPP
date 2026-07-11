@@ -33,7 +33,6 @@ class DashboardAdminActivity : AppCompatActivity() {
          * Primero configuramos todos los componentes
          * de navegación.
          */
-        configurarBottomNavigation()
         configurarToolbar()
         configurarNavigationDrawer()
 
@@ -175,58 +174,7 @@ class DashboardAdminActivity : AppCompatActivity() {
     /**
      * Configura la navegación inferior del administrador.
      */
-    private fun configurarBottomNavigation() {
 
-        binding.bottomNavigationAdmin
-            .setOnItemSelectedListener { item ->
-
-                when (item.itemId) {
-
-                    R.id.nav_home -> {
-                        abrirHome()
-                        true
-                    }
-
-                    R.id.nav_inventario -> {
-                        supportFragmentManager
-                            .beginTransaction()
-                            .replace(
-                                R.id.fragmentContainerAdmin,
-                                InventarioFragment()
-                            )
-                            .commit()
-
-                        true
-                    }
-
-                    R.id.nav_mantenimiento -> {
-                        supportFragmentManager
-                            .beginTransaction()
-                            .replace(
-                                R.id.fragmentContainerAdmin,
-                                MantenimientoFragment()
-                            )
-                            .commit()
-
-                        true
-                    }
-
-                    R.id.nav_perfil -> {
-                        supportFragmentManager
-                            .beginTransaction()
-                            .replace(
-                                R.id.fragmentContainerAdmin,
-                                PerfilFragment()
-                            )
-                            .commit()
-
-                        true
-                    }
-
-                    else -> false
-                }
-            }
-    }
 
     /**
      * Configura el botón del Toolbar que abre
@@ -250,6 +198,23 @@ class DashboardAdminActivity : AppCompatActivity() {
             .setNavigationItemSelectedListener { item ->
 
                 when (item.itemId) {
+
+                    R.id.nav_home -> {
+
+                        abrirHome()
+                        binding.drawerLayoutAdmin.close()
+
+                        true
+                    }
+
+                    R.id.nav_perfil -> {
+
+                        abrirFragmentDrawer(
+                            PerfilFragment()
+                        )
+
+                        true
+                    }
 
                     R.id.drawer_usuarios -> {
 
