@@ -13,6 +13,7 @@ import kotlinx.coroutines.tasks.await
 import com.lingomak.lingomakapp.data.local.AppDatabase
 import com.lingomak.lingomakapp.data.local.entity.MovimientoEntity
 import com.lingomak.lingomakapp.data.model.MovimientoModel
+import com.lingomak.lingomakapp.worker.SincronizacionRepuestosWorker
 import com.lingomak.lingomakapp.worker.SincronizacionMovimientosWorker
 import java.util.*
 
@@ -42,7 +43,11 @@ class MovimientoRepository(private val context: Context) {
         // 2. Ajustar stock del repuesto localmente
         val delta = if (movimiento.tipo == "ENTRADA") movimiento.cantidad else -movimiento.cantidad
         repuestoDao.ajustarStockLocal(movimiento.repuestoUid, delta, System.currentTimeMillis())
-        
+
+        // 2.5. Encolar sincronización del REPUESTO (el stock actualizado
+        //      también debe subir a Firestore, no solo el movimiento)
+        SincronizacionRepuestosWorker.encolar(context)
+
         // 3. Crear alerta de actividad para el administrador si es una salida de operario
         crearNotificacionActividad(movimiento)
         
@@ -251,7 +256,11 @@ class MovimientoRepository(private val context: Context) {
         // 1. Revertir stock localmente
         val deltaReversion = if (entity.tipo == "ENTRADA") -entity.cantidad else entity.cantidad
         repuestoDao.ajustarStockLocal(entity.repuestoUid, deltaReversion, System.currentTimeMillis())
-        
+
+        // 1.5. Encolar sincronización del REPUESTO (el stock revertido
+        //      también debe subir a Firestore, no solo el movimiento)
+        SincronizacionRepuestosWorker.encolar(context)
+
         // 3. Eliminar de Room
         movimientoDao.eliminar(entity)
         
@@ -276,7 +285,11 @@ class MovimientoRepository(private val context: Context) {
         
         // 2. Ajustar stock del repuesto localmente con la diferencia calculada
         repuestoDao.ajustarStockLocal(movimiento.repuestoUid, deltaStock, System.currentTimeMillis())
-        
+
+        // 2.5. Encolar sincronización del REPUESTO (el stock actualizado
+        //      también debe subir a Firestore, no solo el movimiento)
+        SincronizacionRepuestosWorker.encolar(context)
+
         // 4. Encolar Worker
         encolarSincronizacion()
     }
