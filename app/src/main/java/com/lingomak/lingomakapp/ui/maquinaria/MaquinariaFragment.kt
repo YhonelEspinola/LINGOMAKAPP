@@ -184,20 +184,15 @@ class MaquinariaFragment : Fragment() {
     }
 
     private fun configurarFiltros() {
-
-        binding.toggleEstadoMaquinaria.addOnButtonCheckedListener { _, checkedId, isChecked ->
-
-            if (isChecked) {
-
-                filtroEstado = when (checkedId) {
-                    binding.btnEstadoOperativa.id -> "OPERATIVA"
-                    binding.btnEstadoMantenimiento.id -> "EN_MANTENIMIENTO"
-                    binding.btnEstadoInactiva.id -> "INACTIVA"
-                    else -> "TODOS"
-                }
-
-                aplicarFiltros()
+        binding.chipGroupEstado.setOnCheckedStateChangeListener { _, checkedIds ->
+            val checkedId = checkedIds.firstOrNull() ?: View.NO_ID
+            filtroEstado = when (checkedId) {
+                binding.chipEstadoOperativa.id -> "OPERATIVA"
+                binding.chipEstadoMantenimiento.id -> "EN_MANTENIMIENTO"
+                binding.chipEstadoInactiva.id -> "INACTIVA"
+                else -> "TODOS"
             }
+            aplicarFiltros()
         }
     }
 

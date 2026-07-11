@@ -163,19 +163,17 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Responsable"
+                    android:text="Responsable / Operario"
                     android:textColor="@color/text_primary"
                     android:textStyle="bold" />
 
-                <EditText
-                    android:id="@+id/etResponsable"
+                <Spinner
+                    android:id="@+id/spResponsable"
                     android:layout_width="match_parent"
                     android:layout_height="55dp"
                     android:layout_marginTop="8dp"
                     android:layout_marginBottom="16dp"
                     android:background="@drawable/bg_edit_text"
-                    android:hint="Nombre del responsable"
-                    android:inputType="textPersonName"
                     android:padding="12dp" />
 
                 <TextView

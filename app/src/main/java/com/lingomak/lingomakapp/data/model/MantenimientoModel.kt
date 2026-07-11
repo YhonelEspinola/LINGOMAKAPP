@@ -13,6 +13,7 @@ data class MantenimientoModel(
     var fechaRealizada: String = "",
     var estado: String = "",
     var responsable: String = "",
+    var responsableUid: String = "", // UID del operario asignado
     var observaciones: String = "",
     var costoEstimado: Double = 0.0,
     var costoReal: Double = 0.0,

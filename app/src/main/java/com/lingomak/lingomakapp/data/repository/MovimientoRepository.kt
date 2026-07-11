@@ -7,13 +7,14 @@ import androidx.work.Constraints
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 import com.lingomak.lingomakapp.data.local.AppDatabase
 import com.lingomak.lingomakapp.data.local.entity.MovimientoEntity
 import com.lingomak.lingomakapp.data.model.MovimientoModel
 import com.lingomak.lingomakapp.worker.SincronizacionMovimientosWorker
-import java.util.Date
+import java.util.*
 
 /**
  * Repositorio de Movimientos (Entradas/Salidas).
@@ -42,8 +43,37 @@ class MovimientoRepository(private val context: Context) {
         val delta = if (movimiento.tipo == "ENTRADA") movimiento.cantidad else -movimiento.cantidad
         repuestoDao.ajustarStockLocal(movimiento.repuestoUid, delta, System.currentTimeMillis())
         
+        // 3. Crear alerta de actividad para el administrador si es una salida de operario
+        crearNotificacionActividad(movimiento)
+        
         // 4. Encolar Worker de sincronización
         encolarSincronizacion()
+    }
+
+    private suspend fun crearNotificacionActividad(movimiento: MovimientoModel) {
+        // Obtenemos el nombre del repuesto para el mensaje
+        val repuesto = repuestoDao.obtenerPorUid(movimiento.repuestoUid)
+        val nombreProducto = repuesto?.nombre ?: "Repuesto"
+        
+        val userEmail = FirebaseAuth.getInstance().currentUser?.email ?: "Operario"
+        
+        val alerta = com.lingomak.lingomakapp.data.model.AlertaModel(
+            uid = UUID.randomUUID().toString(),
+            categoria = "ACTIVIDAD",
+            tipo = "ACTIVIDAD_OPERARIO",
+            titulo = "Nueva salida registrada",
+            mensaje = "$userEmail retiró ${movimiento.cantidad} unidad(es) de '$nombreProducto'.",
+            prioridad = "BAJA",
+            fecha = java.text.SimpleDateFormat("dd/MM/yyyy HH:mm", java.util.Locale.getDefault()).format(Date()),
+            uidRepuesto = movimiento.repuestoUid
+        )
+        
+        // La guardamos directamente en Firestore en la colección de alertas
+        try {
+            db.collection("alertas").document(alerta.uid).set(alerta).await()
+        } catch (e: Exception) {
+            // Si falla la red, no es crítico para el flujo offline-first del movimiento
+        }
     }
 
     /**

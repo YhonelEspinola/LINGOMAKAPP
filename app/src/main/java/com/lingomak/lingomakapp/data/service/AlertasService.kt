@@ -20,38 +20,63 @@ class AlertasService(
 
     private val coleccionSolicitudesMantenimiento = "solicitudes_mantenimiento"
 
-    suspend fun obtenerAlertas(): List<AlertaModel> {
+    suspend fun obtenerAlertas(userUid: String? = null, esOperario: Boolean = false): List<AlertaModel> {
 
         val listaAlertas = mutableListOf<AlertaModel>()
 
-        val mantenimientos = database.collection("mantenimientos")
-            .get()
-            .await()
-            .toObjects(MantenimientoModel::class.java)
+        // 1. Mantenimientos (Filtrar por operario si corresponde)
+        var queryMantenimientos = database.collection("mantenimientos")
+        
+        val mantenimientos = if (esOperario && userUid != null) {
+            // Firestore no soporta OR de forma tan directa en versiones antiguas, pero podemos simularlo
+            // o simplemente traer y filtrar localmente si la lista no es inmensa.
+            queryMantenimientos.get().await().toObjects(MantenimientoModel::class.java)
+                .filter { it.responsableUid == userUid || it.responsableUid == "TODOS" }
+        } else {
+            queryMantenimientos.get().await().toObjects(MantenimientoModel::class.java)
+        }
 
         cargarAlertasMantenimiento(mantenimientos, listaAlertas)
 
-        val repuestos = repuestoDao.obtenerRepuestosActivos()
+        // Si es operario, solo mostramos las alertas de mantenimiento asignadas.
+        // Las alertas de inventario y movimientos suelen ser de nivel administrativo.
+        if (!esOperario) {
+            val repuestos = repuestoDao.obtenerRepuestosActivos()
+            cargarAlertasInventario(repuestos, listaAlertas)
+            cargarAlertasMovimientos(repuestos, listaAlertas)
 
-        cargarAlertasInventario(repuestos, listaAlertas)
-        cargarAlertasMovimientos(repuestos, listaAlertas)
+            val solicitudesPendientes = database.collection(coleccionSolicitudesMantenimiento)
+                .whereEqualTo("estadoSolicitud", "PENDIENTE_APROBACION")
+                .get().await().toObjects(SolicitudMantenimientoModel::class.java)
 
-        val solicitudesPendientes =
-            database.collection(coleccionSolicitudesMantenimiento)
-                .whereEqualTo(
-                    "estadoSolicitud",
-                    "PENDIENTE_APROBACION"
-                )
-                .get()
-                .await()
-                .toObjects(SolicitudMantenimientoModel::class.java)
-
-        cargarAlertasSolicitudes(
-            solicitudesPendientes,
-            listaAlertas
-        )
+            cargarAlertasSolicitudes(solicitudesPendientes, listaAlertas)
+            
+            // Cargar notificaciones de actividad de operarios (nueva categoría)
+            cargarNotificacionesActividad(listaAlertas)
+        }
 
         return ordenarAlertas(listaAlertas)
+    }
+
+    private suspend fun cargarNotificacionesActividad(listaAlertas: MutableList<AlertaModel>) {
+        try {
+            // Calculamos la fecha de hace 7 días
+            val calendar = java.util.Calendar.getInstance()
+            calendar.add(java.util.Calendar.DAY_OF_YEAR, -7)
+            val haceSieteDias = java.text.SimpleDateFormat("dd/MM/yyyy HH:mm", java.util.Locale.getDefault()).format(calendar.time)
+
+            val snapshot = database.collection("alertas")
+                .whereEqualTo("tipo", "ACTIVIDAD_OPERARIO")
+                .whereGreaterThan("fecha", haceSieteDias) // Solo de los últimos 7 días
+                .limit(50)
+                .get()
+                .await()
+            
+            val actividades = snapshot.toObjects(AlertaModel::class.java)
+            listaAlertas.addAll(actividades)
+        } catch (e: Exception) {
+            // Manejar error de consulta si los índices no están listos
+        }
     }
 
     private fun cargarAlertasMantenimiento(
@@ -258,23 +283,25 @@ class AlertasService(
         return listaAlertas.sortedWith(
             compareBy<AlertaModel> { alerta ->
                 when (alerta.categoria) {
-                    "MANTENIMIENTO" -> 1
-                    "INVENTARIO" -> 2
-                    "MOVIMIENTOS" -> 3
-                    else -> 4
+                    "ACTIVIDAD" -> 1
+                    "MANTENIMIENTO" -> 2
+                    "INVENTARIO" -> 3
+                    "MOVIMIENTOS" -> 4
+                    else -> 5
                 }
             }.thenBy { alerta ->
                 when (alerta.tipo) {
                     "SOLICITUD_MANTENIMIENTO" -> 1
-                    "VENCIDO" -> 2
-                    "STOCK_AGOTADO" -> 3
-                    "STOCK_CRITICO" -> 4
-                    "PROXIMO" -> 5
-                    "STOCK_BAJO" -> 6
-                    "ALTO_CONSUMO" -> 7
-                    "SIN_ROTACION" -> 8
-                    "EN_PROCESO" -> 9
-                    else -> 10
+                    "ACTIVIDAD_OPERARIO" -> 2
+                    "VENCIDO" -> 3
+                    "STOCK_AGOTADO" -> 4
+                    "STOCK_CRITICO" -> 5
+                    "PROXIMO" -> 6
+                    "STOCK_BAJO" -> 7
+                    "ALTO_CONSUMO" -> 8
+                    "SIN_ROTACION" -> 9
+                    "EN_PROCESO" -> 10
+                    else -> 11
                 }
             }
         )
@@ -285,43 +312,16 @@ class AlertasService(
         listaAlertas: MutableList<AlertaModel>
     ) {
         solicitudes.forEach { solicitud ->
-            val prioridad =
-                if (solicitud.horasRestantes <= 10) {
-                    "ALTA"
-                } else {
-                    "MEDIA"
-                }
-
-            val mensaje =
-                when {
-                    solicitud.horasRestantes < 0 -> {
-                        val horasExcedidas =
-                            kotlin.math.abs(
-                                solicitud.horasRestantes
-                            )
-
-                        "La maquinaria ${solicitud.nombreMaquinaria} " +
-                                "superó el intervalo de mantenimiento " +
-                                "por $horasExcedidas horas."
-                    }
-
-                    solicitud.horasRestantes == 0 -> {
-                        "La maquinaria ${solicitud.nombreMaquinaria} " +
-                                "alcanzó el límite de mantenimiento."
-                    }
-
-                    else -> {
-                        "La maquinaria ${solicitud.nombreMaquinaria} " +
-                                "tiene una solicitud pendiente. Faltan " +
-                                "${solicitud.horasRestantes} horas para mantenimiento."
-                    }
-                }
+            val prioridad = if (solicitud.horasRestantes <= 10) "ALTA" else "MEDIA"
+            val mensaje = when {
+                solicitud.horasRestantes < 0 -> "La maquinaria ${solicitud.nombreMaquinaria} superó el intervalo de mantenimiento por ${kotlin.math.abs(solicitud.horasRestantes)} horas."
+                solicitud.horasRestantes == 0 -> "La maquinaria ${solicitud.nombreMaquinaria} alcanzó el límite de mantenimiento."
+                else -> "La maquinaria ${solicitud.nombreMaquinaria} tiene una solicitud pendiente. Faltan ${solicitud.horasRestantes} horas."
+            }
 
             listaAlertas.add(
                 AlertaModel(
-                    uid =
-                        "${solicitud.uid}_SOLICITUD_MANTENIMIENTO",
-
+                    uid = "${solicitud.uid}_SOLICITUD_MANTENIMIENTO",
                     categoria = "MANTENIMIENTO",
                     icono = "📋",
                     titulo = "Solicitud de mantenimiento pendiente",
@@ -329,9 +329,7 @@ class AlertasService(
                     tipo = "SOLICITUD_MANTENIMIENTO",
                     prioridad = prioridad,
                     fecha = solicitud.fechaRegistro,
-
                     uidSolicitudMantenimiento = solicitud.uid,
-
                     uidMaquinaria = solicitud.uidMaquinaria,
                     nombreMaquinaria = solicitud.nombreMaquinaria
                 )

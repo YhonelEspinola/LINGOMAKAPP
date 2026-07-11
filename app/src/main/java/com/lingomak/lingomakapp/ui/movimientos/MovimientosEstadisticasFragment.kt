@@ -10,8 +10,12 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.lingomak.lingomakapp.databinding.FragmentEstadisticasMovimientosBinding
 
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
+import android.widget.TableRow
+import com.github.mikephil.charting.data.BarData
+import com.github.mikephil.charting.data.BarDataSet
+import com.github.mikephil.charting.data.BarEntry
+import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
+import com.github.mikephil.charting.utils.ColorTemplate
 import com.lingomak.lingomakapp.R
 
 class MovimientosEstadisticasFragment : Fragment() {
@@ -36,29 +40,41 @@ class MovimientosEstadisticasFragment : Fragment() {
     private fun setupUI() {
         binding.btnVolver.setOnClickListener { parentFragmentManager.popBackStack() }
 
-        // Configurar Spinner de Periodo
-        val opciones = listOf("Hoy", "Esta Semana", "Este Mes", "Este Año")
-        val spinnerAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, opciones)
-        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding.spinnerPeriodo.adapter = spinnerAdapter
-        binding.spinnerPeriodo.setSelection(1) // Semana por defecto
+        binding.selectorFechasEstadisticas.onRangoSeleccionado = { inicio, fin, etiqueta ->
+            viewModel.setRango(inicio, fin, etiqueta)
+        }
+        
+        setupChart()
+    }
 
-        binding.spinnerPeriodo.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                val p = when(position) {
-                    0 -> "DIA"
-                    1 -> "SEMANA"
-                    2 -> "MES"
-                    3 -> "ANIO"
-                    else -> "SEMANA"
-                }
-                viewModel.setPeriodo(p)
+    private fun setupChart() {
+        binding.barChart.apply {
+            description.isEnabled = false
+            setDrawGridBackground(false)
+            setDrawBarShadow(false)
+            setDrawValueAboveBar(true)
+            
+            xAxis.apply {
+                position = com.github.mikephil.charting.components.XAxis.XAxisPosition.BOTTOM
+                setDrawGridLines(false)
+                granularity = 1f
+                valueFormatter = IndexAxisValueFormatter(listOf("Entradas", "Salidas"))
             }
-            override fun onNothingSelected(parent: AdapterView<*>?) {}
+            
+            axisLeft.apply {
+                setDrawGridLines(true)
+                axisMinimum = 0f
+            }
+            axisRight.isEnabled = false
+            legend.isEnabled = false
         }
     }
 
     private fun observarViewModel() {
+        viewModel.etiquetaRango.observe(viewLifecycleOwner) { etiqueta ->
+            binding.tvRangoActual.text = etiqueta
+        }
+
         viewModel.estadisticas.observe(viewLifecycleOwner) { data ->
             binding.tvTotalEntradasGlobal.text = data.totalEntradas.toString()
             binding.tvTotalSalidasGlobal.text = data.totalSalidas.toString()
@@ -75,33 +91,63 @@ class MovimientosEstadisticasFragment : Fragment() {
             }
 
             actualizarGrafica(data.totalEntradas, data.totalSalidas)
-            actualizarListaTop(data.topProductos)
+            actualizarTablaTop(data.topProductos)
         }
     }
 
     private fun actualizarGrafica(entradas: Int, salidas: Int) {
-        val max = maxOf(entradas, salidas, 1).toFloat()
-        
-        // Ajustar altura de las barras proporcionalmente (max 150dp aprox)
-        val factor = 150f / max
-        
-        binding.barEntrada.layoutParams.height = (entradas * factor).toInt().toPx()
-        binding.barSalida.layoutParams.height = (salidas * factor).toInt().toPx()
-        
-        binding.barEntrada.requestLayout()
-        binding.barSalida.requestLayout()
+        val entries = mutableListOf<BarEntry>()
+        entries.add(BarEntry(0f, entradas.toFloat()))
+        entries.add(BarEntry(1f, salidas.toFloat()))
+
+        val dataSet = BarDataSet(entries, "Movimientos")
+        dataSet.colors = listOf(
+            requireContext().getColor(R.color.success),
+            requireContext().getColor(R.color.danger)
+        )
+        dataSet.valueTextSize = 12f
+        dataSet.valueTextColor = requireContext().getColor(R.color.text_primary)
+
+        val barData = BarData(dataSet)
+        barData.barWidth = 0.6f
+
+        binding.barChart.data = barData
+        binding.barChart.animateY(800)
+        binding.barChart.invalidate()
     }
 
-    private fun actualizarListaTop(top: List<Pair<String, Int>>) {
-        binding.containerTopProductos.removeAllViews()
-        top.forEachIndexed { index, pair ->
-            val textView = TextView(requireContext()).apply {
-                text = "${index + 1}. ${pair.first} (${pair.second} mov.)"
-                setPadding(0, 8, 0, 8)
-                textSize = 14f
-                setTextColor(requireContext().getColor(com.lingomak.lingomakapp.R.color.text_primary))
+    private fun actualizarTablaTop(top: List<Pair<String, Int>>) {
+        // Mantener el encabezado (índice 0)
+        val count = binding.tableTopProductos.childCount
+        if (count > 1) {
+            binding.tableTopProductos.removeViews(1, count - 1)
+        }
+
+        top.forEach { (nombre, movs) ->
+            val row = TableRow(requireContext()).apply {
+                setPadding(0, 12, 0, 12)
             }
-            binding.containerTopProductos.addView(textView)
+
+            val tvNombre = TextView(requireContext()).apply {
+                text = nombre
+                layoutParams = TableRow.LayoutParams(0, TableRow.LayoutParams.WRAP_CONTENT, 1f)
+                setPadding(8.toPx(), 0, 8.toPx(), 0)
+                setTextColor(requireContext().getColor(R.color.text_primary))
+                textSize = 14f
+            }
+
+            val tvMovs = TextView(requireContext()).apply {
+                text = movs.toString()
+                setPadding(8.toPx(), 0, 8.toPx(), 0)
+                setTextColor(requireContext().getColor(R.color.text_primary))
+                textSize = 14f
+                setTypeface(null, android.graphics.Typeface.BOLD)
+                gravity = android.view.Gravity.END
+            }
+
+            row.addView(tvNombre)
+            row.addView(tvMovs)
+            binding.tableTopProductos.addView(row)
         }
     }
 

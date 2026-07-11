@@ -42,7 +42,9 @@ class MantenimientoFragment : Fragment() {
         configurarEventos()
         configurarFiltros()
         configurarBusqueda()
-        viewModel.listarMantenimientos()
+        
+        val isOperario = requireActivity() is com.lingomak.lingomakapp.ui.dashboard.DashboardOperarioActivity
+        viewModel.listarMantenimientos(isOperario)
 
         return binding.root
     }

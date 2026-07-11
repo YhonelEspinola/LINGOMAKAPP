@@ -4,14 +4,8 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import com.lingomak.lingomakapp.data.local.dao.ContadorDao
-import com.lingomak.lingomakapp.data.local.dao.MaquinariaDao
-import com.lingomak.lingomakapp.data.local.dao.MovimientoDao
-import com.lingomak.lingomakapp.data.local.dao.RepuestoDao
-import com.lingomak.lingomakapp.data.local.entity.ContadorEntity
-import com.lingomak.lingomakapp.data.local.entity.MaquinariaEntity
-import com.lingomak.lingomakapp.data.local.entity.MovimientoEntity
-import com.lingomak.lingomakapp.data.local.entity.RepuestoEntity
+import com.lingomak.lingomakapp.data.local.dao.*
+import com.lingomak.lingomakapp.data.local.entity.*
 
 /**
  * Base de datos principal de la aplicación (Room).
@@ -24,9 +18,10 @@ import com.lingomak.lingomakapp.data.local.entity.RepuestoEntity
           RepuestoEntity::class,
           MovimientoEntity::class,
           ContadorEntity::class,
-          MaquinariaEntity::class
+          MaquinariaEntity::class,
+          MantenimientoEntity::class
       ],
-      version = 9,
+      version = 10,
       exportSchema = false
   )
   abstract class AppDatabase : RoomDatabase() {
@@ -34,6 +29,7 @@ import com.lingomak.lingomakapp.data.local.entity.RepuestoEntity
       abstract fun repuestoDao(): RepuestoDao
       abstract fun movimientoDao(): MovimientoDao
       abstract fun maquinariaDao(): MaquinariaDao
+      abstract fun mantenimientoDao(): MantenimientoDao
       abstract fun contadorDao(): ContadorDao
 
     companion object {

@@ -12,7 +12,6 @@ import com.lingomak.lingomakapp.ui.dashboard.operario.HomeOperarioFragment
 import com.lingomak.lingomakapp.ui.dashboard.perfil.PerfilOperarioFragment
 import com.lingomak.lingomakapp.ui.mantenimiento.MantenimientoFragment
 import com.lingomak.lingomakapp.ui.movimientos.EscaneoQRFragment
-import com.lingomak.lingomakapp.ui.movimientos.MovimientosOpFragment
 import com.lingomak.lingomakapp.ui.operario.OperarioMaquinariaFragment
 import com.lingomak.lingomakapp.ui.repuestos.InventarioOpFragment
 
@@ -55,14 +54,6 @@ class DashboardOperarioActivity : AppCompatActivity() {
                 R.id.nav_op_inventario -> {
                     supportFragmentManager.beginTransaction()
                         .replace(R.id.containerOperario, InventarioOpFragment())
-                        .commit()
-                    binding.drawerLayoutOperario.close()
-                    true
-                }
-
-                R.id.nav_op_movimientos -> {
-                    supportFragmentManager.beginTransaction()
-                        .replace(R.id.containerOperario, MovimientosOpFragment())
                         .commit()
                     binding.drawerLayoutOperario.close()
                     true

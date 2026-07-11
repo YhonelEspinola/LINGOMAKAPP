@@ -66,56 +66,45 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:scrollbars="none"
-                android:layout_marginTop="8dp">
+                android:layout_marginTop="12dp">
 
-                <com.google.android.material.button.MaterialButtonToggleGroup
-                    android:id="@+id/toggleEstadoMaquinaria"
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/chipGroupEstado"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     app:singleSelection="true"
                     app:selectionRequired="true">
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnEstadoTodos"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipEstadoTodos"
+                        style="@style/Widget.MaterialComponents.Chip.Choice"
                         android:layout_width="wrap_content"
-                        android:layout_height="42dp"
+                        android:layout_height="wrap_content"
                         android:text="Todos"
-                        android:textSize="12sp"
-                        android:textStyle="bold"
-                        app:cornerRadius="16dp" />
+                        android:checked="true" />
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnEstadoOperativa"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipEstadoOperativa"
+                        style="@style/Widget.MaterialComponents.Chip.Choice"
                         android:layout_width="wrap_content"
-                        android:layout_height="42dp"
-                        android:text="Operativa"
-                        android:textSize="12sp"
-                        android:textStyle="bold"
-                        app:cornerRadius="16dp" />
+                        android:layout_height="wrap_content"
+                        android:text="Operativa" />
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnEstadoMantenimiento"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipEstadoMantenimiento"
+                        style="@style/Widget.MaterialComponents.Chip.Choice"
                         android:layout_width="wrap_content"
-                        android:layout_height="42dp"
-                        android:text="En mantenimiento"
-                        android:textSize="12sp"
-                        android:textStyle="bold"
-                        app:cornerRadius="16dp" />
+                        android:layout_height="wrap_content"
+                        android:text="En mantenimiento" />
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnEstadoInactiva"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipEstadoInactiva"
+                        style="@style/Widget.MaterialComponents.Chip.Choice"
                         android:layout_width="wrap_content"
-                        android:layout_height="42dp"
-                        android:text="Inactiva"
-                        android:textSize="12sp"
-                        android:textStyle="bold"
-                        app:cornerRadius="16dp" />
+                        android:layout_height="wrap_content"
+                        android:text="Inactiva" />
 
-                </com.google.android.material.button.MaterialButtonToggleGroup>
+                </com.google.android.material.chip.ChipGroup>
 
             </HorizontalScrollView>
 

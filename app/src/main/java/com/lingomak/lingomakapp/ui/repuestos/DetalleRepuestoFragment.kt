@@ -134,6 +134,7 @@ class DetalleRepuestoFragment : Fragment() {
         if (requireActivity() is com.lingomak.lingomakapp.ui.dashboard.DashboardOperarioActivity) {
             binding.btnEditar.visibility = View.GONE
             binding.btnCambiarEstado.visibility = View.GONE
+            binding.btnVerMovimientos.visibility = View.GONE
         }
 
         binding.ivBotonRegresar.setOnClickListener { parentFragmentManager.popBackStack() }

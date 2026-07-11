@@ -127,7 +127,7 @@ class FinalizarMantenimientoFragment : Fragment() {
         mostrarCargando(true)
 
         viewModel.finalizarMantenimiento(
-            uid = uidMantenimiento,
+            uidMantenimiento = uidMantenimiento,
             uidMaquinaria = uidMaquinaria,
             fechaRealizada = fechaRealizada,
             horometroReal = horometroReal,

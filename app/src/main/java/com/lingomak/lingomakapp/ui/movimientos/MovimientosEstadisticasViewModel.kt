@@ -16,8 +16,11 @@ class MovimientosEstadisticasViewModel(application: Application) : AndroidViewMo
     private val repository = MovimientoRepository(application)
     private val repuestoDao = AppDatabase.getInstance(application).repuestoDao()
 
-    private val _periodo = MutableLiveData<String>("SEMANA") // DIA, SEMANA, MES, ANIO
-    val periodo: LiveData<String> get() = _periodo
+    private val _rango = MutableLiveData<Pair<Long, Long>>()
+    val rango: LiveData<Pair<Long, Long>> get() = _rango
+
+    private val _etiquetaRango = MutableLiveData<String>("Últimos 30 días")
+    val etiquetaRango: LiveData<String> get() = _etiquetaRango
 
     private val todosLosMovimientos = repository.obtenerTodos()
     private val todosLosRepuestos = repuestoDao.obtenerTodosObservable()
@@ -26,31 +29,28 @@ class MovimientosEstadisticasViewModel(application: Application) : AndroidViewMo
         fun update() {
             val movimientos = todosLosMovimientos.value ?: emptyList()
             val repuestos = todosLosRepuestos.value ?: emptyList()
-            val p = _periodo.value ?: "SEMANA"
+            val r = _rango.value
             if (movimientos.isEmpty()) return
 
             val repuestosMap = repuestos.associateBy { it.uid }
 
-            val diasFiltro = when (p) {
-                "DIA" -> 1
-                "SEMANA" -> 7
-                "MES" -> 30
-                "ANIO" -> 365
-                else -> 7
+            val enPeriodo = if (r != null) {
+                movimientos.filter { it.fecha != null && it.fecha.time >= r.first && it.fecha.time <= r.second }
+            } else {
+                val cal = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, -30) }
+                movimientos.filter { it.fecha != null && it.fecha.after(cal.time) }
             }
-            val cal = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, -diasFiltro) }
-            val enPeriodo = movimientos.filter { it.fecha != null && it.fecha.after(cal.time) }
 
             val entradas = enPeriodo.filter { it.tipo == "ENTRADA" }.sumOf { it.cantidad }
             val salidas = enPeriodo.filter { it.tipo == "SALIDA" }.sumOf { it.cantidad }
 
             // Promedios reales para las etiquetas
-            val labelResumen = when(p) {
-                "DIA" -> "Consumo total de hoy"
-                "SEMANA" -> String.format(Locale.getDefault(), "Promedio diario: %.1f/día", salidas.toDouble() / 7.0)
-                "MES" -> String.format(Locale.getDefault(), "Promedio semanal: %.1f/sem.", salidas.toDouble() / 4.0)
-                "ANIO" -> String.format(Locale.getDefault(), "Promedio mensual: %.1f/mes", salidas.toDouble() / 12.0)
-                else -> ""
+            val labelResumen = if (r != null) {
+                val diff = r.second - r.first
+                val days = (diff / (1000 * 60 * 60 * 24)).coerceAtLeast(1)
+                String.format(Locale.getDefault(), "Promedio diario: %.1f/día", salidas.toDouble() / days.toDouble())
+            } else {
+                String.format(Locale.getDefault(), "Promedio diario: %.1f/día", salidas.toDouble() / 30.0)
             }
 
             // Producto más usado en el periodo
@@ -95,11 +95,12 @@ class MovimientosEstadisticasViewModel(application: Application) : AndroidViewMo
         }
         addSource(todosLosMovimientos) { update() }
         addSource(todosLosRepuestos) { update() }
-        addSource(_periodo) { update() }
+        addSource(_rango) { update() }
     }
 
-    fun setPeriodo(periodo: String) {
-        _periodo.value = periodo
+    fun setRango(inicio: Long, fin: Long, etiqueta: String) {
+        _rango.value = inicio to fin
+        _etiquetaRango.value = etiqueta
     }
 
     data class EstadisticasData(

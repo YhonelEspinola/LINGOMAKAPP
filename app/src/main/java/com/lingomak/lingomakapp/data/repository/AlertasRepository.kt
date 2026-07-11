@@ -15,13 +15,15 @@ class AlertasRepository(
     private val alertasService = AlertasService(context)
 
     fun listarAlertas(
+        userUid: String? = null,
+        esOperario: Boolean = false,
         onSuccess: (List<AlertaModel>) -> Unit,
         onError: (String) -> Unit
     ) {
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val listaAlertas = alertasService.obtenerAlertas()
+                val listaAlertas = alertasService.obtenerAlertas(userUid, esOperario)
 
                 withContext(Dispatchers.Main) {
                     onSuccess(listaAlertas)

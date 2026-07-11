@@ -1,101 +1,68 @@
 package com.lingomak.lingomakapp.ui.mantenimiento
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.*
+import com.google.firebase.auth.FirebaseAuth
 import com.lingomak.lingomakapp.data.model.MantenimientoModel
 import com.lingomak.lingomakapp.data.repository.MantenimientoRepository
+import kotlinx.coroutines.launch
 
-class MantenimientoViewModel : ViewModel() {
+class MantenimientoViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repository = MantenimientoRepository()
-    private val _listaMantenimiento = MutableLiveData<List<MantenimientoModel>>()
-    val listaMantenimientos: LiveData<List<MantenimientoModel>> get() = _listaMantenimiento
+    private val repository = MantenimientoRepository(application)
+    
+    private val _listaMantenimientosOriginales = MediatorLiveData<List<MantenimientoModel>>()
+    val listaMantenimientos: LiveData<List<MantenimientoModel>> = _listaMantenimientosOriginales
+
     private val _mensajeError = MutableLiveData<String>()
     val mensajeError: LiveData<String> get() = _mensajeError
 
-    fun agregarMantenimiento(
-        mantenimiento: MantenimientoModel,
-        onSuccess: () -> Unit
-    ) {
-        repository.agregarMantenimiento(
-            mantenimiento = mantenimiento,
-            onSuccess = {
-                onSuccess()
-            },
-            onError = { error ->
-                _mensajeError.postValue(error)
-            }
-        )
-    }
+    private val auth = FirebaseAuth.getInstance()
 
-    private var ultimoDocMantenimiento: com.google.firebase.firestore.DocumentSnapshot? = null
-    private var estaCargandoMantenimientos = false
-    private val listaMantenimientosAcumulados = mutableListOf<MantenimientoModel>()
-
-    fun listarMantenimientos(reset: Boolean = false) {
-        if (estaCargandoMantenimientos) return
-        if (reset) {
-            ultimoDocMantenimiento = null
-            listaMantenimientosAcumulados.clear()
+    fun cargarMantenimientos() {
+        val user = auth.currentUser
+        if (user == null) {
+            _mensajeError.value = "Sesión no válida"
+            return
         }
+
+        // Si es operario, solo cargamos los asignados. 
+        // Nota: En un sistema real verificaríamos el rol. 
+        // Por ahora, si llamamos a cargarAsignados, filtramos.
+    }
+
+    fun listarMantenimientos(esOperario: Boolean) {
+        val userUid = auth.currentUser?.uid ?: ""
         
-        estaCargandoMantenimientos = true
-        repository.listarMantenimientosPaginados(
-            ultimoDocumento = ultimoDocMantenimiento,
-            batchSize = 20,
-            onSuccess = { lista, ultimo ->
-                ultimoDocMantenimiento = ultimo
-                listaMantenimientosAcumulados.addAll(lista)
-                _listaMantenimiento.postValue(listaMantenimientosAcumulados)
-                estaCargandoMantenimientos = false
-            },
-            onError = { error ->
-                _mensajeError.postValue(error)
-                estaCargandoMantenimientos = false
-            }
-        )
+        val source = if (esOperario) {
+            repository.obtenerAsignadosObservable(userUid)
+        } else {
+            repository.obtenerTodosObservable()
+        }
+
+        _listaMantenimientosOriginales.addSource(source) {
+            _listaMantenimientosOriginales.value = it
+        }
+
+        viewModelScope.launch {
+            repository.descargarCambiosDeFirestore()
+        }
     }
 
-    fun cargarSiguienteLote() {
-        listarMantenimientos(reset = false)
+    fun agregarMantenimiento(mantenimiento: MantenimientoModel, onSuccess: () -> Unit) {
+        repository.agregarMantenimiento(mantenimiento, onSuccess, { _mensajeError.postValue(it) })
     }
 
-    fun cambiarEstadoMantenimiento(
-        uid: String,
-        nuevoEstado: String,
-        onSuccess: () -> Unit
-    ) {
-        repository.cambiarEstadoMantenimiento(
-            uid = uid,
-            nuevoEstado = nuevoEstado,
-            onSuccess = {
-                onSuccess()
-            },
-            onError = { error ->
-                _mensajeError.postValue(error)
-            }
-        )
-
+    fun cambiarEstadoMantenimiento(uid: String, nuevoEstado: String, onSuccess: () -> Unit) {
+        repository.cambiarEstadoMantenimiento(uid, nuevoEstado, onSuccess, { _mensajeError.postValue(it) })
     }
 
-    fun actualizarMantenimiento(
-        mantenimiento: MantenimientoModel,
-        onSuccess: () -> Unit
-    ) {
-        repository.actualizarMantenimiento(
-            mantenimiento = mantenimiento,
-            onSuccess = {
-                onSuccess()
-            },
-            onError = { error ->
-                _mensajeError.postValue(error)
-            }
-        )
+    fun actualizarMantenimiento(mantenimiento: MantenimientoModel, onSuccess: () -> Unit) {
+        repository.actualizarMantenimiento(mantenimiento, onSuccess, { _mensajeError.postValue(it) })
     }
 
     fun finalizarMantenimiento(
-        uid: String,
+        uidMantenimiento: String,
         uidMaquinaria: String,
         fechaRealizada: String,
         horometroReal: Int,
@@ -104,18 +71,14 @@ class MantenimientoViewModel : ViewModel() {
         onSuccess: () -> Unit
     ) {
         repository.finalizarMantenimiento(
-            uid = uid,
-            uidMaquinaria = uidMaquinaria,
-            fechaRealizada = fechaRealizada,
-            horometroReal = horometroReal,
-            costoReal = costoReal,
-            observacionesFinales = observacionesFinales,
-            onSuccess = {
-                onSuccess()
-            },
-            onError =  { error ->
-            _mensajeError.postValue(error)
-        }
+            uidMantenimiento,
+            uidMaquinaria,
+            fechaRealizada,
+            horometroReal,
+            costoReal,
+            observacionesFinales,
+            onSuccess,
+            { _mensajeError.postValue(it) }
         )
     }
 
@@ -125,12 +88,10 @@ class MantenimientoViewModel : ViewModel() {
         onSuccess: () -> Unit
     ) {
         repository.iniciarMantenimiento(
-            uidMantenimiento = uidMantenimiento,
-            uidMaquinaria = uidMaquinaria,
-            onSuccess = { onSuccess() },
-            onError = { error ->
-                _mensajeError.postValue(error)
-            }
+            uidMantenimiento,
+            uidMaquinaria,
+            onSuccess,
+            { _mensajeError.postValue(it) }
         )
     }
 
@@ -140,49 +101,29 @@ class MantenimientoViewModel : ViewModel() {
         onNoExiste: () -> Unit
     ) {
         repository.validarMantenimientoActivo(
-            uidMaquinaria = uidMaquinaria,
-            onExiste = {
-                onExiste()
-            },
-            onNoExiste = {
-                onNoExiste()
-            },
-            onError = { error ->
-                _mensajeError.postValue(error)
-            }
+            uidMaquinaria,
+            onExiste,
+            onNoExiste,
+            { _mensajeError.postValue(it) }
         )
     }
 
-    fun actualizarMantenimientosVencidos(
-        onSuccess: () -> Unit
-    ) {
-        repository.actualizarMantenimientosVencidos(
-            onSuccess = {
-                onSuccess()
-            },
-            onError = { error ->
-                _mensajeError.postValue(error)
-            }
-        )
+    fun obtenerMantenimientoPorUid(uid: String, onSuccess: (MantenimientoModel) -> Unit) {
+        repository.obtenerMantenimientoPorUid(uid, onSuccess, { _mensajeError.postValue(it) })
     }
 
-    fun obtenerMantenimientoPorUid(
-        uid: String,
-        onSuccess: (MantenimientoModel) -> Unit
-    ) {
-        /*
-         * El ViewModel pide el mantenimiento al Repository.
-         * Si ocurre error, lo enviamos al LiveData de errores.
-         */
-        repository.obtenerMantenimientoPorUid(
-            uid = uid,
-            onSuccess = { mantenimiento ->
-                onSuccess(mantenimiento)
-            },
-            onError = { error ->
-                _mensajeError.postValue(error)
-            }
-        )
-    }
+    private var estaCargandoMas = false
 
+    fun cargarSiguienteLote() {
+        if (estaCargandoMas) return
+        viewModelScope.launch {
+            estaCargandoMas = true
+            val listaActual = listaMantenimientos.value ?: emptyList()
+            if (listaActual.isNotEmpty()) {
+                val ultimaFecha = listaActual.last().fechaProgramada
+                repository.descargarCambiosPaginados(ultimaFecha, 50)
+            }
+            estaCargandoMas = false
+        }
+    }
 }

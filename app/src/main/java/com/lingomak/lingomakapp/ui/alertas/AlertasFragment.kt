@@ -42,7 +42,8 @@ class AlertasFragment : Fragment() {
         observarViewModel()
         solicitarPermisoNotificaciones()
 
-        viewModel.listarAlertas()
+        val isOperario = requireActivity() is com.lingomak.lingomakapp.ui.dashboard.DashboardOperarioActivity
+        viewModel.listarAlertas(isOperario)
 
         return binding.root
     }
@@ -158,7 +159,10 @@ class AlertasFragment : Fragment() {
             "STOCK_CRITICO",
             "STOCK_BAJO",
             "SIN_ROTACION" -> {
+                abrirDetalleRepuestoDesdeAlerta(alerta)
+            }
 
+            "ACTIVIDAD_OPERARIO" -> {
                 abrirDetalleRepuestoDesdeAlerta(alerta)
             }
 

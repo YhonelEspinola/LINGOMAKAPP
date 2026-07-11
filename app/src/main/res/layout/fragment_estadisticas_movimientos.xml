@@ -27,25 +27,35 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
-                android:text="Estadísticas"
-                android:textColor="@color/primary"
+                android:text="Análisis Estadístico"
+                android:textColor="@color/text_primary"
                 android:textSize="22sp"
                 android:textStyle="bold" />
         </RelativeLayout>
 
-        <Spinner
-            android:id="@+id/spinnerPeriodo"
-            android:layout_width="wrap_content"
+        <com.lingomak.lingomakapp.ui.custom.SelectorFechasView
+            android:id="@+id/selectorFechasEstadisticas"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="end"
             android:layout_marginTop="16dp" />
 
-        <!-- Bloque de resumen (movido de Global) -->
+        <TextView
+            android:id="@+id/tvRangoActual"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Periodo seleccionado"
+            android:textAlignment="center"
+            android:textColor="@color/primary"
+            android:textStyle="bold"
+            android:textSize="14sp" />
+
+        <!-- Bloque de resumen -->
         <LinearLayout
             android:id="@+id/layoutResumenGlobal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="20dp"
             android:orientation="horizontal"
             android:weightSum="3">
 
@@ -169,80 +179,76 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:text="Gráfica comparativa"
+            android:layout_marginTop="32dp"
+            android:text="Gráfica de Movimientos"
             android:textColor="@color/text_primary"
-            android:textSize="16sp"
+            android:textSize="17sp"
             android:textStyle="bold" />
 
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
-            android:layout_height="200dp"
+            android:layout_height="260dp"
             android:layout_marginTop="12dp"
-            app:cardCornerRadius="8dp"
+            app:cardCornerRadius="16dp"
             app:cardElevation="2dp"
-            app:strokeColor="#DDDDDD"
+            app:strokeColor="@color/border"
             app:strokeWidth="1dp">
-            <LinearLayout
+
+            <com.github.mikephil.charting.charts.BarChart
+                android:id="@+id/barChart"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:gravity="bottom"
-                android:orientation="horizontal"
-                android:padding="24dp">
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:gravity="center_horizontal|bottom"
-                    android:orientation="vertical">
-                    <View
-                        android:id="@+id/barEntrada"
-                        android:layout_width="40dp"
-                        android:layout_height="0dp"
-                        android:background="@color/success" />
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="Entrada"
-                        android:textSize="12sp" />
-                </LinearLayout>
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:gravity="center_horizontal|bottom"
-                    android:orientation="vertical">
-                    <View
-                        android:id="@+id/barSalida"
-                        android:layout_width="40dp"
-                        android:layout_height="0dp"
-                        android:background="@color/danger" />
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="Salida"
-                        android:textSize="12sp" />
-                </LinearLayout>
-            </LinearLayout>
+                android:padding="16dp" />
+
         </com.google.android.material.card.MaterialCardView>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:text="Productos con mayor movimiento"
+            android:layout_marginTop="32dp"
+            android:text="Top 5 Productos"
             android:textColor="@color/text_primary"
-            android:textSize="16sp"
+            android:textSize="17sp"
             android:textStyle="bold" />
 
-        <LinearLayout
-            android:id="@+id/containerTopProductos"
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:orientation="vertical" />
+            app:cardCornerRadius="16dp"
+            app:cardElevation="2dp"
+            app:strokeColor="@color/border"
+            app:strokeWidth="1dp">
+
+            <TableLayout
+                android:id="@+id/tableTopProductos"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="16dp"
+                android:stretchColumns="0">
+
+                <TableRow
+                    android:background="#F3F4F6"
+                    android:paddingVertical="8dp">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Producto"
+                        android:textStyle="bold"
+                        android:paddingHorizontal="8dp"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Movimientos"
+                        android:textStyle="bold"
+                        android:paddingHorizontal="8dp"
+                        android:gravity="end"/>
+                </TableRow>
+
+                <!-- Filas agregadas dinámicamente -->
+            </TableLayout>
+
+        </com.google.android.material.card.MaterialCardView>
 
         <TextView
             android:id="@+id/tvRecomendacionStock"

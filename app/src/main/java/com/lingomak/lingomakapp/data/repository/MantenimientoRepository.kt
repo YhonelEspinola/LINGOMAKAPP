@@ -1,14 +1,109 @@
 package com.lingomak.lingomakapp.data.repository
 
+import android.content.Context
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.map
 import com.google.firebase.firestore.FirebaseFirestore
+import com.lingomak.lingomakapp.data.local.AppDatabase
+import com.lingomak.lingomakapp.data.local.entity.MantenimientoEntity
 import com.lingomak.lingomakapp.data.model.MantenimientoModel
 import com.lingomak.lingomakapp.utils.DateUtils
+import kotlinx.coroutines.tasks.await
 
-class MantenimientoRepository {
+class MantenimientoRepository(context: Context) {
 
     private val database = FirebaseFirestore.getInstance()
-
     private val coleccionMantenimientos = "mantenimientos"
+    
+    private val maintenanceDao = AppDatabase.getInstance(context).mantenimientoDao()
+
+    fun obtenerTodosObservable(): LiveData<List<MantenimientoModel>> {
+        return maintenanceDao.obtenerTodosObservable().map { entities ->
+            entities.map { it.aModel() }
+        }
+    }
+
+    fun obtenerAsignadosObservable(userUid: String): LiveData<List<MantenimientoModel>> {
+        return maintenanceDao.obtenerAsignadosObservable(userUid).map { entities ->
+            entities.map { it.aModel() }
+        }
+    }
+
+    suspend fun descargarCambiosDeFirestore() {
+        try {
+            val snapshot = database.collection(coleccionMantenimientos).get().await()
+            val remotos = snapshot.toObjects(MantenimientoModel::class.java)
+            
+            if (remotos.isNotEmpty()) {
+                val entities = remotos.map { it.aEntity(estadoSync = "SINCRONIZADO") }
+                maintenanceDao.insertarLista(entities)
+            }
+        } catch (e: Exception) {
+            // Error de red
+        }
+    }
+
+    suspend fun descargarCambiosPaginados(ultimaFecha: String? = null, batchSize: Long = 50) {
+        try {
+            var query = database.collection(coleccionMantenimientos)
+                .orderBy("fechaProgramada", com.google.firebase.firestore.Query.Direction.DESCENDING)
+                .limit(batchSize)
+
+            if (ultimaFecha != null) {
+                query = query.startAfter(ultimaFecha)
+            }
+
+            val snapshot = query.get().await()
+            val remotos = snapshot.toObjects(MantenimientoModel::class.java)
+
+            if (remotos.isNotEmpty()) {
+                val entities = remotos.map { it.aEntity(estadoSync = "SINCRONIZADO") }
+                maintenanceDao.insertarLista(entities)
+            }
+        } catch (e: Exception) {
+            // Manejar error
+        }
+    }
+
+    fun actualizarMantenimientosVencidos(
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        database.collection(coleccionMantenimientos)
+            .whereEqualTo("estado", "PENDIENTE")
+            .get()
+            .addOnSuccessListener { result ->
+                val batch = database.batch()
+                var huboCambios = false
+
+                for (document in result) {
+                    val mantenimiento = document.toObject(MantenimientoModel::class.java)
+                    if (DateUtils.fechaYaPaso(mantenimiento.fechaProgramada)) {
+                        batch.update(
+                            document.reference,
+                            mapOf(
+                                "estado" to "VENCIDO",
+                                "fechaActualizacion" to obtenerFechaActual()
+                            )
+                        )
+                        huboCambios = true
+                    }
+                }
+
+                if (huboCambios) {
+                    batch.commit()
+                        .addOnSuccessListener { onSuccess() }
+                        .addOnFailureListener { e ->
+                            onError(e.message ?: "Error al actualizar mantenimientos vencidos")
+                        }
+                } else {
+                    onSuccess()
+                }
+            }
+            .addOnFailureListener { e ->
+                onError(e.message ?: "Error al consultar mantenimientos")
+            }
+    }
 
     fun agregarMantenimiento(
         mantenimiento: MantenimientoModel,
@@ -24,56 +119,6 @@ class MantenimientoRepository {
             .addOnFailureListener { exception ->
                 onError(exception.message ?: "Error al guardar mantenimiento")
             }
-    }
-
-    fun listarMantenimientosPaginados(
-        ultimoDocumento: com.google.firebase.firestore.DocumentSnapshot? = null,
-        batchSize: Long = 20,
-        onSuccess: (List<MantenimientoModel>, com.google.firebase.firestore.DocumentSnapshot?) -> Unit,
-        onError: (String) -> Unit
-    ) {
-        var query = database.collection(coleccionMantenimientos)
-            .orderBy("fechaProgramada", com.google.firebase.firestore.Query.Direction.DESCENDING)
-            .limit(batchSize)
-
-        if (ultimoDocumento != null) {
-            query = query.startAfter(ultimoDocumento)
-        }
-
-        query.get()
-            .addOnSuccessListener { result ->
-                val lista = result.documents.mapNotNull { it.toObject(MantenimientoModel::class.java) }
-                val ultimo = if (result.documents.isNotEmpty()) result.documents.last() else null
-                onSuccess(lista, ultimo)
-            }
-            .addOnFailureListener {
-                onError(it.message ?: "Error al paginar mantenimientos")
-            }
-    }
-
-    fun listarMantenimientos(
-        onSuccess: (List<MantenimientoModel>) -> Unit,
-        onError: (String) -> Unit
-    ){
-        database.collection(coleccionMantenimientos)
-            .addSnapshotListener { snapshots, error ->
-
-                if(error != null){
-                    onError(error.message ?: "Error al listar mantenimientos")
-                    return@addSnapshotListener
-                }
-                if(snapshots == null){
-                    onSuccess(emptyList())
-                    return@addSnapshotListener
-                }
-
-                val lista = snapshots.documents.mapNotNull { document ->
-                    document.toObject(MantenimientoModel::class.java)
-                }
-                onSuccess(lista)
-
-            }
-
     }
 
     fun cambiarEstadoMantenimiento(
@@ -165,11 +210,8 @@ class MantenimientoRepository {
             maquinariaRef,
             mapOf(
                 "estado" to "OPERATIVA",
-
                 "horometroUltimoMantenimiento" to horometroReal,
-
                 "horometroActual" to horometroReal,
-
                 "fechaActualizacion" to obtenerFechaActual()
             )
         )
@@ -249,83 +291,16 @@ class MantenimientoRepository {
             }
     }
 
-    fun actualizarMantenimientosVencidos(
-        onSuccess: () -> Unit,
-        onError: (String) -> Unit
-    ) {
-
-
-        database.collection(coleccionMantenimientos)
-            .whereEqualTo("estado", "PENDIENTE")
-            .get()
-            .addOnSuccessListener { result ->
-
-                val batch = database.batch()
-
-                var hayCambios = false
-
-                result.documents.forEach { document ->
-
-                    val mantenimiento =
-                        document.toObject(MantenimientoModel::class.java)
-
-                    if (
-                        mantenimiento != null &&
-                        DateUtils.fechaYaPaso(mantenimiento.fechaProgramada)
-                    ) {
-                        hayCambios = true
-
-                        batch.update(
-                            document.reference,
-                            mapOf(
-                                "estado" to "VENCIDO",
-                                "fechaActualizacion" to DateUtils.obtenerFechaActual()
-                            )
-                        )
-                    }
-                }
-
-                if (hayCambios) {
-                    batch.commit()
-                        .addOnSuccessListener {
-                            onSuccess()
-                        }
-                        .addOnFailureListener { exception ->
-                            onError(
-                                exception.message
-                                    ?: "Error al actualizar mantenimientos vencidos"
-                            )
-                        }
-                } else {
-                    onSuccess()
-                }
-            }
-            .addOnFailureListener { exception ->
-                onError(
-                    exception.message
-                        ?: "Error al consultar mantenimientos pendientes"
-                )
-            }
-    }
-
     fun obtenerMantenimientoPorUid(
         uid: String,
         onSuccess: (MantenimientoModel) -> Unit,
         onError: (String) -> Unit
     ) {
-        /*
-         * Buscamos un mantenimiento específico por su UID.
-         * Esto nos servirá cuando el usuario presione
-         * "Tomar acción" desde una alerta.
-         */
         database.collection(coleccionMantenimientos)
             .document(uid)
             .get()
             .addOnSuccessListener { document ->
-
-                val mantenimiento =
-                    document.toObject(MantenimientoModel::class.java)
-
+                val mantenimiento = document.toObject(MantenimientoModel::class.java)
                 if (mantenimiento != null) {
                     onSuccess(mantenimiento)
                 } else {
@@ -333,10 +308,64 @@ class MantenimientoRepository {
                 }
             }
             .addOnFailureListener { exception ->
-                onError(
-                    exception.message ?: "Error al obtener mantenimiento"
-                )
+                onError(exception.message ?: "Error al obtener mantenimiento")
             }
     }
 
+    private fun MantenimientoModel.aEntity(estadoSync: String): MantenimientoEntity {
+        return MantenimientoEntity(
+            uid = uid,
+            codigoMantenimiento = codigoMantenimiento,
+            uidMaquinaria = uidMaquinaria,
+            codigoMaquinaria = codigoMaquinaria,
+            nombreMaquinaria = nombreMaquinaria,
+            tipoMaquinaria = tipoMaquinaria,
+            tipoMantenimiento = tipoMantenimiento,
+            descripcion = descripcion,
+            fechaProgramada = fechaProgramada,
+            fechaRealizada = fechaRealizada,
+            estado = estado,
+            responsable = responsable,
+            responsableUid = responsableUid,
+            observaciones = observaciones,
+            costoEstimado = costoEstimado,
+            costoReal = costoReal,
+            horometroProgramado = horometroProgramado,
+            horometroReal = horometroReal,
+            fechaRegistro = fechaRegistro,
+            fechaActualizacion = fechaActualizacion,
+            registradoPor = registradoPor,
+            actualizadoPor = actualizadoPor,
+            prioridad = prioridad,
+            estadoSync = estadoSync
+        )
+    }
+
+    private fun MantenimientoEntity.aModel(): MantenimientoModel {
+        return MantenimientoModel(
+            uid = uid,
+            codigoMantenimiento = codigoMantenimiento,
+            uidMaquinaria = uidMaquinaria,
+            codigoMaquinaria = codigoMaquinaria,
+            nombreMaquinaria = nombreMaquinaria,
+            tipoMaquinaria = tipoMaquinaria,
+            tipoMantenimiento = tipoMantenimiento,
+            descripcion = descripcion,
+            fechaProgramada = fechaProgramada,
+            fechaRealizada = fechaRealizada,
+            estado = estado,
+            responsable = responsable,
+            responsableUid = responsableUid,
+            observaciones = observaciones,
+            costoEstimado = costoEstimado,
+            costoReal = costoReal,
+            horometroProgramado = horometroProgramado,
+            horometroReal = horometroReal,
+            fechaRegistro = fechaRegistro,
+            fechaActualizacion = fechaActualizacion,
+            registradoPor = registradoPor,
+            actualizadoPor = actualizadoPor,
+            prioridad = prioridad
+        )
+    }
 }

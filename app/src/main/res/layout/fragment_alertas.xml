@@ -20,58 +20,48 @@
             app:cardCornerRadius="16dp"
             app:cardElevation="2dp"
             app:strokeWidth="1dp"
-            app:strokeColor="#BFDBFE"
-            app:cardBackgroundColor="#EFF6FF">
+            app:strokeColor="@color/border"
+            app:cardBackgroundColor="@color/white">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:padding="16dp">
+                android:padding="20dp">
 
-                <TextView
-                    android:layout_width="42dp"
-                    android:layout_height="42dp"
-                    android:gravity="center"
-                    android:text="ℹ"
-                    android:textColor="@color/primary"
-                    android:textSize="24sp"
-                    android:textStyle="bold" />
+                <ImageView
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:src="@drawable/ic_notification"
+                    app:tint="@color/primary"
+                    android:padding="8dp"
+                    android:background="@drawable/bg_circle_primary_light" />
 
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
+                    android:layout_marginStart="16dp"
                     android:layout_weight="1"
                     android:orientation="vertical">
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Sistema de alertas"
-                        android:textAlignment="center"
-                        android:textColor="@color/primary"
-                        android:textSize="17sp"
+                        android:text="Sistema de Alertas"
+                        android:textColor="@color/text_primary"
+                        android:textSize="20sp"
                         android:textStyle="bold" />
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text="Monitorización"
-                        android:textAlignment="center"
+                        android:layout_marginTop="2dp"
+                        android:text="Monitorización en tiempo real"
                         android:textColor="@color/text_secondary"
-                        android:textSize="13sp" />
+                        android:textSize="14sp" />
 
                 </LinearLayout>
-
-                <TextView
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:gravity="center"
-                    android:text="🔔"
-                    android:textSize="30sp" />
 
             </LinearLayout>
 
@@ -80,43 +70,34 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
+            android:layout_marginTop="20dp"
             android:orientation="horizontal"
             android:weightSum="3">
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="0dp"
-                android:layout_height="145dp"
+                android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:layout_marginEnd="6dp"
+                android:layout_marginEnd="8dp"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="3dp"
-                app:strokeColor="#FECACA"
+                app:strokeColor="@color/border"
                 app:strokeWidth="1dp"
-                app:cardBackgroundColor="@android:color/white">
+                app:cardBackgroundColor="@color/white">
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_height="wrap_content"
                     android:gravity="center"
                     android:orientation="vertical"
-                    android:padding="8dp">
-
-                    <TextView
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:gravity="center"
-                        android:text="🚨"
-                        android:textSize="26sp"
-                        android:background="#FEE2E2" />
+                    android:padding="16dp">
 
                     <TextView
                         android:id="@+id/tvAlertasCriticas"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp"
                         android:text="0"
-                        android:textColor="@android:color/holo_red_dark"
+                        android:textColor="@color/danger"
                         android:textSize="28sp"
                         android:textStyle="bold" />
 
@@ -124,9 +105,10 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Críticas"
-                        android:textColor="@color/text_primary"
+                        android:textColor="@color/text_secondary"
                         android:textSize="12sp"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"
+                        android:textAllCaps="true" />
 
                 </LinearLayout>
 
@@ -134,47 +116,39 @@
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="0dp"
-                android:layout_height="145dp"
+                android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:layout_marginHorizontal="6dp"
+                android:layout_marginHorizontal="4dp"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="3dp"
-                app:strokeColor="#FED7AA"
+                app:strokeColor="@color/border"
                 app:strokeWidth="1dp"
-                app:cardBackgroundColor="@android:color/white">
+                app:cardBackgroundColor="@color/white">
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_height="wrap_content"
                     android:gravity="center"
                     android:orientation="vertical"
-                    android:padding="8dp">
-
-                    <TextView
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:gravity="center"
-                        android:text="⏳"
-                        android:textSize="26sp"
-                        android:background="#FFEDD5" />
+                    android:padding="16dp">
 
                     <TextView
                         android:id="@+id/tvAlertasAdvertencias"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp"
                         android:text="0"
-                        android:textColor="@android:color/holo_orange_dark"
+                        android:textColor="@color/warning"
                         android:textSize="28sp"
                         android:textStyle="bold" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Advertencias"
-                        android:textColor="@color/text_primary"
+                        android:text="Avisos"
+                        android:textColor="@color/text_secondary"
                         android:textSize="12sp"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"
+                        android:textAllCaps="true" />
 
                 </LinearLayout>
 
@@ -182,35 +156,26 @@
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="0dp"
-                android:layout_height="145dp"
+                android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:layout_marginStart="6dp"
+                android:layout_marginStart="8dp"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="3dp"
-                app:strokeColor="#BFDBFE"
+                app:strokeColor="@color/border"
                 app:strokeWidth="1dp"
-                app:cardBackgroundColor="@android:color/white">
+                app:cardBackgroundColor="@color/white">
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_height="wrap_content"
                     android:gravity="center"
                     android:orientation="vertical"
-                    android:padding="8dp">
-
-                    <TextView
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:gravity="center"
-                        android:text="📋"
-                        android:textSize="26sp"
-                        android:background="#DBEAFE" />
+                    android:padding="16dp">
 
                     <TextView
                         android:id="@+id/tvAlertasTotal"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp"
                         android:text="0"
                         android:textColor="@color/primary"
                         android:textSize="28sp"
@@ -220,9 +185,10 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Total"
-                        android:textColor="@color/text_primary"
+                        android:textColor="@color/text_secondary"
                         android:textSize="12sp"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"
+                        android:textAllCaps="true" />
 
                 </LinearLayout>
 
@@ -230,56 +196,33 @@
 
         </LinearLayout>
 
-        <com.google.android.material.card.MaterialCardView
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="28dp"
+            android:layout_marginBottom="12dp"
+            android:text="HISTORIAL DE ALERTAS"
+            android:textColor="@color/text_primary"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:layout_gravity="center_horizontal"
+            android:letterSpacing="0.1" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvAlertas"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            app:cardCornerRadius="18dp"
-            app:cardElevation="3dp"
-            app:strokeColor="#E5E7EB"
-            app:strokeWidth="1dp"
-            app:cardBackgroundColor="@android:color/white">
+            android:nestedScrollingEnabled="false" />
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="56dp"
-                    android:gravity="center_vertical"
-                    android:paddingHorizontal="16dp"
-                    android:text="☷  Todas las alertas"
-                    android:textColor="@color/text_primary"
-                    android:textSize="17sp"
-                    android:textStyle="bold" />
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:background="#E5E7EB" />
-
-                <TextView
-                    android:id="@+id/tvSinAlertas"
-                    android:layout_width="match_parent"
-                    android:layout_height="220dp"
-                    android:gravity="center"
-                    android:text="✅ Todo está funcionando correctamente\n\nNo hay alertas por el momento."
-                    android:textColor="@color/text_secondary"
-                    android:textSize="15sp"
-                    android:visibility="gone" />
-
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/rvAlertas"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:nestedScrollingEnabled="false"
-                    android:paddingVertical="8dp" />
-
-            </LinearLayout>
-
-        </com.google.android.material.card.MaterialCardView>
+        <TextView
+            android:id="@+id/tvSinAlertas"
+            android:layout_width="match_parent"
+            android:layout_height="220dp"
+            android:gravity="center"
+            android:text="✅ Todo está funcionando correctamente\n\nNo hay alertas por el momento."
+            android:textColor="@color/text_secondary"
+            android:textSize="15sp"
+            android:visibility="gone" />
 
     </LinearLayout>
 

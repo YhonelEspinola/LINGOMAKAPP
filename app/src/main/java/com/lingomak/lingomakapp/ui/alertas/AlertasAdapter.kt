@@ -41,6 +41,8 @@ class AlertasAdapter(
             }
             aplicarEstilos(alerta.tipo)
 
+            binding.btnTomarAccionAlerta.text = if (alerta.tipo == "ACTIVIDAD_OPERARIO") "Ver más" else "Tomar acción"
+
             binding.btnTomarAccionAlerta.setOnClickListener {
                 onTomarAccionClick(alerta)
             }
@@ -49,6 +51,12 @@ class AlertasAdapter(
         private fun aplicarEstilos(tipo: String) {
 
             when (tipo) {
+
+                "ACTIVIDAD_OPERARIO" -> {
+                    binding.tvIconoAlerta.text = "👤"
+                    binding.tvTituloAlerta.setTextColor(Color.rgb(107, 114, 128))
+                    binding.tvPrioridadAlerta.setTextColor(Color.rgb(107, 114, 128))
+                }
 
                 "VENCIDO" -> {
                     binding.tvIconoAlerta.text = "🚨"

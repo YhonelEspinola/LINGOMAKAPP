@@ -12,24 +12,34 @@ class UserRepository {
     private val functions = FirebaseFunctions.getInstance()
 
     fun listarUsuarios(onSuccess:(List<UserModel>) -> Unit, onError:(String) -> Unit){
-
         dataBase.collection(Constants.USUARIOS)
             .addSnapshotListener { snapshots, error ->
                 if(error != null) {
                     onError(error.message ?: "Error al listar usuarios")
                     return@addSnapshotListener
                 }
-
                 if (snapshots == null){
                     onSuccess(emptyList())
                     return@addSnapshotListener
                 }
-
                 val listaUsuarios = snapshots.documents.mapNotNull { document ->
                     document.toObject(UserModel::class.java)
                 }
                 onSuccess(listaUsuarios)
+            }
+    }
 
+    fun listarOperarios(onSuccess: (List<UserModel>) -> Unit, onError: (String) -> Unit) {
+        dataBase.collection(Constants.USUARIOS)
+            .whereEqualTo("rol", "OPERARIO")
+            .whereEqualTo("estado", "ACTIVO")
+            .get()
+            .addOnSuccessListener { result ->
+                val lista = result.documents.mapNotNull { it.toObject(UserModel::class.java) }
+                onSuccess(lista)
+            }
+            .addOnFailureListener {
+                onError(it.message ?: "Error al listar operarios")
             }
     }
 
