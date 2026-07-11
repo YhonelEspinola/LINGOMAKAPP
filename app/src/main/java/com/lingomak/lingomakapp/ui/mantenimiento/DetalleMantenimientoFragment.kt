@@ -82,6 +82,9 @@ class DetalleMantenimientoFragment : Fragment() {
         binding.tvResponsableDetalle.text = responsable
         binding.tvHorometroDetalle.text = "$horometroProgramado horas"
         binding.tvEstadoDetalle.text = estadoActual
+        
+        aplicarColorEstado(estadoActual)
+
         binding.tvCodigoMaquinariaDetalle.text = codigoMaquinaria
         binding.tvTipoMaquinariaDetalle.text = tipoMaquinaria
         binding.tvPrioridadDetalle.text = prioridad
@@ -142,6 +145,7 @@ class DetalleMantenimientoFragment : Fragment() {
                     onSuccess = {
                         estadoActual = "EN_PROCESO"
                         binding.tvEstadoDetalle.text = "EN_PROCESO"
+                        aplicarColorEstado("EN_PROCESO")
                         actualizarAccionesPorEstado()
                         Toast.makeText(
                             requireContext(),
@@ -197,6 +201,18 @@ class DetalleMantenimientoFragment : Fragment() {
             .replace(containerId, fragment)
             .addToBackStack(null)
             .commit()
+    }
+
+    private fun aplicarColorEstado(estado: String) {
+        val color = when (estado) {
+            "PENDIENTE" -> R.color.warning
+            "EN_PROCESO" -> R.color.primary
+            "FINALIZADO" -> R.color.success
+            "VENCIDO" -> R.color.danger
+            "CANCELADO" -> R.color.text_secondary
+            else -> R.color.text_primary
+        }
+        binding.tvEstadoDetalle.setTextColor(requireContext().getColor(color))
     }
 
     private fun actualizarAccionesPorEstado() {

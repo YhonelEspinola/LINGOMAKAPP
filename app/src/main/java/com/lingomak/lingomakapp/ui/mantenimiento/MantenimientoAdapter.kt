@@ -149,29 +149,18 @@ class MantenimientoAdapter(
         }
 
         private fun aplicarColorEstado(estado: String) {
-
-            when (estado) {
-
-                "PENDIENTE" -> {
-                    binding.tvEstadoMantenimiento.setTextColor(Color.rgb(180, 83, 9))
-                }
-
-                "EN_PROCESO" -> {
-                    binding.tvEstadoMantenimiento.text = "EN PROCESO"
-                    binding.tvEstadoMantenimiento.setTextColor(Color.rgb(37, 99, 235))
-                }
-
-                "FINALIZADO" -> {
-                    binding.tvEstadoMantenimiento.setTextColor(Color.rgb(22, 101, 52))
-                }
-
-                "VENCIDO" -> {
-                    binding.tvEstadoMantenimiento.setTextColor(Color.rgb(185, 28, 28))
-                }
-
-                else -> {
-                    binding.tvEstadoMantenimiento.setTextColor(Color.rgb(55, 65, 81))
-                }
+            val context = binding.root.context
+            val color = when (estado) {
+                "PENDIENTE" -> R.color.warning
+                "EN_PROCESO" -> R.color.primary
+                "FINALIZADO" -> R.color.success
+                "VENCIDO" -> R.color.danger
+                "CANCELADO" -> R.color.text_secondary
+                else -> R.color.text_primary
+            }
+            binding.tvEstadoMantenimiento.setTextColor(context.getColor(color))
+            if (estado == "EN_PROCESO") {
+                binding.tvEstadoMantenimiento.text = "EN PROCESO"
             }
         }
     }
