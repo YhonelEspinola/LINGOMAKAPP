@@ -12,6 +12,7 @@ import com.lingomak.lingomakapp.databinding.ItemMaquinariaBinding
 
 class MaquinariaAdapter(
     private var listaMaquinarias: List<MaquinariaModel>,
+    private val isOperario: Boolean = false,
     private val onMaquinariaClick: (MaquinariaModel) -> Unit,
     private val onEditarClick: (MaquinariaModel) -> Unit,
     private val onCambiarEstadoClick: (MaquinariaModel) -> Unit
@@ -87,8 +88,11 @@ class MaquinariaAdapter(
             val popupMemu = PopupMenu(binding.root.context,binding.btnOpcionesMaquinaria)
 
             popupMemu.menu.add("Ver detalle")
-            popupMemu.menu.add("Editar")
-            popupMemu.menu.add("Cambiar estado")
+            
+            if (!isOperario) {
+                popupMemu.menu.add("Editar")
+                popupMemu.menu.add("Cambiar estado")
+            }
 
             popupMemu.setOnMenuItemClickListener { item ->
                 when (item.title.toString()){

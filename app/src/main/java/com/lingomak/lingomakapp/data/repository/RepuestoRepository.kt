@@ -246,9 +246,32 @@ class RepuestoRepository(context: Context) {
     }
 
     /**
-     * Trae todos los repuestos de Firestore y los mezcla en Room,
-     * respetando last-write-wins frente a cualquier cambio local
-     * pendiente. Se llama periódicamente / al recuperar conexión.
+     * Descarga repuestos desde Firestore de forma paginada.
+     */
+    suspend fun descargarCambiosPaginados(ultimoNombre: String? = null, batchSize: Long = 50) {
+        try {
+            var query = repuestosCollection
+                .orderBy("nombre", com.google.firebase.firestore.Query.Direction.ASCENDING)
+                .limit(batchSize)
+
+            if (ultimoNombre != null) {
+                query = query.startAfter(ultimoNombre)
+            }
+
+            val snapshot = query.get().await()
+            val remotos = snapshot.toObjects(RepuestoModel::class.java)
+
+            if (remotos.isNotEmpty()) {
+                val entities = remotos.map { it.aEntity(estadoSync = "SINCRONIZADO", timestampLocal = System.currentTimeMillis()) }
+                repuestoDao.insertarOActualizarLista(entities)
+            }
+        } catch (e: Exception) {
+            // Error de red, mantiene datos locales
+        }
+    }
+
+    /**
+     * Trae todos los repuestos de Firestore (Legacy - se recomienda usar paginado).
      */
     suspend fun descargarCambiosDeFirestore() {
         val snapshot = repuestosCollection.get().await()

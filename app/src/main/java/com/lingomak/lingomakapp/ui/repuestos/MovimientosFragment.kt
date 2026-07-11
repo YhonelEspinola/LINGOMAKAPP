@@ -58,6 +58,17 @@ class MovimientosFragment : Fragment() {
         binding.rvMovimientos.layoutManager = LinearLayoutManager(requireContext())
         binding.rvMovimientos.adapter = adapter
 
+        // Paginación del historial por repuesto
+        binding.rvMovimientos.addOnScrollListener(object : androidx.recyclerview.widget.RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: androidx.recyclerview.widget.RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+                val layoutManager = recyclerView.layoutManager as LinearLayoutManager
+                if ((layoutManager.childCount + layoutManager.findFirstVisibleItemPosition()) >= layoutManager.itemCount) {
+                    viewModel.cargarSiguienteLote()
+                }
+            }
+        })
+
         binding.selectorFechas.onRangoSeleccionado = { inicio, fin, etiqueta ->
             viewModel.setRangoFechas(inicio, fin)
             binding.tvTituloRepuesto.text = etiqueta

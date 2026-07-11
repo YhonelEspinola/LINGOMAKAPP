@@ -23,6 +23,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.bumptech.glide.Glide
+import com.lingomak.lingomakapp.utils.ImageOptimizer
 import com.lingomak.lingomakapp.R
 import com.lingomak.lingomakapp.data.model.RepuestoModel
 import com.lingomak.lingomakapp.databinding.FragmentDetalleRepuestoBinding
@@ -94,7 +95,15 @@ class DetalleRepuestoFragment : Fragment() {
         binding.tvEstado.setTextColor(requireContext().getColor(colorEstado))
 
         if (repuesto.imagenUrl.isNotEmpty()) {
-            Glide.with(this).load(repuesto.imagenUrl).placeholder(android.R.drawable.ic_menu_gallery).error(android.R.drawable.ic_menu_gallery).into(binding.ivImagenRepuesto)
+            val optimizedUrl = ImageOptimizer.getOptimizedUrl(repuesto.imagenUrl, "1024x1024")
+            Glide.with(this)
+                .load(optimizedUrl)
+                // Cargamos la original como miniatura para que aparezca INSTANTÁNEAMENTE 
+                // mientras se descarga la de 1024px
+                .thumbnail(Glide.with(this).load(repuesto.imagenUrl).override(300))
+                .error(Glide.with(this).load(repuesto.imagenUrl))
+                .placeholder(android.R.drawable.ic_menu_gallery)
+                .into(binding.ivImagenRepuesto)
         } else {
             binding.ivImagenRepuesto.setImageResource(android.R.drawable.ic_menu_gallery)
         }
@@ -121,6 +130,12 @@ class DetalleRepuestoFragment : Fragment() {
     }
 
     private fun configurarEventos() {
+        // Ocultar botones de edición para Operadores
+        if (requireActivity() is com.lingomak.lingomakapp.ui.dashboard.DashboardOperarioActivity) {
+            binding.btnEditar.visibility = View.GONE
+            binding.btnCambiarEstado.visibility = View.GONE
+        }
+
         binding.ivBotonRegresar.setOnClickListener { parentFragmentManager.popBackStack() }
         
         binding.btnImprimirQR.setOnClickListener {

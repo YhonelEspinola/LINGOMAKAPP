@@ -9,6 +9,7 @@ import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import com.lingomak.lingomakapp.R
 import com.lingomak.lingomakapp.data.model.MantenimientoModel
 import com.lingomak.lingomakapp.databinding.FragmentEditarMantenimientoBinding
 import java.text.SimpleDateFormat
@@ -271,10 +272,13 @@ class EditarMantenimientoFragment : Fragment() {
                     Toast.LENGTH_SHORT
                 ).show()
 
-                requireActivity().supportFragmentManager
+                val containerId = if (requireActivity() is com.lingomak.lingomakapp.ui.dashboard.DashboardAdminActivity) 
+                    R.id.fragmentContainerAdmin else R.id.containerOperario
+
+                parentFragmentManager
                     .beginTransaction()
                     .replace(
-                        com.lingomak.lingomakapp.R.id.fragmentContainerAdmin,
+                        containerId,
                         MantenimientoFragment()
                     )
                     .commit()

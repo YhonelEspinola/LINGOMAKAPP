@@ -48,10 +48,11 @@ class MantenimientoFragment : Fragment() {
     }
 
     private fun configurarRecyclerView() {
+        val isOperario = requireActivity() is com.lingomak.lingomakapp.ui.dashboard.DashboardOperarioActivity
 
         adapter = MantenimientoAdapter(
             listaMantenimientos = emptyList(),
-
+            isOperario = isOperario,
             onMantenimientoClick = { mantenimiento ->
                 abrirDetalleMantenimiento(mantenimiento)
             },
@@ -75,6 +76,14 @@ class MantenimientoFragment : Fragment() {
             LinearLayoutManager(requireContext())
 
         binding.rvMantenimientos.adapter = adapter
+
+        // Scroll Infinito para Mantenimientos
+        binding.scrollMantenimiento.setOnScrollChangeListener(androidx.core.widget.NestedScrollView.OnScrollChangeListener { v, _, scrollY, _, _ ->
+            // Como es un NestedScrollView con un RecyclerView adentro, detectamos el final del scroll
+            if (scrollY == v.getChildAt(0).measuredHeight - v.measuredHeight) {
+                viewModel.cargarSiguienteLote()
+            }
+        })
     }
 
     private fun observarViewModel(){
@@ -112,23 +121,32 @@ class MantenimientoFragment : Fragment() {
 
         fragment.arguments = bundle
 
-        requireActivity().supportFragmentManager
+        val containerId = if (requireActivity() is com.lingomak.lingomakapp.ui.dashboard.DashboardAdminActivity) 
+            R.id.fragmentContainerAdmin else R.id.containerOperario
+
+        parentFragmentManager
             .beginTransaction()
-            .replace(R.id.fragmentContainerAdmin, fragment)
+            .replace(containerId, fragment)
             .addToBackStack(null)
             .commit()
 
     }
     private fun configurarEventos() {
+        if (requireActivity() is com.lingomak.lingomakapp.ui.dashboard.DashboardOperarioActivity) {
+            binding.fabAgregarMantenimiento.visibility = View.GONE
+        }
 
         binding.fabAgregarMantenimiento.setOnClickListener {
 
             val fragment = ProgramarMantenimientoFragment()
 
-            requireActivity().supportFragmentManager
+            val containerId = if (requireActivity() is com.lingomak.lingomakapp.ui.dashboard.DashboardAdminActivity) 
+                R.id.fragmentContainerAdmin else R.id.containerOperario
+
+            parentFragmentManager
                 .beginTransaction()
                 .replace(
-                    R.id.fragmentContainerAdmin,
+                    containerId,
                     fragment
                 )
                 .addToBackStack(null)
@@ -329,10 +347,13 @@ class MantenimientoFragment : Fragment() {
 
         fragment.arguments = bundle
 
-        requireActivity().supportFragmentManager
+        val containerId = if (requireActivity() is com.lingomak.lingomakapp.ui.dashboard.DashboardAdminActivity) 
+            R.id.fragmentContainerAdmin else R.id.containerOperario
+
+        parentFragmentManager
             .beginTransaction()
             .replace(
-                R.id.fragmentContainerAdmin,
+                containerId,
                 fragment
             )
             .addToBackStack(null)
@@ -395,9 +416,13 @@ class MantenimientoFragment : Fragment() {
         }
 
         fragment.arguments = bundle
-        requireActivity().supportFragmentManager
+
+        val containerId = if (requireActivity() is com.lingomak.lingomakapp.ui.dashboard.DashboardAdminActivity) 
+            R.id.fragmentContainerAdmin else R.id.containerOperario
+
+        parentFragmentManager
             .beginTransaction()
-            .replace(R.id.fragmentContainerAdmin, fragment)
+            .replace(containerId, fragment)
             .addToBackStack(null)
             .commit()
 

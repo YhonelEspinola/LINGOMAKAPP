@@ -11,12 +11,12 @@ import com.lingomak.lingomakapp.databinding.ItemRepuestoBinding
 
 import com.lingomak.lingomakapp.utils.ImageOptimizer
 
-class RepuestosAdapter(
+class RepuestosOpAdapter(
     private var listaRepuestos: List<RepuestoModel>,
     private val onItemClick: (RepuestoModel) -> Unit
-) : RecyclerView.Adapter<RepuestosAdapter.RepuestoViewHolder>() {
+) : RecyclerView.Adapter<RepuestosOpAdapter.RepuestoOpViewHolder>() {
 
-    inner class RepuestoViewHolder(private val binding: ItemRepuestoBinding) :
+    inner class RepuestoOpViewHolder(private val binding: ItemRepuestoBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
         fun bind(repuesto: RepuestoModel) {
@@ -25,7 +25,6 @@ class RepuestosAdapter(
             binding.tvStockActual.text = repuesto.stockActual.toString()
             binding.tvEstado.text = repuesto.estado
 
-            // Cargar imagen optimizada (thumbnail)
             if (repuesto.imagenUrl.isNotEmpty()) {
                 val optimizedUrl = ImageOptimizer.getOptimizedUrl(repuesto.imagenUrl, "512x512")
                 Glide.with(binding.root.context)
@@ -38,7 +37,6 @@ class RepuestosAdapter(
                 binding.ivRepuesto.setImageResource(android.R.drawable.ic_menu_gallery)
             }
 
-            // Lógica de criticidad de color para el indicador lateral
             val colorRes = when {
                 repuesto.stockActual == 0 -> R.color.danger
                 repuesto.stockActual <= repuesto.stockMinimo -> R.color.warning
@@ -55,16 +53,16 @@ class RepuestosAdapter(
         }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RepuestoViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RepuestoOpViewHolder {
         val binding = ItemRepuestoBinding.inflate(
             LayoutInflater.from(parent.context),
             parent,
             false
         )
-        return RepuestoViewHolder(binding)
+        return RepuestoOpViewHolder(binding)
     }
 
-    override fun onBindViewHolder(holder: RepuestoViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: RepuestoOpViewHolder, position: Int) {
         holder.bind(listaRepuestos[position])
     }
 

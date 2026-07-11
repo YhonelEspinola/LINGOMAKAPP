@@ -29,15 +29,36 @@ class MantenimientoViewModel : ViewModel() {
         )
     }
 
-    fun listarMantenimientos() {
-        repository.listarMantenimientos(
-            onSuccess = { lista ->
-                _listaMantenimiento.postValue(lista)
+    private var ultimoDocMantenimiento: com.google.firebase.firestore.DocumentSnapshot? = null
+    private var estaCargandoMantenimientos = false
+    private val listaMantenimientosAcumulados = mutableListOf<MantenimientoModel>()
+
+    fun listarMantenimientos(reset: Boolean = false) {
+        if (estaCargandoMantenimientos) return
+        if (reset) {
+            ultimoDocMantenimiento = null
+            listaMantenimientosAcumulados.clear()
+        }
+        
+        estaCargandoMantenimientos = true
+        repository.listarMantenimientosPaginados(
+            ultimoDocumento = ultimoDocMantenimiento,
+            batchSize = 20,
+            onSuccess = { lista, ultimo ->
+                ultimoDocMantenimiento = ultimo
+                listaMantenimientosAcumulados.addAll(lista)
+                _listaMantenimiento.postValue(listaMantenimientosAcumulados)
+                estaCargandoMantenimientos = false
             },
             onError = { error ->
                 _mensajeError.postValue(error)
+                estaCargandoMantenimientos = false
             }
         )
+    }
+
+    fun cargarSiguienteLote() {
+        listarMantenimientos(reset = false)
     }
 
     fun cambiarEstadoMantenimiento(

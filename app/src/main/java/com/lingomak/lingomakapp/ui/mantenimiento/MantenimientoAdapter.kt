@@ -10,7 +10,7 @@ import android.widget.PopupMenu
 import com.lingomak.lingomakapp.R
 class MantenimientoAdapter(
     private var listaMantenimientos: List<MantenimientoModel>,
-
+    private val isOperario: Boolean = false,
     private val onMantenimientoClick: (MantenimientoModel) -> Unit,
     private val onEditarClick: (MantenimientoModel) -> Unit,
     private val onCambiarEstadoClick : (MantenimientoModel) -> Unit,
@@ -58,6 +58,12 @@ class MantenimientoAdapter(
                     R.menu.menu_mantenimiento_item,
                     popupMenu.menu
                 )
+
+                // Restricciones por Rol
+                if (isOperario) {
+                    popupMenu.menu.findItem(R.id.opcion_editar).isVisible = false
+                    popupMenu.menu.findItem(R.id.opcion_cancelar).isVisible = false
+                }
 
                 when (mantenimiento.estado) {
 

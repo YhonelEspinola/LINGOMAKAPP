@@ -108,13 +108,37 @@ class MovimientosGlobalViewModel(application: Application) : AndroidViewModel(ap
 
     val resumenGlobal: LiveData<ResumenGlobal> = MutableLiveData()
 
+    private val _loading = MutableLiveData(false)
+    val loading: LiveData<Boolean> get() = _loading
+
+    private var ultimoTimestampCargado: Long? = null
+    private var estaCargandoMas = false
+
     init {
         descargarDatos()
     }
 
     private fun descargarDatos() {
         viewModelScope.launch {
-            movimientoRepository.descargarTodosDesdeFirestore()
+            _loading.value = true
+            movimientoRepository.descargarMovimientosPaginados(batchSize = 50)
+            _loading.value = false
+        }
+    }
+
+    fun cargarSiguienteLote() {
+        if (estaCargandoMas) return
+        
+        viewModelScope.launch {
+            estaCargandoMas = true
+            val listaActual = movimientosFiltrados.value ?: emptyList()
+            if (listaActual.isNotEmpty()) {
+                val ultimoMov = listaActual.last().first
+                ultimoTimestampCargado = ultimoMov.fecha?.time
+                
+                movimientoRepository.descargarMovimientosPaginados(ultimoTimestampCargado, 50)
+            }
+            estaCargandoMas = false
         }
     }
 

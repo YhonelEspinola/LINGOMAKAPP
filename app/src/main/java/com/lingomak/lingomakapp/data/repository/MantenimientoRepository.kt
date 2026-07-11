@@ -26,6 +26,31 @@ class MantenimientoRepository {
             }
     }
 
+    fun listarMantenimientosPaginados(
+        ultimoDocumento: com.google.firebase.firestore.DocumentSnapshot? = null,
+        batchSize: Long = 20,
+        onSuccess: (List<MantenimientoModel>, com.google.firebase.firestore.DocumentSnapshot?) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        var query = database.collection(coleccionMantenimientos)
+            .orderBy("fechaProgramada", com.google.firebase.firestore.Query.Direction.DESCENDING)
+            .limit(batchSize)
+
+        if (ultimoDocumento != null) {
+            query = query.startAfter(ultimoDocumento)
+        }
+
+        query.get()
+            .addOnSuccessListener { result ->
+                val lista = result.documents.mapNotNull { it.toObject(MantenimientoModel::class.java) }
+                val ultimo = if (result.documents.isNotEmpty()) result.documents.last() else null
+                onSuccess(lista, ultimo)
+            }
+            .addOnFailureListener {
+                onError(it.message ?: "Error al paginar mantenimientos")
+            }
+    }
+
     fun listarMantenimientos(
         onSuccess: (List<MantenimientoModel>) -> Unit,
         onError: (String) -> Unit

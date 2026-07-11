@@ -56,6 +56,36 @@ class MovimientoRepository(private val context: Context) {
     }
 
     /**
+     * Descarga movimientos de un repuesto específico de forma paginada.
+     */
+    suspend fun descargarMovimientosPaginadosPorRepuesto(
+        repuestoUid: String,
+        ultimoTimestamp: Long? = null,
+        batchSize: Long = 50
+    ) {
+        try {
+            var query = movimientosCollection
+                .whereEqualTo("repuestoUid", repuestoUid)
+                .orderBy("fecha", com.google.firebase.firestore.Query.Direction.DESCENDING)
+                .limit(batchSize)
+
+            if (ultimoTimestamp != null) {
+                query = query.startAfter(Date(ultimoTimestamp))
+            }
+
+            val snapshot = query.get().await()
+            val remotos = snapshot.toObjects(MovimientoModel::class.java)
+
+            if (remotos.isNotEmpty()) {
+                val entities = remotos.map { it.aEntity().copy(estadoSync = "SINCRONIZADO") }
+                movimientoDao.insertarLista(entities)
+            }
+        } catch (e: Exception) {
+            // Manejar error
+        }
+    }
+
+    /**
      * Descarga movimientos desde Firestore para un repuesto específico.
      * Inserta solo los que no existan localmente.
      */
@@ -98,8 +128,34 @@ class MovimientoRepository(private val context: Context) {
     }
 
     /**
-     * Descarga todos los movimientos desde Firestore (límite 500).
-     * Inserta solo los que no existan localmente.
+     * Descarga movimientos desde Firestore de forma paginada.
+     * @param ultimoDocumento El último timestamp descargado para continuar desde ahí.
+     * @param batchSize Cantidad de registros por lote.
+     */
+    suspend fun descargarMovimientosPaginados(ultimoTimestamp: Long? = null, batchSize: Long = 50) {
+        try {
+            var query = movimientosCollection
+                .orderBy("fecha", com.google.firebase.firestore.Query.Direction.DESCENDING)
+                .limit(batchSize)
+
+            if (ultimoTimestamp != null) {
+                query = query.startAfter(Date(ultimoTimestamp))
+            }
+
+            val snapshot = query.get().await()
+            val remotos = snapshot.toObjects(MovimientoModel::class.java)
+
+            if (remotos.isNotEmpty()) {
+                val entities = remotos.map { it.aEntity().copy(estadoSync = "SINCRONIZADO") }
+                movimientoDao.insertarLista(entities)
+            }
+        } catch (e: Exception) {
+            // Error de red, se queda con lo que tiene en Room
+        }
+    }
+
+    /**
+     * Descarga todos los movimientos desde Firestore (Legacy - se recomienda usar paginado).
      */
     suspend fun descargarTodosDesdeFirestore() {
         try {
@@ -210,7 +266,8 @@ private fun MovimientoEntity.aModel(): MovimientoModel {
         registradoPor = registradoPor,
         observacion = observacion,
         destinoSalida = destinoSalida,
-        ordenMantenimientoUid = ordenMantenimientoUid
+        ordenMantenimientoUid = ordenMantenimientoUid,
+        maquinariaUid = maquinariaUid
     )
 }
 
@@ -224,6 +281,7 @@ private fun MovimientoModel.aEntity(): MovimientoEntity {
         registradoPor = registradoPor,
         observacion = observacion,
         destinoSalida = destinoSalida,
-        ordenMantenimientoUid = ordenMantenimientoUid
+        ordenMantenimientoUid = ordenMantenimientoUid,
+        maquinariaUid = maquinariaUid
     )
 }

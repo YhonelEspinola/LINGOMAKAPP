@@ -12,52 +12,49 @@ import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.lingomak.lingomakapp.R
 import com.lingomak.lingomakapp.databinding.FragmentMovimientosGlobalBinding
-import java.util.*
 
-class MovimientosGlobalFragment : Fragment() {
+class MovimientosOpFragment : Fragment() {
 
     private var _binding: FragmentMovimientosGlobalBinding? = null
     private val binding get() = _binding!!
 
-    private val viewModel: MovimientosGlobalViewModel by viewModels()
+    private val viewModel: MovimientosOpViewModel by viewModels()
     private lateinit var adapter: MovimientosGlobalAdapter
-
-    private var filtroInicialTexto: String = ""
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentMovimientosGlobalBinding.inflate(inflater, container, false)
-
-        filtroInicialTexto = arguments?.getString("filtroTexto") ?: ""
-
+        
         setupUI()
         observarViewModel()
+        
+        viewModel.sincronizarDatos()
         
         return binding.root
     }
 
     private fun setupUI() {
+        // En el modo operario, quizás no necesitemos filtrar por entradas ya que solo registran salidas
+        // pero pueden ver el historial general.
+        
         adapter = MovimientosGlobalAdapter(emptyList()) { pair ->
+            // Ver detalle
             val fragment = DetalleMovimientoFragment()
-            val bundle = Bundle().apply {
-                putString("movimientoUid", pair.first.uid)
-            }
+            val bundle = Bundle().apply { putString("movimientoUid", pair.first.uid) }
             fragment.arguments = bundle
             
-            val containerId = if (requireActivity() is com.lingomak.lingomakapp.ui.dashboard.DashboardAdminActivity) 
-                R.id.fragmentContainerAdmin else R.id.containerOperario
-                
             parentFragmentManager.beginTransaction()
-                .replace(containerId, fragment)
+                .replace(R.id.containerOperario, fragment)
                 .addToBackStack(null)
                 .commit()
         }
+
         binding.rvMovimientos.layoutManager = LinearLayoutManager(requireContext())
         binding.rvMovimientos.adapter = adapter
 
-        // Implementar Scroll Infinito (Paginación para Admin)
+        // Implementar Scroll Infinito (Paginación)
         binding.rvMovimientos.addOnScrollListener(object : androidx.recyclerview.widget.RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: androidx.recyclerview.widget.RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
@@ -66,6 +63,7 @@ class MovimientosGlobalFragment : Fragment() {
                 val totalItemCount = layoutManager.itemCount
                 val firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition()
 
+                // Si estamos cerca del final de la lista, cargamos más
                 if ((visibleItemCount + firstVisibleItemPosition) >= totalItemCount && firstVisibleItemPosition >= 0) {
                     viewModel.cargarSiguienteLote()
                 }
@@ -74,7 +72,6 @@ class MovimientosGlobalFragment : Fragment() {
 
         binding.selectorFechas.onRangoSeleccionado = { inicio, fin, etiqueta ->
             viewModel.setRangoFechas(inicio, fin)
-            // Actualizar el texto del filtro actual arriba del buscador
             binding.root.findViewById<TextView>(R.id.tvFiltroActual)?.text = etiqueta
         }
         binding.selectorFechas.dispararSeleccionActual()
@@ -87,38 +84,21 @@ class MovimientosGlobalFragment : Fragment() {
             override fun afterTextChanged(s: Editable?) {}
         })
 
-        binding.chipGroupTipo.setOnCheckedChangeListener { _, checkedId ->
-            when (checkedId) {
-                R.id.chipTodos -> viewModel.filtrarPorTipo(null)
-                R.id.chipEntradas -> viewModel.filtrarPorTipo("ENTRADA")
-                R.id.chipSalidas -> viewModel.filtrarPorTipo("SALIDA")
-            }
-        }
-
+        // Botón Registrar (En Operario solo Salidas)
+        binding.btnRegistrar.text = "REGISTRAR SALIDA"
         binding.btnRegistrar.setOnClickListener {
+            // Abrir el escáner que luego llevará a RegistrarSalidaOpFragment
             val fragment = EscaneoQRFragment()
-            val containerId = if (requireActivity() is com.lingomak.lingomakapp.ui.dashboard.DashboardAdminActivity) 
-                R.id.fragmentContainerAdmin else R.id.containerOperario
-                
             parentFragmentManager.beginTransaction()
-                .replace(containerId, fragment)
+                .replace(R.id.containerOperario, fragment)
                 .addToBackStack(null)
                 .commit()
         }
 
-        binding.btnEstadisticas.setOnClickListener {
-            val fragment = MovimientosEstadisticasFragment()
-            val containerId = if (requireActivity() is com.lingomak.lingomakapp.ui.dashboard.DashboardAdminActivity) 
-                R.id.fragmentContainerAdmin else R.id.containerOperario
-                
-            parentFragmentManager.beginTransaction()
-                .replace(containerId, fragment)
-                .addToBackStack(null)
-                .commit()
-        }
-        filtroInicialTexto = arguments?.getString("filtroTexto") ?: ""
+        // Quitar estadísticas y centrar botón de registro
+        binding.btnEstadisticas.visibility = View.GONE
+        binding.layoutBotones.weightSum = 1f
     }
-
 
     private fun observarViewModel() {
         viewModel.movimientosFiltrados.observe(viewLifecycleOwner) { lista ->

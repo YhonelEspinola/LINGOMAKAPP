@@ -1,49 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <item
-        android:id="@+id/drawer_usuarios"
-        android:title="Usuarios"
-        android:icon="@drawable/per">
-    </item>
-    <item
-        android:id="@+id/drawer_inventario"
-        android:title="Inventario"
-        android:icon="@drawable/inventario">
-    </item>
-    <item
-        android:id="@+id/drawer_movimientos"
-        android:title="Movimientos"
-        android:icon="@drawable/movimiento">
-    </item>
-    <item
-        android:id="@+id/drawer_maquinaria"
-        android:title="Maquinaria"
-        android:icon="@drawable/machine">
-    </item>
-    <item
-        android:id="@+id/drawer_mantenimiento"
-        android:title="Mantenimiento"
-        android:icon="@drawable/maintenance">
-    </item>
-    <item
-        android:id="@+id/drawer_alertas"
-        android:title="Alertas"
-        android:icon="@drawable/alert">
-    </item>
-    <item
-        android:id="@+id/drawer_reportes"
-        android:title="Reportes"
-        android:icon="@drawable/report"/>
-    <item
-        android:id="@+id/drawer_cerrar_sesion"
-        android:title="Cerrar Sesión"
-        android:icon="@drawable/logout"/>
-    <item
-        android:id="@+id/drawer_configuracion"
-        android:title="Configuracion"
-        android:icon="@drawable/settings">
-    </item>
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_home"
+            android:title="Inicio"
+            android:icon="@drawable/ic_home" />
+        <item
+            android:id="@+id/drawer_usuarios"
+            android:title="Usuarios"
+            android:icon="@drawable/per" />
+        <item
+            android:id="@+id/drawer_inventario"
+            android:title="Inventario"
+            android:icon="@drawable/inventario" />
+        <item
+            android:id="@+id/drawer_movimientos"
+            android:title="Movimientos"
+            android:icon="@drawable/movimiento" />
+        <item
+            android:id="@+id/drawer_maquinaria"
+            android:title="Maquinaria"
+            android:icon="@drawable/machine" />
+        <item
+            android:id="@+id/drawer_mantenimiento"
+            android:title="Mantenimiento"
+            android:icon="@drawable/maintenance" />
+        <item
+            android:id="@+id/drawer_alertas"
+            android:title="Alertas"
+            android:icon="@drawable/alert" />
+    </group>
 
+    <item android:title="Sistema">
+        <menu>
+            <item
+                android:id="@+id/nav_perfil"
+                android:title="Mi Perfil"
+                android:icon="@drawable/per" />
+            <item
+                android:id="@+id/drawer_configuracion"
+                android:title="Configuración"
+                android:icon="@drawable/settings" />
+        </menu>
+    </item>
 
 </menu>

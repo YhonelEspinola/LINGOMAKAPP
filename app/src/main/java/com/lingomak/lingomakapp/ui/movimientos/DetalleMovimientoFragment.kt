@@ -36,6 +36,12 @@ class DetalleMovimientoFragment : Fragment() {
 
     private fun setupUI() {
         binding.btnVolver.setOnClickListener { parentFragmentManager.popBackStack() }
+
+        // Restringir acciones para el Operario
+        if (requireActivity() is com.lingomak.lingomakapp.ui.dashboard.DashboardOperarioActivity) {
+            binding.btnEditar.visibility = View.GONE
+            binding.btnEliminar.visibility = View.GONE
+        }
         
         binding.btnEliminar.setOnClickListener {
             mostrarDialogoEliminar()

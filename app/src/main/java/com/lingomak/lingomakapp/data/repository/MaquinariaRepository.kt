@@ -10,6 +10,7 @@ class MaquinariaRepository {
     private val database = FirebaseFirestore.getInstance()
 
     private val colectionMaquinarias = "maquinarias"
+    private val storageFolder = "maquinarias_imagenes"
 
     private val storage = FirebaseStorage.getInstance()
 
@@ -90,7 +91,7 @@ class MaquinariaRepository {
         onError: (String) -> Unit
     ) {
         val referencia = storage.reference
-            .child("maquinarias")
+            .child(storageFolder)
             .child("$uid.jpg")
 
         referencia.putFile(imagenUri)

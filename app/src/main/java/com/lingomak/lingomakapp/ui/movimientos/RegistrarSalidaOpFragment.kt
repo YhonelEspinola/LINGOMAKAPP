@@ -1,0 +1,165 @@
+package com.lingomak.lingomakapp.ui.movimientos
+
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.ArrayAdapter
+import android.widget.Toast
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import com.google.firebase.auth.FirebaseAuth
+import com.lingomak.lingomakapp.data.model.MovimientoModel
+import com.lingomak.lingomakapp.data.model.RepuestoModel
+import com.lingomak.lingomakapp.data.model.MaquinariaModel
+import com.lingomak.lingomakapp.databinding.FragmentRegistrarSalidaOpBinding
+import java.util.*
+
+class RegistrarSalidaOpFragment : Fragment() {
+
+    private var _binding: FragmentRegistrarSalidaOpBinding? = null
+    private val binding get() = _binding!!
+
+    private val viewModel: MovimientosOpViewModel by viewModels()
+    
+    private var listaRepuestos: List<RepuestoModel> = emptyList()
+    private var listaMaquinas: List<MaquinariaModel> = emptyList()
+    
+    private var repuestoSeleccionado: RepuestoModel? = null
+    private var maquinaSeleccionada: MaquinariaModel? = null
+    
+    private var uidEscaneado: String? = null
+
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentRegistrarSalidaOpBinding.inflate(inflater, container, false)
+        uidEscaneado = arguments?.getString("repuestoUidScanned")
+        
+        setupUI()
+        observarViewModel()
+        
+        return binding.root
+    }
+
+    private fun setupUI() {
+        binding.autoCompleteRepuesto.setOnItemClickListener { parent, _, position, _ ->
+            val seleccionado = parent.getItemAtPosition(position) as String
+            repuestoSeleccionado = listaRepuestos.find { "${it.codigoInterno} - ${it.nombre}" == seleccionado }
+            actualizarUIStock()
+        }
+
+        binding.autoCompleteMaquinaria.setOnItemClickListener { parent, _, position, _ ->
+            val seleccionado = parent.getItemAtPosition(position) as String
+            maquinaSeleccionada = listaMaquinas.find { "${it.codigoMaquinaria} - ${it.nombre}" == seleccionado }
+        }
+
+        // Logica de visibilidad según tipo de destino
+        binding.rgDestino.setOnCheckedChangeListener { _, checkedId ->
+            if (checkedId == binding.rbConsumoInterno.id) {
+                binding.layoutMaquinariaDestino.visibility = View.VISIBLE
+            } else {
+                binding.layoutMaquinariaDestino.visibility = View.GONE
+                maquinaSeleccionada = null
+                binding.autoCompleteMaquinaria.setText("")
+            }
+        }
+
+        binding.btnGuardar.setOnClickListener {
+            validarYRegistrar()
+        }
+    }
+
+    private fun actualizarUIStock() {
+        binding.tvStockActual.text = "Stock actual: ${repuestoSeleccionado?.stockActual ?: "--"}"
+    }
+
+    private fun observarViewModel() {
+        viewModel.todosLosRepuestos.observe(viewLifecycleOwner) { repuestos ->
+            listaRepuestos = repuestos.filter { it.estado == "ACTIVO" }
+            val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, 
+                listaRepuestos.map { "${it.codigoInterno} - ${it.nombre}" })
+            binding.autoCompleteRepuesto.setAdapter(adapter)
+
+            uidEscaneado?.let { valor ->
+                val encontrado = listaRepuestos.find { it.uid == valor || it.codigoInterno == valor }
+                if (encontrado != null) {
+                    repuestoSeleccionado = encontrado
+                    binding.autoCompleteRepuesto.setText("${encontrado.codigoInterno} - ${encontrado.nombre}", false)
+                    actualizarUIStock()
+                    uidEscaneado = null
+                }
+            }
+        }
+
+        viewModel.todasLasMaquinas.observe(viewLifecycleOwner) { maquinas ->
+            listaMaquinas = maquinas.filter { it.estado == "OPERATIVA" || it.estado == "EN_MANTENIMIENTO" }
+            val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, 
+                listaMaquinas.map { "${it.codigoMaquinaria} - ${it.nombre}" })
+            binding.autoCompleteMaquinaria.setAdapter(adapter)
+        }
+
+        viewModel.registroExitoso.observe(viewLifecycleOwner) { exitoso ->
+            if (exitoso) {
+                Toast.makeText(requireContext(), "Salida registrada con éxito", Toast.LENGTH_SHORT).show()
+                parentFragmentManager.popBackStack(null, androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE)
+            }
+        }
+
+        viewModel.error.observe(viewLifecycleOwner) { msg ->
+            Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun validarYRegistrar() {
+        val repuesto = repuestoSeleccionado
+        val cantidadStr = binding.etCantidad.text.toString()
+
+        if (repuesto == null) {
+            Toast.makeText(requireContext(), "Seleccione un repuesto", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val destinoSalida = when (binding.rgDestino.checkedRadioButtonId) {
+            binding.rbConsumoInterno.id -> "CONSUMO_INTERNO"
+            binding.rbDistribucionExterna.id -> "DISTRIBUCION_EXTERNA"
+            else -> {
+                Toast.makeText(requireContext(), "Seleccione el tipo de salida", Toast.LENGTH_SHORT).show()
+                return
+            }
+        }
+
+        if (destinoSalida == "CONSUMO_INTERNO" && maquinaSeleccionada == null) {
+            Toast.makeText(requireContext(), "Seleccione una maquinaria", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val cantidad = cantidadStr.toIntOrNull() ?: 0
+        if (cantidad <= 0) {
+            binding.etCantidad.error = "Cantidad inválida"
+            return
+        }
+
+        val registradoPor = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+
+        val movimiento = MovimientoModel(
+            uid = UUID.randomUUID().toString(),
+            repuestoUid = repuesto.uid,
+            tipo = "SALIDA",
+            cantidad = cantidad,
+            fecha = Date(),
+            registradoPor = registradoPor,
+            observacion = binding.etObservacion.text.toString(),
+            destinoSalida = destinoSalida,
+            maquinariaUid = maquinaSeleccionada?.uid
+        )
+
+        viewModel.registrarSalida(movimiento)
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+}

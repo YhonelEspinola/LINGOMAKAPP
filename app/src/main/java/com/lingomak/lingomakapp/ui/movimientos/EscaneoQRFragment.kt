@@ -93,14 +93,15 @@ class EscaneoQRFragment : Fragment() {
 
     private fun processQR(uid: String) {
         activity?.runOnUiThread {
-            val fragment = RegistrarMovimientoGlobalFragment()
+            val isOperario = requireActivity() is com.lingomak.lingomakapp.ui.dashboard.DashboardOperarioActivity
+            
+            val fragment = if (isOperario) RegistrarSalidaOpFragment() else RegistrarMovimientoGlobalFragment()
             val bundle = Bundle().apply {
                 putString("repuestoUidScanned", uid)
             }
             fragment.arguments = bundle
             
-            val containerId = if (requireActivity() is com.lingomak.lingomakapp.ui.dashboard.DashboardAdminActivity) 
-                R.id.fragmentContainerAdmin else R.id.containerOperario
+            val containerId = if (isOperario) R.id.containerOperario else R.id.fragmentContainerAdmin
 
             parentFragmentManager.beginTransaction()
                 .replace(containerId, fragment)
@@ -110,9 +111,10 @@ class EscaneoQRFragment : Fragment() {
     }
 
     private fun abrirRegistroManual() {
-        val fragment = RegistrarMovimientoGlobalFragment()
-        val containerId = if (requireActivity() is com.lingomak.lingomakapp.ui.dashboard.DashboardAdminActivity) 
-            R.id.fragmentContainerAdmin else R.id.containerOperario
+        val isOperario = requireActivity() is com.lingomak.lingomakapp.ui.dashboard.DashboardOperarioActivity
+        val fragment = if (isOperario) RegistrarSalidaOpFragment() else RegistrarMovimientoGlobalFragment()
+        
+        val containerId = if (isOperario) R.id.containerOperario else R.id.fragmentContainerAdmin
 
         parentFragmentManager.beginTransaction()
             .replace(containerId, fragment)

@@ -271,7 +271,7 @@
                         <ImageView
                             android:layout_width="24dp"
                             android:layout_height="24dp"
-                            android:src="@android:drawable/checkbox_on_background"
+                            android:src="@drawable/ic_check"
                             app:tint="@android:color/holo_green_dark" />
 
                         <TextView

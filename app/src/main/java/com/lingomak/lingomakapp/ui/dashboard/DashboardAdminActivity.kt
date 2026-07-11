@@ -1,7 +1,9 @@
 package com.lingomak.lingomakapp.ui.dashboard
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import com.google.firebase.auth.FirebaseAuth
 import com.lingomak.lingomakapp.R
 import com.lingomak.lingomakapp.databinding.DashboardAdminBinding
 import com.lingomak.lingomakapp.ui.alertas.AlertasFragment
@@ -32,47 +34,11 @@ class DashboardAdminActivity : AppCompatActivity() {
                 .commit()
         }
 
-        configurarBottomNavigation()
-
         configurarTollbar()
 
         configurarNavigationDrawer()
 
         AlertasWorkerManager.programarRevisionAlertas(this)
-    }
-
-    private fun configurarBottomNavigation(){
-        binding.bottomNavigationAdmin.setOnItemSelectedListener { item ->
-            when(item.itemId){
-                R.id.nav_home -> {
-                    supportFragmentManager.beginTransaction()
-                        .replace(R.id.fragmentContainerAdmin, HomeAdminFragment())
-                        .commit()
-                    true
-                }
-                R.id.nav_inventario -> {
-                    supportFragmentManager.beginTransaction()
-                        .replace(R.id.fragmentContainerAdmin, InventarioFragment())
-                        .commit()
-                    true
-                }
-                R.id.nav_mantenimiento -> {
-                    supportFragmentManager.beginTransaction()
-                        .replace(R.id.fragmentContainerAdmin, MantenimientoFragment())
-                        .commit()
-                    true
-                }
-                R.id.nav_perfil -> {
-                    supportFragmentManager.beginTransaction()
-                        .replace(R.id.fragmentContainerAdmin,
-                    PerfilFragment())
-                    .commit()
-                    true
-                }
-                else -> false
-            }
-
-        }
     }
 
     private fun configurarTollbar(){
@@ -84,6 +50,14 @@ class DashboardAdminActivity : AppCompatActivity() {
     private fun configurarNavigationDrawer(){
         binding.navigationViewAdmin.setNavigationItemSelectedListener { item ->
             when (item.itemId){
+                R.id.nav_home -> {
+                    supportFragmentManager.beginTransaction()
+                        .replace(R.id.fragmentContainerAdmin, HomeAdminFragment())
+                        .commit()
+                    binding.drawerLayoutAdmin.close()
+                    true
+                }
+
                 R.id.drawer_usuarios ->{
                     supportFragmentManager.beginTransaction()
                         .replace(
@@ -148,6 +122,14 @@ class DashboardAdminActivity : AppCompatActivity() {
                             R.id.fragmentContainerAdmin,
                             AlertasFragment()
                         )
+                        .commit()
+                    binding.drawerLayoutAdmin.close()
+                    true
+                }
+
+                R.id.nav_perfil -> {
+                    supportFragmentManager.beginTransaction()
+                        .replace(R.id.fragmentContainerAdmin, PerfilFragment())
                         .commit()
                     binding.drawerLayoutAdmin.close()
                     true

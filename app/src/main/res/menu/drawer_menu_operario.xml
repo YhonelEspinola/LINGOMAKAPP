@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_op_inventario"
+            android:icon="@drawable/inventario"
+            android:title="Inventario" />
+        <item
+            android:id="@+id/nav_op_movimientos"
+            android:icon="@drawable/movimiento"
+            android:title="Movimientos" />
+        <item
+            android:id="@+id/nav_op_qr"
+            android:icon="@drawable/qr"
+            android:title="Registrar Salida (QR)" />
+        <item
+            android:id="@+id/nav_op_mantenimiento"
+            android:icon="@drawable/maintenance"
+            android:title="Mantenimiento" />
+        <item
+            android:id="@+id/nav_op_alertas"
+            android:icon="@drawable/alert"
+            android:title="Alertas" />
+    </group>
+
+    <item android:title="Usuario">
+        <menu>
+            <item
+                android:id="@+id/menu_perfil_operario"
+                android:icon="@drawable/per"
+                android:title="Mi Perfil" />
+            <item
+                android:id="@+id/drawer_configuracion_op"
+                android:title="Configuración"
+                android:icon="@drawable/settings" />
+        </menu>
+    </item>
+
+</menu>

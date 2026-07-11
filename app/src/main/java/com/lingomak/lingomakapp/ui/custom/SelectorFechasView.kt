@@ -111,9 +111,9 @@ class SelectorFechasView @JvmOverloads constructor(
 
     // --- MODO 1: CHIPS ---
     inner class ChipsViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        private val chipGroup: ChipGroup = view.findViewById(R.id.chipGroupFixed)
+        private val radioGroup: RadioGroup = view.findViewById(R.id.radioGroupChips)
         fun bind() {
-            chipGroup.setOnCheckedChangeListener { _, checkedId ->
+            radioGroup.setOnCheckedChangeListener { _, checkedId ->
                 val calInicio = Calendar.getInstance()
                 val calFin = Calendar.getInstance().apply {
                     set(Calendar.HOUR_OF_DAY, 23)
@@ -131,30 +131,39 @@ class SelectorFechasView @JvmOverloads constructor(
                         "Últimos 30 días"
                     }
                     R.id.chip12S -> {
-                        calInicio.add(Calendar.DAY_OF_YEAR, -84)
+                        calInicio.add(Calendar.WEEK_OF_YEAR, -12)
                         "Últimas 12 semanas"
                     }
                     R.id.chip6M -> {
-                        calInicio.add(Calendar.DAY_OF_YEAR, -180)
+                        calInicio.add(Calendar.MONTH, -6)
                         "Últimos 6 meses"
                     }
                     R.id.chip1A -> {
-                        calInicio.add(Calendar.DAY_OF_YEAR, -365)
+                        calInicio.add(Calendar.YEAR, -1)
                         "Último año"
                     }
                     else -> "Últimos 30 días"
                 }
                 onRangoSeleccionado?.invoke(calInicio.timeInMillis, calFin.timeInMillis, etiqueta)
             }
-            // Disparar 30D inicial si es la primera vez
-            if (chipGroup.checkedChipId == R.id.chip30D) {
-                val calInicio = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, -30) }
+            // Disparar selección inicial
+            val checkedId = radioGroup.checkedRadioButtonId
+            if (checkedId != -1) {
                 val calFin = Calendar.getInstance().apply {
                     set(Calendar.HOUR_OF_DAY, 23)
                     set(Calendar.MINUTE, 59)
                     set(Calendar.SECOND, 59)
                 }
-                onRangoSeleccionado?.invoke(calInicio.timeInMillis, calFin.timeInMillis, "Últimos 30 días")
+                val calInicio = Calendar.getInstance()
+                val etiqueta = when (checkedId) {
+                    R.id.chip7D -> { calInicio.add(Calendar.DAY_OF_YEAR, -7); "Últimos 7 días" }
+                    R.id.chip30D -> { calInicio.add(Calendar.DAY_OF_YEAR, -30); "Últimos 30 días" }
+                    R.id.chip12S -> { calInicio.add(Calendar.WEEK_OF_YEAR, -12); "Últimas 12 semanas" }
+                    R.id.chip6M -> { calInicio.add(Calendar.MONTH, -6); "Últimos 6 meses" }
+                    R.id.chip1A -> { calInicio.add(Calendar.YEAR, -1); "Último año" }
+                    else -> "Últimos 30 días"
+                }
+                onRangoSeleccionado?.invoke(calInicio.timeInMillis, calFin.timeInMillis, etiqueta)
             }
         }
     }

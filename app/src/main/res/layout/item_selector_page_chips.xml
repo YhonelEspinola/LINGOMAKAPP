@@ -3,77 +3,107 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingHorizontal="16dp"
+    android:paddingHorizontal="12dp"
     android:paddingVertical="4dp">
 
-    <com.google.android.material.chip.ChipGroup
+    <LinearLayout
         android:id="@+id/chipGroupFixed"
         android:layout_width="match_parent"
-        android:layout_height="36dp"
+        android:layout_height="38dp"
         android:background="@drawable/bg_selector_bar"
+        android:orientation="horizontal"
         android:paddingHorizontal="4dp"
-        app:chipSpacingHorizontal="2dp"
+        android:gravity="center"
+        android:weightSum="5"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:selectionRequired="true"
-        app:singleSelection="true">
+        app:layout_constraintTop_toTopOf="parent">
 
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chip7D"
-            style="@style/Widget.MaterialComponents.Chip.Choice"
-            android:layout_width="wrap_content"
-            android:layout_height="28dp"
-            android:text="7D"
-            android:textColor="@color/white"
-            android:textSize="12sp"
-            app:chipBackgroundColor="@drawable/selector_chip_segmented"
-            app:chipStrokeWidth="0dp" />
+        <!-- Usamos RadioButtons con estilo de botón para que funcionen como Chips de selección única -->
+        <RadioGroup
+            android:id="@+id/radioGroupChips"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:weightSum="5">
 
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chip30D"
-            style="@style/Widget.MaterialComponents.Chip.Choice"
-            android:layout_width="wrap_content"
-            android:layout_height="28dp"
-            android:checked="true"
-            android:text="30D"
-            android:textColor="@color/white"
-            android:textSize="12sp"
-            app:chipBackgroundColor="@drawable/selector_chip_segmented"
-            app:chipStrokeWidth="0dp" />
+            <RadioButton
+                android:id="@+id/chip7D"
+                android:layout_width="0dp"
+                android:layout_height="30dp"
+                android:layout_gravity="center_vertical"
+                android:layout_marginHorizontal="2dp"
+                android:layout_weight="1"
+                android:background="@drawable/selector_chip_segmented"
+                android:button="@null"
+                android:gravity="center"
+                android:text="7D"
+                android:textColor="@color/white"
+                android:textSize="11sp"
+                android:textStyle="bold" />
 
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chip12S"
-            style="@style/Widget.MaterialComponents.Chip.Choice"
-            android:layout_width="wrap_content"
-            android:layout_height="28dp"
-            android:text="12S"
-            android:textColor="@color/white"
-            android:textSize="12sp"
-            app:chipBackgroundColor="@drawable/selector_chip_segmented"
-            app:chipStrokeWidth="0dp" />
+            <RadioButton
+                android:id="@+id/chip30D"
+                android:layout_width="0dp"
+                android:layout_height="30dp"
+                android:layout_gravity="center_vertical"
+                android:layout_marginHorizontal="2dp"
+                android:layout_weight="1"
+                android:background="@drawable/selector_chip_segmented"
+                android:button="@null"
+                android:checked="true"
+                android:gravity="center"
+                android:text="30D"
+                android:textColor="@color/white"
+                android:textSize="11sp"
+                android:textStyle="bold" />
 
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chip6M"
-            style="@style/Widget.MaterialComponents.Chip.Choice"
-            android:layout_width="wrap_content"
-            android:layout_height="28dp"
-            android:text="6M"
-            android:textColor="@color/white"
-            android:textSize="12sp"
-            app:chipBackgroundColor="@drawable/selector_chip_segmented"
-            app:chipStrokeWidth="0dp" />
+            <RadioButton
+                android:id="@+id/chip12S"
+                android:layout_width="0dp"
+                android:layout_height="30dp"
+                android:layout_gravity="center_vertical"
+                android:layout_marginHorizontal="2dp"
+                android:layout_weight="1"
+                android:background="@drawable/selector_chip_segmented"
+                android:button="@null"
+                android:gravity="center"
+                android:text="12S"
+                android:textColor="@color/white"
+                android:textSize="11sp"
+                android:textStyle="bold" />
 
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chip1A"
-            style="@style/Widget.MaterialComponents.Chip.Choice"
-            android:layout_width="wrap_content"
-            android:layout_height="28dp"
-            android:text="1A"
-            android:textColor="@color/white"
-            android:textSize="12sp"
-            app:chipBackgroundColor="@drawable/selector_chip_segmented"
-            app:chipStrokeWidth="0dp" />
+            <RadioButton
+                android:id="@+id/chip6M"
+                android:layout_width="0dp"
+                android:layout_height="30dp"
+                android:layout_gravity="center_vertical"
+                android:layout_marginHorizontal="2dp"
+                android:layout_weight="1"
+                android:background="@drawable/selector_chip_segmented"
+                android:button="@null"
+                android:gravity="center"
+                android:text="6M"
+                android:textColor="@color/white"
+                android:textSize="11sp"
+                android:textStyle="bold" />
 
-    </com.google.android.material.chip.ChipGroup>
+            <RadioButton
+                android:id="@+id/chip1A"
+                android:layout_width="0dp"
+                android:layout_height="30dp"
+                android:layout_gravity="center_vertical"
+                android:layout_marginHorizontal="2dp"
+                android:layout_weight="1"
+                android:background="@drawable/selector_chip_segmented"
+                android:button="@null"
+                android:gravity="center"
+                android:text="1A"
+                android:textColor="@color/white"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+
+        </RadioGroup>
+
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -218,12 +218,15 @@ class AlertasFragment : Fragment() {
 
         fragment.arguments = bundle
 
+        val containerId = if (requireActivity() is com.lingomak.lingomakapp.ui.dashboard.DashboardAdminActivity) 
+            R.id.fragmentContainerAdmin else R.id.containerOperario
+
         /*
          * Navegamos al detalle del mantenimiento.
          */
-        requireActivity().supportFragmentManager
+        parentFragmentManager
             .beginTransaction()
-            .replace(R.id.fragmentContainerAdmin, fragment)
+            .replace(containerId, fragment)
             .addToBackStack(null)
             .commit()
     }
@@ -257,9 +260,12 @@ class AlertasFragment : Fragment() {
 
         fragment.arguments = bundle
 
-        requireActivity().supportFragmentManager
+        val containerId = if (requireActivity() is com.lingomak.lingomakapp.ui.dashboard.DashboardAdminActivity) 
+            R.id.fragmentContainerAdmin else R.id.containerOperario
+
+        parentFragmentManager
             .beginTransaction()
-            .replace(R.id.fragmentContainerAdmin, fragment)
+            .replace(containerId, fragment)
             .addToBackStack(null)
             .commit()
     }
@@ -289,9 +295,12 @@ class AlertasFragment : Fragment() {
 
         fragment.arguments = bundle
 
-        requireActivity().supportFragmentManager
+        val containerId = if (requireActivity() is com.lingomak.lingomakapp.ui.dashboard.DashboardAdminActivity) 
+            R.id.fragmentContainerAdmin else R.id.containerOperario
+
+        parentFragmentManager
             .beginTransaction()
-            .replace(R.id.fragmentContainerAdmin, fragment)
+            .replace(containerId, fragment)
             .addToBackStack(null)
             .commit()
     }

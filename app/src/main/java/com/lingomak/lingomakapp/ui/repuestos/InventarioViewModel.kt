@@ -125,20 +125,29 @@ class InventarioViewModel(application: Application) : AndroidViewModel(applicati
         observarRepuestoPorUid(uid)
     }
 
-    /**
-     * Dispara una sincronización con Firestore (descarga + sube
-     * pendientes) y deja que Room, una vez actualizado, propague el
-     * cambio solo a través del LiveData reactivo (repuestos).
-     *
-     * Esto es necesario sobre todo en el PRIMER arranque de la app con
-     * esta arquitectura offline-first: Room empieza vacío, así que sin
-     * esta llamada la lista nunca se llena aunque Firestore sí tenga
-     * datos. En arranques posteriores, Room ya tiene los datos
-     * cacheados y la lista aparece instantánea aunque esta sincronización
-     * tarde unos segundos en completarse en segundo plano.
-     */
+    private var ultimoNombreCargado: String? = null
+    private var estaCargandoMas = false
+
     fun listarRepuestos() {
-        SincronizacionRepuestosWorker.sincronizarAhora(getApplication())
+        viewModelScope.launch {
+            _loading.value = true
+            repository.descargarCambiosPaginados(batchSize = 50)
+            _loading.value = false
+        }
+    }
+
+    fun cargarSiguienteLote() {
+        if (estaCargandoMas) return
+        
+        viewModelScope.launch {
+            estaCargandoMas = true
+            val listaActual = _repuestosFiltrados.value ?: emptyList()
+            if (listaActual.isNotEmpty()) {
+                ultimoNombreCargado = listaActual.last().nombre
+                repository.descargarCambiosPaginados(ultimoNombreCargado, 50)
+            }
+            estaCargandoMas = false
+        }
     }
 
     fun buscarRepuesto(texto: String) {

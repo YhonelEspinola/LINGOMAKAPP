@@ -10,6 +10,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.lingomak.lingomakapp.R
 import com.lingomak.lingomakapp.data.model.MaquinariaModel
 import com.lingomak.lingomakapp.databinding.FragmentMaquinariaBinding
 
@@ -46,10 +47,11 @@ class MaquinariaFragment : Fragment() {
     }
 
     private fun configurarRecyclerView() {
+        val isOperario = requireActivity() is com.lingomak.lingomakapp.ui.dashboard.DashboardOperarioActivity
 
         adapter = MaquinariaAdapter(
             listaMaquinarias = emptyList(),
-
+            isOperario = isOperario,
             onMaquinariaClick = { maquinaria ->
 
 
@@ -79,11 +81,13 @@ class MaquinariaFragment : Fragment() {
 
                 detalleFragment.arguments = bundle
 
+                val containerId = if (requireActivity() is com.lingomak.lingomakapp.ui.dashboard.DashboardAdminActivity) 
+                    R.id.fragmentContainerAdmin else R.id.containerOperario
 
-                requireActivity().supportFragmentManager
+                parentFragmentManager
                     .beginTransaction()
                     .replace(
-                        com.lingomak.lingomakapp.R.id.fragmentContainerAdmin,
+                        containerId,
                         detalleFragment
                     )
 
@@ -117,11 +121,13 @@ class MaquinariaFragment : Fragment() {
 
                 editarFragment.arguments = bundle
 
+                val containerId = if (requireActivity() is com.lingomak.lingomakapp.ui.dashboard.DashboardAdminActivity) 
+                    R.id.fragmentContainerAdmin else R.id.containerOperario
 
-                requireActivity().supportFragmentManager
+                parentFragmentManager
                     .beginTransaction()
                     .replace(
-                        com.lingomak.lingomakapp.R.id.fragmentContainerAdmin,
+                        containerId,
                         editarFragment
                     )
                     .addToBackStack(null)
@@ -235,11 +241,18 @@ class MaquinariaFragment : Fragment() {
     }
 
     private fun configurarEventos() {
+        if (requireActivity() is com.lingomak.lingomakapp.ui.dashboard.DashboardOperarioActivity) {
+            binding.fabAgregarMaquinaria.visibility = View.GONE
+        }
+
         binding.fabAgregarMaquinaria.setOnClickListener {
-            requireActivity().supportFragmentManager
+            val containerId = if (requireActivity() is com.lingomak.lingomakapp.ui.dashboard.DashboardAdminActivity) 
+                R.id.fragmentContainerAdmin else R.id.containerOperario
+
+            parentFragmentManager
                 .beginTransaction()
                 .replace(
-                    com.lingomak.lingomakapp.R.id.fragmentContainerAdmin,
+                    containerId,
                     AgregarMaquinariaFragment()
                 )
                 .addToBackStack(null)

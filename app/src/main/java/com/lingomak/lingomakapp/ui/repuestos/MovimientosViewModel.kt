@@ -36,6 +36,8 @@ class MovimientosViewModel(application: Application) : AndroidViewModel(applicat
         repository.obtenerHistorial(uid)
     }
 
+    private var estaCargandoMas = false
+
     // Lista filtrada y ordenada que observa el Fragment
     val historialFiltrado = MediatorLiveData<List<MovimientoModel>>().apply {
         fun update() {
@@ -88,6 +90,27 @@ class MovimientosViewModel(application: Application) : AndroidViewModel(applicat
         descargarHistorial(uid)
     }
 
+    private fun descargarHistorial(uid: String) {
+        viewModelScope.launch {
+            repository.descargarMovimientosPaginadosPorRepuesto(uid, batchSize = 50)
+        }
+    }
+
+    fun cargarSiguienteLote() {
+        val uid = _repuestoUid.value ?: return
+        if (estaCargandoMas) return
+
+        viewModelScope.launch {
+            estaCargandoMas = true
+            val listaActual = historialFiltrado.value ?: emptyList()
+            if (listaActual.isNotEmpty()) {
+                val ultimoTimestamp = listaActual.last().fecha?.time
+                repository.descargarMovimientosPaginadosPorRepuesto(uid, ultimoTimestamp, 50)
+            }
+            estaCargandoMas = false
+        }
+    }
+
     fun setRangoFechas(inicio: Long, fin: Long) {
         _fechaInicio.value = inicio
         _fechaFin.value = fin
@@ -96,12 +119,6 @@ class MovimientosViewModel(application: Application) : AndroidViewModel(applicat
 
     fun toggleOrden() {
         _ordenDescendente.value = !(_ordenDescendente.value ?: true)
-    }
-
-    private fun descargarHistorial(uid: String) {
-        viewModelScope.launch {
-            repository.descargarMovimientosDeFirestore(uid)
-        }
     }
 
     fun registrarMovimiento(movimiento: MovimientoModel) {
@@ -132,7 +149,7 @@ class MovimientosViewModel(application: Application) : AndroidViewModel(applicat
 
     // --- Lógica de Resumen ---
 
-    val resumen = historialFiltrado.map { lista ->
+    val resumen: LiveData<ResumenMovimientos> = historialFiltrado.map { lista ->
         val rango = _rangoActivo.value ?: "MES"
         val totalEntradas = lista.filter { it.tipo == "ENTRADA" }.sumOf { it.cantidad }
         val totalSalidas = lista.filter { it.tipo == "SALIDA" }.sumOf { it.cantidad }
