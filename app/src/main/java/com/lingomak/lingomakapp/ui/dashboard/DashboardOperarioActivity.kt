@@ -8,10 +8,12 @@ import com.lingomak.lingomakapp.R
 import com.lingomak.lingomakapp.databinding.DashboardOperarioBinding
 import com.lingomak.lingomakapp.ui.alertas.AlertasFragment
 import com.lingomak.lingomakapp.ui.auth.LoginActivity
+import com.lingomak.lingomakapp.ui.dashboard.operario.HomeOperarioFragment
 import com.lingomak.lingomakapp.ui.dashboard.perfil.PerfilOperarioFragment
 import com.lingomak.lingomakapp.ui.mantenimiento.MantenimientoFragment
 import com.lingomak.lingomakapp.ui.movimientos.EscaneoQRFragment
 import com.lingomak.lingomakapp.ui.movimientos.MovimientosOpFragment
+import com.lingomak.lingomakapp.ui.operario.OperarioMaquinariaFragment
 import com.lingomak.lingomakapp.ui.repuestos.InventarioOpFragment
 
 class DashboardOperarioActivity : AppCompatActivity() {
@@ -25,7 +27,7 @@ class DashboardOperarioActivity : AppCompatActivity() {
 
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
-                .replace(R.id.containerOperario, InventarioOpFragment())
+                .replace(R.id.containerOperario, HomeOperarioFragment())
                 .commit()
         }
 
@@ -42,6 +44,14 @@ class DashboardOperarioActivity : AppCompatActivity() {
     private fun configurarNavigationDrawer() {
         binding.navigationViewOperario.setNavigationItemSelectedListener { item ->
             when (item.itemId) {
+                R.id.nav_op_inicio -> {
+                    supportFragmentManager.beginTransaction()
+                        .replace(R.id.containerOperario, HomeOperarioFragment())
+                        .commit()
+                    binding.drawerLayoutOperario.close()
+                    true
+                }
+
                 R.id.nav_op_inventario -> {
                     supportFragmentManager.beginTransaction()
                         .replace(R.id.containerOperario, InventarioOpFragment())
@@ -53,6 +63,14 @@ class DashboardOperarioActivity : AppCompatActivity() {
                 R.id.nav_op_movimientos -> {
                     supportFragmentManager.beginTransaction()
                         .replace(R.id.containerOperario, MovimientosOpFragment())
+                        .commit()
+                    binding.drawerLayoutOperario.close()
+                    true
+                }
+
+                R.id.nav_op_maquinaria -> {
+                    supportFragmentManager.beginTransaction()
+                        .replace(R.id.containerOperario, OperarioMaquinariaFragment())
                         .commit()
                     binding.drawerLayoutOperario.close()
                     true
@@ -87,6 +105,16 @@ class DashboardOperarioActivity : AppCompatActivity() {
                         .replace(R.id.containerOperario, PerfilOperarioFragment())
                         .commit()
                     binding.drawerLayoutOperario.close()
+                    true
+                }
+
+                R.id.menu_cerrar_sesion_operario -> {
+                    FirebaseAuth.getInstance().signOut()
+                    val intent = Intent(this, LoginActivity::class.java).apply {
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    }
+                    startActivity(intent)
+                    finish()
                     true
                 }
 

@@ -3,6 +3,10 @@
 
     <group android:checkableBehavior="single">
         <item
+            android:id="@+id/nav_op_inicio"
+            android:icon="@drawable/ic_home"
+            android:title="Inicio" />
+        <item
             android:id="@+id/nav_op_inventario"
             android:icon="@drawable/inventario"
             android:title="Inventario" />
@@ -10,6 +14,10 @@
             android:id="@+id/nav_op_movimientos"
             android:icon="@drawable/movimiento"
             android:title="Movimientos" />
+        <item
+            android:id="@+id/nav_op_maquinaria"
+            android:icon="@drawable/machine"
+            android:title="Maquinaria" />
         <item
             android:id="@+id/nav_op_qr"
             android:icon="@drawable/qr"
@@ -31,9 +39,9 @@
                 android:icon="@drawable/per"
                 android:title="Mi Perfil" />
             <item
-                android:id="@+id/drawer_configuracion_op"
-                android:title="Configuración"
-                android:icon="@drawable/settings" />
+                android:id="@+id/menu_cerrar_sesion_operario"
+                android:icon="@drawable/logout"
+                android:title="Cerrar Sesión" />
         </menu>
     </item>
 
