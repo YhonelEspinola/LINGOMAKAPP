@@ -55,7 +55,7 @@ class HomeOperarioFragment : Fragment() {
         }
 
         binding.cardMovimientos.setOnClickListener {
-            abrirFragment(MovimientosGlobalFragment())
+
         }
 
         binding.cardEscanearQr.setOnClickListener {
