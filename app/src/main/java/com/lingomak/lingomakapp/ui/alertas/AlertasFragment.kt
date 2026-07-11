@@ -17,7 +17,7 @@ import androidx.core.content.ContextCompat
 import com.lingomak.lingomakapp.ui.repuestos.DetalleRepuestoFragment
 import com.lingomak.lingomakapp.ui.mantenimiento.MantenimientoViewModel
 import com.lingomak.lingomakapp.ui.mantenimiento.DetalleMantenimientoFragment
-import com.lingomak.lingomakapp.ui.movimientos.MovimientosGlobalFragment
+import com.lingomak.lingomakapp.ui.mantenimiento.SolicitudesMantenimientoFragment
 import com.lingomak.lingomakapp.R
 import com.lingomak.lingomakapp.ui.repuestos.MovimientosFragment
 
@@ -127,10 +127,6 @@ class AlertasFragment : Fragment() {
 
     private fun tomarAccionAlerta(alerta: com.lingomak.lingomakapp.data.model.AlertaModel) {
 
-        /*
-         * Según el tipo de alerta, el sistema decide
-         * qué acción debe realizar el administrador.
-         */
         when (alerta.tipo) {
 
             "VENCIDO",
@@ -166,8 +162,15 @@ class AlertasFragment : Fragment() {
                 abrirMovimientosDesdeAlerta(alerta)
             }
 
-            "SIN_ROTACION" -> {
-                abrirDetalleRepuestoDesdeAlerta(alerta)
+            "SOLICITUD_MANTENIMIENTO" -> {
+
+                parentFragmentManager.beginTransaction()
+                    .replace(
+                        R.id.fragmentContainerAdmin,
+                        SolicitudesMantenimientoFragment()
+                    )
+                    .addToBackStack(null)
+                    .commit()
             }
 
             else -> {
@@ -184,15 +187,9 @@ class AlertasFragment : Fragment() {
         mantenimiento: com.lingomak.lingomakapp.data.model.MantenimientoModel,
         alerta : com.lingomak.lingomakapp.data.model.AlertaModel
     ) {
-        /*
-         * Creamos el Fragment de detalle.
-         */
+
         val fragment = DetalleMantenimientoFragment()
 
-        /*
-         * Enviamos los mismos datos que ya usas
-         * cuando abres el detalle desde MantenimientoFragment.
-         */
         val bundle = Bundle().apply {
             putString("uid", mantenimiento.uid)
             putString("uidMaquinaria", mantenimiento.uidMaquinaria)
@@ -218,9 +215,6 @@ class AlertasFragment : Fragment() {
 
         fragment.arguments = bundle
 
-        /*
-         * Navegamos al detalle del mantenimiento.
-         */
         requireActivity().supportFragmentManager
             .beginTransaction()
             .replace(R.id.fragmentContainerAdmin, fragment)
@@ -231,24 +225,13 @@ class AlertasFragment : Fragment() {
     private fun abrirDetalleRepuestoDesdeAlerta(
         alerta: com.lingomak.lingomakapp.data.model.AlertaModel
     ) {
-        /*
-         * Abrimos el detalle del repuesto asociado a la alerta.
-         * Desde esa pantalla el administrador podrá:
-         * - Ver stock actual.
-         * - Editar el repuesto.
-         * - Ver movimientos.
-         * - Activar/Inactivar.
-         */
+
 
         val fragment = DetalleRepuestoFragment()
 
         val bundle = Bundle().apply {
             putString("uid", alerta.uidRepuesto)
 
-            /*
-             * Estos datos extra nos servirán luego para mostrar
-             * un banner indicando que llegó desde una alerta.
-             */
             putString("origen", "ALERTA")
             putString("tipoAlerta", alerta.tipo)
             putString("tituloAlerta", alerta.titulo)
@@ -267,15 +250,7 @@ class AlertasFragment : Fragment() {
     private fun abrirMovimientosDesdeAlerta(
         alerta: com.lingomak.lingomakapp.data.model.AlertaModel
     ) {
-        /*
-         * Abrimos el historial global de movimientos.
-         *
-         * La alerta de ALTO_CONSUMO indica que un repuesto
-         * tuvo muchas salidas en los últimos 7 días.
-         *
-         * Por eso enviamos el nombre del repuesto como texto de búsqueda.
-         * Luego haremos que MovimientosGlobalFragment use ese filtro inicial.
-         */
+
         val fragment = MovimientosFragment()
 
         val bundle = Bundle().apply {

@@ -14,6 +14,7 @@ data class MaquinariaModel(
     var estado: String = "",
     var horometroActual: Int = 0,
     var horometroUltimoMantenimiento: Int = 0,
+    var intervaloMantenimientoHoras: Int = 250,
     var ubicacionActual: String = "",
     var imagenUrl: String = "",
     var observaciones: String = "",

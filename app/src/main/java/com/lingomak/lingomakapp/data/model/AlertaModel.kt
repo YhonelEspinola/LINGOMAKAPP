@@ -19,5 +19,6 @@ data class AlertaModel(
     var codigoRepuesto: String = "",
     var nombreRepuesto: String = "",
     var stockActual: Int = 0,
-    var stockMinimo: Int = 0
+    var stockMinimo: Int = 0,
+    val uidSolicitudMantenimiento: String = ""
 )

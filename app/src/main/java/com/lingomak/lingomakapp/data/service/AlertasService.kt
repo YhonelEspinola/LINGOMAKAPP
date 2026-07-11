@@ -8,6 +8,7 @@ import com.lingomak.lingomakapp.data.model.AlertaModel
 import com.lingomak.lingomakapp.data.model.MantenimientoModel
 import com.lingomak.lingomakapp.utils.DateUtils
 import kotlinx.coroutines.tasks.await
+import com.lingomak.lingomakapp.data.model.SolicitudMantenimientoModel
 
 class AlertasService(
     private val context: Context
@@ -16,6 +17,8 @@ class AlertasService(
     private val database = FirebaseFirestore.getInstance()
     private val repuestoDao = AppDatabase.getInstance(context).repuestoDao()
     private val movimientoDao = AppDatabase.getInstance(context).movimientoDao()
+
+    private val coleccionSolicitudesMantenimiento = "solicitudes_mantenimiento"
 
     suspend fun obtenerAlertas(): List<AlertaModel> {
 
@@ -32,6 +35,21 @@ class AlertasService(
 
         cargarAlertasInventario(repuestos, listaAlertas)
         cargarAlertasMovimientos(repuestos, listaAlertas)
+
+        val solicitudesPendientes =
+            database.collection(coleccionSolicitudesMantenimiento)
+                .whereEqualTo(
+                    "estadoSolicitud",
+                    "PENDIENTE_APROBACION"
+                )
+                .get()
+                .await()
+                .toObjects(SolicitudMantenimientoModel::class.java)
+
+        cargarAlertasSolicitudes(
+            solicitudesPendientes,
+            listaAlertas
+        )
 
         return ordenarAlertas(listaAlertas)
     }
@@ -247,17 +265,77 @@ class AlertasService(
                 }
             }.thenBy { alerta ->
                 when (alerta.tipo) {
-                    "VENCIDO" -> 1
-                    "STOCK_AGOTADO" -> 2
-                    "STOCK_CRITICO" -> 3
-                    "PROXIMO" -> 4
-                    "STOCK_BAJO" -> 5
-                    "ALTO_CONSUMO" -> 6
-                    "SIN_ROTACION" -> 7
-                    "EN_PROCESO" -> 8
-                    else -> 9
+                    "SOLICITUD_MANTENIMIENTO" -> 1
+                    "VENCIDO" -> 2
+                    "STOCK_AGOTADO" -> 3
+                    "STOCK_CRITICO" -> 4
+                    "PROXIMO" -> 5
+                    "STOCK_BAJO" -> 6
+                    "ALTO_CONSUMO" -> 7
+                    "SIN_ROTACION" -> 8
+                    "EN_PROCESO" -> 9
+                    else -> 10
                 }
             }
         )
+    }
+
+    private fun cargarAlertasSolicitudes(
+        solicitudes: List<SolicitudMantenimientoModel>,
+        listaAlertas: MutableList<AlertaModel>
+    ) {
+        solicitudes.forEach { solicitud ->
+            val prioridad =
+                if (solicitud.horasRestantes <= 10) {
+                    "ALTA"
+                } else {
+                    "MEDIA"
+                }
+
+            val mensaje =
+                when {
+                    solicitud.horasRestantes < 0 -> {
+                        val horasExcedidas =
+                            kotlin.math.abs(
+                                solicitud.horasRestantes
+                            )
+
+                        "La maquinaria ${solicitud.nombreMaquinaria} " +
+                                "superó el intervalo de mantenimiento " +
+                                "por $horasExcedidas horas."
+                    }
+
+                    solicitud.horasRestantes == 0 -> {
+                        "La maquinaria ${solicitud.nombreMaquinaria} " +
+                                "alcanzó el límite de mantenimiento."
+                    }
+
+                    else -> {
+                        "La maquinaria ${solicitud.nombreMaquinaria} " +
+                                "tiene una solicitud pendiente. Faltan " +
+                                "${solicitud.horasRestantes} horas para mantenimiento."
+                    }
+                }
+
+            listaAlertas.add(
+                AlertaModel(
+                    uid =
+                        "${solicitud.uid}_SOLICITUD_MANTENIMIENTO",
+
+                    categoria = "MANTENIMIENTO",
+                    icono = "📋",
+                    titulo = "Solicitud de mantenimiento pendiente",
+                    mensaje = mensaje,
+                    tipo = "SOLICITUD_MANTENIMIENTO",
+                    prioridad = prioridad,
+                    fecha = solicitud.fechaRegistro,
+
+                    uidSolicitudMantenimiento = solicitud.uid,
+
+                    uidMaquinaria = solicitud.uidMaquinaria,
+                    nombreMaquinaria = solicitud.nombreMaquinaria
+                )
+            )
+        }
     }
 }

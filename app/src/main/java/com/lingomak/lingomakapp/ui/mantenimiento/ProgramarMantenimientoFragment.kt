@@ -30,6 +30,7 @@ class ProgramarMantenimientoFragment : Fragment() {
 
     private val maquinariaViewModel: MaquinariaViewModel by viewModels()
 
+    private val solicitudViewModel: SolicitudMantenimientoViewModel by viewModels()
     private var listaMaquinarias = listOf<MaquinariaModel>()
 
     private var maquinariaSeleccionada: MaquinariaModel? = null
@@ -37,6 +38,13 @@ class ProgramarMantenimientoFragment : Fragment() {
     private val auth = FirebaseAuth.getInstance()
     private val database = FirebaseFirestore.getInstance()
     private var responsableActual = ""
+    private var vieneDeSolicitud = false
+    private var uidSolicitud = ""
+
+    private var uidMaquinariaSolicitud = ""
+    private var motivoSolicitud = ""
+    private var fechaSugerida = ""
+    private var horometroSugerido = 0
 
     private val mantenimientoViewModel: MantenimientoViewModel by viewModels()
 
@@ -53,7 +61,9 @@ class ProgramarMantenimientoFragment : Fragment() {
             false
         )
 
+        leerArgumentosSolicitud()
         configurarSpinners()
+        aplicarDatosInicialesSolicitud()
         cargarMaquinaria()
         configurarEventos()
         cargarResponsableActual()
@@ -127,8 +137,15 @@ class ProgramarMantenimientoFragment : Fragment() {
                                 maquinaria.horometroActual
                         }
 
+                        val horometroAmostrar =
+                            if (vieneDeSolicitud && horometroSugerido > 0) {
+                                horometroSugerido
+                            } else {
+                                proximoHorometro
+                            }
+
                         binding.etHorometroProgramado.setText(
-                            proximoHorometro.toString()
+                            horometroAmostrar.toString()
                         )
 
                     }
@@ -344,15 +361,61 @@ class ProgramarMantenimientoFragment : Fragment() {
                 mantenimientoViewModel.agregarMantenimiento(
                     mantenimiento = mantenimiento,
                     onSuccess = {
-                        mostrarCargando(false)
 
-                        Toast.makeText(
-                            requireContext(),
-                            "Mantenimiento programado correctamente",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        if (!vieneDeSolicitud) {
 
-                        parentFragmentManager.popBackStack()
+                            mostrarCargando(false)
+
+                            Toast.makeText(
+                                requireContext(),
+                                "Mantenimiento programado correctamente",
+                                Toast.LENGTH_SHORT
+                            ).show()
+
+                            parentFragmentManager.popBackStack()
+                            return@agregarMantenimiento
+                        }
+
+                        val uidAdministrador =
+                            FirebaseAuth.getInstance()
+                                .currentUser
+                                ?.uid
+                                .orEmpty()
+
+                        if (
+                            uidSolicitud.isBlank() ||
+                            uidAdministrador.isBlank()
+                        ) {
+                            mostrarCargando(false)
+
+                            Toast.makeText(
+                                requireContext(),
+                                "El mantenimiento se creó, pero no se pudo actualizar la solicitud",
+                                Toast.LENGTH_LONG
+                            ).show()
+
+                            parentFragmentManager.popBackStack()
+                            return@agregarMantenimiento
+                        }
+
+                        solicitudViewModel.marcarComoConvertida(
+                            uidSolicitud = uidSolicitud,
+                            uidAdministrador = uidAdministrador,
+
+                            uidMantenimientoGenerado = mantenimiento.uid,
+
+                            onSuccess = {
+                                mostrarCargando(false)
+
+                                Toast.makeText(
+                                    requireContext(),
+                                    "Solicitud aprobada y mantenimiento programado correctamente",
+                                    Toast.LENGTH_LONG
+                                ).show()
+
+                                parentFragmentManager.popBackStack()
+                            }
+                        )
                     }
                 )
             }
@@ -384,7 +447,48 @@ class ProgramarMantenimientoFragment : Fragment() {
             )
 
             binding.spMaquinaria.adapter = adapter
-            maquinariaSeleccionada = lista.first()
+
+            if (vieneDeSolicitud) {
+
+                val posicionMaquinaria =
+                    lista.indexOfFirst { maquinaria ->
+                        maquinaria.uid == uidMaquinariaSolicitud
+                    }
+
+                if (posicionMaquinaria >= 0) {
+
+                    binding.spMaquinaria.setSelection(posicionMaquinaria)
+
+                    maquinariaSeleccionada =
+                        lista[posicionMaquinaria]
+
+                    binding.spMaquinaria.isEnabled = false
+                    binding.spMaquinaria.isClickable = false
+
+                    if (horometroSugerido > 0) {
+                        binding.etHorometroProgramado.setText(
+                            horometroSugerido.toString()
+                        )
+                    }
+
+                } else {
+
+                    Toast.makeText(
+                        requireContext(),
+                        "No se encontró la maquinaria asociada a la solicitud",
+                        Toast.LENGTH_LONG
+                    ).show()
+
+                    binding.btnGuardarMantenimiento.isEnabled = false
+                }
+
+            } else {
+
+                /*
+                 * Flujo manual normal.
+                 */
+                maquinariaSeleccionada = lista.first()
+            }
 
         }
         maquinariaViewModel.mensajeError.observe(viewLifecycleOwner){ mensaje ->
@@ -446,9 +550,31 @@ class ProgramarMantenimientoFragment : Fragment() {
     }
 
     private fun observarMantenimientoViewModel() {
-        mantenimientoViewModel.mensajeError.observe(viewLifecycleOwner) { mensaje ->
+
+        mantenimientoViewModel.mensajeError.observe(
+            viewLifecycleOwner
+        ) { mensaje ->
+
             mostrarCargando(false)
-            Toast.makeText(requireContext(), mensaje, Toast.LENGTH_SHORT).show()
+
+            Toast.makeText(
+                requireContext(),
+                mensaje,
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+
+        solicitudViewModel.mensajeError.observe(
+            viewLifecycleOwner
+        ) { mensaje ->
+
+            mostrarCargando(false)
+
+            Toast.makeText(
+                requireContext(),
+                mensaje,
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
 
@@ -470,6 +596,50 @@ class ProgramarMantenimientoFragment : Fragment() {
     }
 
 
+    private fun leerArgumentosSolicitud() {
+
+        vieneDeSolicitud =
+            arguments?.getString("origen") ==
+                    "SOLICITUD_MANTENIMIENTO"
+
+        uidSolicitud =
+            arguments?.getString("uidSolicitud").orEmpty()
+
+        uidMaquinariaSolicitud =
+            arguments?.getString("uidMaquinaria").orEmpty()
+
+        motivoSolicitud =
+            arguments?.getString("motivoSolicitud").orEmpty()
+
+        fechaSugerida =
+            arguments?.getString("fechaSugerida").orEmpty()
+
+        horometroSugerido =
+            arguments?.getInt("horometroProgramado") ?: 0
+    }
+
+    private fun aplicarDatosInicialesSolicitud() {
+
+        if (!vieneDeSolicitud) {
+            return
+        }
+
+        binding.spTipoMantenimiento.setSelection(0)
+
+        if (motivoSolicitud.isNotBlank()) {
+            binding.etDescripcion.setText(motivoSolicitud)
+        }
+
+        if (fechaSugerida.isNotBlank()) {
+            binding.etFechaProgramada.setText(fechaSugerida)
+        }
+
+        if (horometroSugerido > 0) {
+            binding.etHorometroProgramado.setText(
+                horometroSugerido.toString()
+            )
+        }
+    }
 
     override fun onDestroyView() {
         super.onDestroyView()

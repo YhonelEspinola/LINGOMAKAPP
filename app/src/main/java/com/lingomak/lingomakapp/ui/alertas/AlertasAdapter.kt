@@ -116,6 +116,18 @@ class AlertasAdapter(
                     binding.tvPrioridadAlerta.setTextColor(Color.rgb(75, 85, 99))
                 }
 
+                "SOLICITUD_MANTENIMIENTO" -> {
+                    binding.tvIconoAlerta.text = "📋"
+
+                    binding.tvTituloAlerta.setTextColor(
+                        Color.rgb(37, 99, 235)
+                    )
+
+                    binding.tvPrioridadAlerta.setTextColor(
+                        Color.rgb(37, 99, 235)
+                    )
+                }
+
                 else -> {
                     binding.tvIconoAlerta.text = "⚠"
                 }
