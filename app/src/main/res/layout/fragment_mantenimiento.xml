@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background">
+    android:background="#F5F5F5">
 
     <androidx.core.widget.NestedScrollView
         android:id="@+id/scrollMantenimiento"
@@ -25,18 +26,21 @@
             <EditText
                 android:id="@+id/etBuscarMantenimiento"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="50dp"
                 android:layout_marginTop="8dp"
+                android:background="@drawable/bg_edit_text"
                 android:hint="Buscar maquinaria o código"
+                android:paddingHorizontal="16dp"
+                android:textSize="14sp"
                 android:inputType="text"
                 android:singleLine="true" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
+                android:layout_marginTop="24dp"
                 android:text="TIPO DE MANTENIMIENTO"
-                android:textColor="@color/text_primary"
+                android:textColor="#212121"
                 android:textSize="12sp"
                 android:textStyle="bold" />
 
@@ -50,7 +54,6 @@
                     android:id="@+id/chipGroupTipoMantenimiento"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
                     app:selectionRequired="true"
                     app:singleSelection="true">
 
@@ -59,7 +62,6 @@
                         style="@style/Widget.MaterialComponents.Chip.Choice"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginEnd="4dp"
                         android:checked="true"
                         android:text="TODOS" />
 
@@ -68,7 +70,6 @@
                         style="@style/Widget.MaterialComponents.Chip.Choice"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginEnd="4dp"
                         android:text="PREVENTIVO" />
 
                     <com.google.android.material.chip.Chip
@@ -76,7 +77,6 @@
                         style="@style/Widget.MaterialComponents.Chip.Choice"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginEnd="4dp"
                         android:text="CORRECTIVO" />
 
                     <com.google.android.material.chip.Chip
@@ -93,9 +93,9 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="18dp"
+                android:layout_marginTop="20dp"
                 android:text="ESTADO"
-                android:textColor="@color/text_primary"
+                android:textColor="#212121"
                 android:textSize="12sp"
                 android:textStyle="bold" />
 
@@ -109,7 +109,6 @@
                     android:id="@+id/chipGroupEstadoMantenimiento"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
                     app:selectionRequired="true"
                     app:singleSelection="true">
 
@@ -118,7 +117,6 @@
                         style="@style/Widget.MaterialComponents.Chip.Choice"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginEnd="4dp"
                         android:checked="true"
                         android:text="TODOS" />
 
@@ -127,7 +125,6 @@
                         style="@style/Widget.MaterialComponents.Chip.Choice"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginEnd="4dp"
                         android:text="PENDIENTE" />
 
                     <com.google.android.material.chip.Chip
@@ -135,7 +132,6 @@
                         style="@style/Widget.MaterialComponents.Chip.Choice"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginEnd="4dp"
                         android:text="EN PROCESO" />
 
                     <com.google.android.material.chip.Chip
@@ -143,7 +139,6 @@
                         style="@style/Widget.MaterialComponents.Chip.Choice"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginEnd="4dp"
                         android:text="FINALIZADO" />
 
                     <com.google.android.material.chip.Chip
@@ -161,19 +156,19 @@
                 android:id="@+id/layoutResumenMantenimiento"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
+                android:layout_marginTop="24dp"
                 android:orientation="horizontal"
                 android:weightSum="3">
 
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="0dp"
-                    android:layout_height="100dp"
+                    android:layout_height="90dp"
                     android:layout_marginEnd="4dp"
                     android:layout_weight="1"
-                    app:cardBackgroundColor="#FFF7ED"
-                    app:cardCornerRadius="16dp"
-                    app:cardElevation="2dp"
-                    app:strokeColor="#FED7AA"
+                    app:cardBackgroundColor="#FFFFFF"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="0dp"
+                    app:strokeColor="#E0E0E0"
                     app:strokeWidth="1dp">
 
                     <LinearLayout
@@ -181,28 +176,23 @@
                         android:layout_height="match_parent"
                         android:gravity="center"
                         android:orientation="vertical">
-
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:src="@android:drawable/ic_menu_recent_history"
-                            app:tint="@android:color/holo_orange_dark" />
 
                         <TextView
                             android:id="@+id/tvPendientesMantenimiento"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="0"
-                            android:textColor="@android:color/holo_orange_dark"
-                            android:textSize="22sp"
+                            android:textColor="#B45309"
+                            android:textSize="20sp"
                             android:textStyle="bold" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Pendientes"
-                            android:textColor="@color/text_primary"
-                            android:textSize="11sp" />
+                            android:textColor="#757575"
+                            android:textSize="11sp"
+                            android:textStyle="bold" />
 
                     </LinearLayout>
 
@@ -210,13 +200,13 @@
 
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="0dp"
-                    android:layout_height="100dp"
+                    android:layout_height="90dp"
                     android:layout_marginHorizontal="4dp"
                     android:layout_weight="1"
-                    app:cardBackgroundColor="#FEF2F2"
-                    app:cardCornerRadius="16dp"
-                    app:cardElevation="2dp"
-                    app:strokeColor="#FECACA"
+                    app:cardBackgroundColor="#FFFFFF"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="0dp"
+                    app:strokeColor="#E0E0E0"
                     app:strokeWidth="1dp">
 
                     <LinearLayout
@@ -224,28 +214,23 @@
                         android:layout_height="match_parent"
                         android:gravity="center"
                         android:orientation="vertical">
-
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:src="@android:drawable/ic_dialog_alert"
-                            app:tint="@android:color/holo_red_dark" />
 
                         <TextView
                             android:id="@+id/tvVencidosMantenimiento"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="0"
-                            android:textColor="@android:color/holo_red_dark"
-                            android:textSize="22sp"
+                            android:textColor="#B91C1C"
+                            android:textSize="20sp"
                             android:textStyle="bold" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Vencidos"
-                            android:textColor="@color/text_primary"
-                            android:textSize="11sp" />
+                            android:textColor="#757575"
+                            android:textSize="11sp"
+                            android:textStyle="bold" />
 
                     </LinearLayout>
 
@@ -253,13 +238,13 @@
 
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="0dp"
-                    android:layout_height="100dp"
+                    android:layout_height="90dp"
                     android:layout_marginStart="4dp"
                     android:layout_weight="1"
-                    app:cardBackgroundColor="#F0FDF4"
-                    app:cardCornerRadius="16dp"
-                    app:cardElevation="2dp"
-                    app:strokeColor="#BBF7D0"
+                    app:cardBackgroundColor="#FFFFFF"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="0dp"
+                    app:strokeColor="#E0E0E0"
                     app:strokeWidth="1dp">
 
                     <LinearLayout
@@ -268,42 +253,28 @@
                         android:gravity="center"
                         android:orientation="vertical">
 
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:src="@drawable/ic_check"
-                            app:tint="@android:color/holo_green_dark" />
-
                         <TextView
                             android:id="@+id/tvFinalizadosMantenimiento"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="0"
-                            android:textColor="@android:color/holo_green_dark"
-                            android:textSize="22sp"
+                            android:textColor="#15803D"
+                            android:textSize="20sp"
                             android:textStyle="bold" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Finalizados"
-                            android:textColor="@color/text_primary"
-                            android:textSize="11sp" />
+                            android:textColor="#757575"
+                            android:textSize="11sp"
+                            android:textStyle="bold" />
 
                     </LinearLayout>
 
                 </com.google.android.material.card.MaterialCardView>
 
             </LinearLayout>
-
-           <!-- <TextView
-                android:id="@+id/tvTotalMantenimientos"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="0 en total."
-                android:textColor="@color/text_primary"
-                android:textSize="14sp" /> -->
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvMantenimientos"
@@ -323,10 +294,11 @@
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
         android:text="PROGRAMAR"
-        android:textColor="@color/white"
-        app:backgroundTint="@color/primary"
+        android:textColor="#FFFFFF"
+        app:backgroundTint="#7F0000"
+        app:elevation="0dp"
         app:icon="@android:drawable/ic_input_add"
-        app:iconTint="@color/white"
+        app:iconTint="#FFFFFF"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 

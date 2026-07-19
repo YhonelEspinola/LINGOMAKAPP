@@ -22,10 +22,13 @@
     <EditText
         android:id="@+id/etBuscar"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="50dp"
         android:layout_marginHorizontal="16dp"
-        android:layout_marginTop="4dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/bg_edit_text"
         android:hint="Buscar por nombre o código"
+        android:paddingHorizontal="16dp"
+        android:textSize="14sp"
         android:inputType="text"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -48,21 +51,30 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:checked="true"
-            android:text="Todos" />
+            android:text="Todos"
+            app:chipBackgroundColor="@color/selector_chip_choice"
+            app:chipStrokeWidth="0dp"
+            android:textColor="@color/selector_chip_text" />
 
         <com.google.android.material.chip.Chip
             android:id="@+id/chipEntradas"
             style="@style/Widget.MaterialComponents.Chip.Choice"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Entradas" />
+            android:text="Entradas"
+            app:chipBackgroundColor="@color/selector_chip_choice"
+            app:chipStrokeWidth="0dp"
+            android:textColor="@color/selector_chip_text" />
 
         <com.google.android.material.chip.Chip
             android:id="@+id/chipSalidas"
             style="@style/Widget.MaterialComponents.Chip.Choice"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Salidas" />
+            android:text="Salidas"
+            app:chipBackgroundColor="@color/selector_chip_choice"
+            app:chipStrokeWidth="0dp"
+            android:textColor="@color/selector_chip_text" />
 
     </com.google.android.material.chip.ChipGroup>
 
@@ -92,24 +104,28 @@
         android:weightSum="2"
         app:layout_constraintBottom_toBottomOf="parent">
 
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnEstadisticas"
             android:layout_width="0dp"
-            android:layout_height="55dp"
+            android:layout_height="56dp"
             android:layout_marginEnd="8dp"
             android:layout_weight="1"
-            android:background="@drawable/bg_button_primary"
-            android:text="Estadísticas"
-            android:textColor="@color/white" />
+            android:text="ESTADÍSTICAS"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            app:cornerRadius="12dp"
+            app:backgroundTint="@color/primary" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnRegistrar"
             android:layout_width="0dp"
-            android:layout_height="55dp"
+            android:layout_height="56dp"
             android:layout_weight="1"
-            android:background="@drawable/bg_button_primary"
             android:text="REGISTRAR"
             android:textColor="@color/white"
+            android:textStyle="bold"
+            app:cornerRadius="12dp"
+            app:backgroundTint="@color/primary"
             app:icon="@drawable/qr"
             app:iconGravity="textStart"
             app:iconPadding="8dp"

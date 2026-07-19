@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Seleccione un repuesto"
+        android:textColor="@color/text_primary"
+        android:textStyle="bold" />
+
+    <AutoCompleteTextView
+        android:id="@+id/actvRepuesto"
+        android:layout_width="match_parent"
+        android:layout_height="55dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/bg_edit_text"
+        android:hint="Escriba el nombre o código"
+        android:padding="12dp"
+        android:completionThreshold="1" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Cantidad utilizada"
+        android:textColor="@color/text_primary"
+        android:textStyle="bold" />
+
+    <EditText
+        android:id="@+id/etCantidadInsumo"
+        android:layout_width="match_parent"
+        android:layout_height="55dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/bg_edit_text"
+        android:hint="Ejemplo: 2"
+        android:inputType="number"
+        android:padding="12dp" />
+
+</LinearLayout>

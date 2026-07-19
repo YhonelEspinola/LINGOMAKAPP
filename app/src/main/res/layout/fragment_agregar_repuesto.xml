@@ -11,7 +11,6 @@
         android:orientation="vertical"
         android:padding="24dp">
 
-
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -22,9 +21,80 @@
             android:gravity="center"
             android:layout_marginBottom="24dp" />
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Imagen del Repuesto"
+            android:textColor="@color/text_primary"
+            android:textStyle="bold"
+            android:textSize="14sp" />
 
-        <!-- Código interno: autogenerado, no editable por el usuario.
-             Se muestra en tiempo real al seleccionar la categoría. -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardSubirImagen"
+            android:layout_width="match_parent"
+            android:layout_height="160dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="20dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="0dp"
+            app:strokeWidth="1dp"
+            app:strokeColor="@color/border"
+            app:cardBackgroundColor="@color/white"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground">
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <ImageView
+                    android:id="@+id/ivFotoRepuesto"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    android:visibility="gone"/>
+
+                <LinearLayout
+                    android:id="@+id/layoutPlaceholder"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:src="@android:drawable/ic_menu_camera"
+                        app:tint="@color/text_secondary" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="Subir imagen"
+                        android:textColor="@color/text_secondary"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </FrameLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Botones antiguos para compatibilidad con código actual -->
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fabGaleria"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            app:fabSize="mini" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fabCamara"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            app:fabSize="mini" />
+
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -37,25 +107,14 @@
             android:layout_width="match_parent"
             android:layout_height="55dp"
             android:layout_marginTop="8dp"
-            android:layout_marginBottom="4dp"
+            android:layout_marginBottom="16dp"
             android:background="@drawable/bg_edit_text"
-            android:hint="Se genera automáticamente al elegir categoría"
+            android:hint="Se genera automáticamente"
             android:padding="12dp"
             android:inputType="none"
             android:focusable="false"
-            android:clickable="false"
             android:enabled="false"
-            android:textColor="@color/text_secondary"
-            android:alpha="0.7" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="* El código se genera automáticamente al seleccionar la categoría"
-            android:textColor="@color/text_secondary"
-            android:textSize="12sp"
-            android:layout_marginBottom="16dp" />
-
+            android:textSize="14sp" />
 
         <TextView
             android:layout_width="match_parent"
@@ -73,53 +132,8 @@
             android:background="@drawable/bg_edit_text"
             android:hint="Ingrese nombre del repuesto"
             android:padding="12dp"
+            android:textSize="14sp"
             android:inputType="text" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Imagen del Repuesto"
-            android:textColor="@color/text_primary"
-            android:textStyle="bold" />
-
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="200dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="16dp">
-
-            <ImageView
-                android:id="@+id/ivFotoRepuesto"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:scaleType="centerCrop"
-                android:background="@drawable/bg_edit_text"
-                android:src="@android:drawable/ic_menu_gallery" />
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom|end"
-                android:orientation="horizontal"
-                android:padding="8dp">
-
-                <com.google.android.material.floatingactionbutton.FloatingActionButton
-                    android:id="@+id/fabGaleria"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="8dp"
-                    android:src="@android:drawable/ic_menu_gallery"
-                    app:fabSize="mini" />
-
-                <com.google.android.material.floatingactionbutton.FloatingActionButton
-                    android:id="@+id/fabCamara"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:src="@android:drawable/ic_menu_camera"
-                    app:fabSize="mini" />
-            </LinearLayout>
-        </FrameLayout>
-
 
         <TextView
             android:layout_width="match_parent"
@@ -137,26 +151,6 @@
             android:background="@drawable/bg_edit_text"
             android:padding="12dp" />
 
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Marca"
-            android:textColor="@color/text_primary"
-            android:textStyle="bold" />
-
-        <EditText
-            android:id="@+id/etMarca"
-            android:layout_width="match_parent"
-            android:layout_height="55dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="16dp"
-            android:background="@drawable/bg_edit_text"
-            android:hint="Ingrese marca"
-            android:padding="12dp"
-            android:inputType="text" />
-
-
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -167,77 +161,52 @@
         <EditText
             android:id="@+id/etDescripcion"
             android:layout_width="match_parent"
-            android:layout_height="100dp"
+            android:layout_height="80dp"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="16dp"
             android:background="@drawable/bg_edit_text"
-            android:hint="Ingrese una descripción (opcional)"
+            android:hint="Descripción opcional"
             android:padding="12dp"
+            android:textSize="14sp"
             android:gravity="top"
             android:inputType="textMultiLine" />
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Marca" android:textStyle="bold" android:textColor="@color/text_primary"/>
+                <EditText android:id="@+id/etMarca" android:layout_width="match_parent" android:layout_height="55dp" android:layout_marginTop="8dp" android:background="@drawable/bg_edit_text" android:hint="Marca" android:padding="12dp" android:textSize="14sp" android:inputType="text"/>
+            </LinearLayout>
+            <View android:layout_width="12dp" android:layout_height="1dp"/>
+            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Stock Inicial" android:textStyle="bold" android:textColor="@color/text_primary"/>
+                <EditText android:id="@+id/etStockInicial" android:layout_width="match_parent" android:layout_height="55dp" android:layout_marginTop="8dp" android:background="@drawable/bg_edit_text" android:hint="0" android:padding="12dp" android:inputType="number" android:textSize="14sp"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:orientation="horizontal">
+            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Stock Mínimo" android:textStyle="bold" android:textColor="@color/text_primary"/>
+                <EditText android:id="@+id/etStockMinimo" android:layout_width="match_parent" android:layout_height="55dp" android:layout_marginTop="8dp" android:background="@drawable/bg_edit_text" android:hint="0" android:padding="12dp" android:inputType="number" android:textSize="14sp"/>
+            </LinearLayout>
+            <View android:layout_width="12dp" android:layout_height="1dp"/>
+            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Stock Máximo" android:textStyle="bold" android:textColor="@color/text_primary"/>
+                <EditText android:id="@+id/etStockMaximo" android:layout_width="match_parent" android:layout_height="55dp" android:layout_marginTop="8dp" android:background="@drawable/bg_edit_text" android:hint="0" android:padding="12dp" android:inputType="number" android:textSize="14sp"/>
+            </LinearLayout>
+        </LinearLayout>
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Stock inicial"
-            android:textColor="@color/text_primary"
-            android:textStyle="bold" />
-
-        <EditText
-            android:id="@+id/etStockInicial"
-            android:layout_width="match_parent"
-            android:layout_height="55dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="16dp"
-            android:background="@drawable/bg_edit_text"
-            android:hint="Ingrese stock inicial"
-            android:padding="12dp"
-            android:inputType="number" />
-
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Stock mínimo"
-            android:textColor="@color/text_primary"
-            android:textStyle="bold" />
-
-        <EditText
-            android:id="@+id/etStockMinimo"
-            android:layout_width="match_parent"
-            android:layout_height="55dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="16dp"
-            android:background="@drawable/bg_edit_text"
-            android:hint="Ingrese stock mínimo"
-            android:padding="12dp"
-            android:inputType="number" />
-
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Stock máximo"
-            android:textColor="@color/text_primary"
-            android:textStyle="bold" />
-
-        <EditText
-            android:id="@+id/etStockMaximo"
-            android:layout_width="match_parent"
-            android:layout_height="55dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="16dp"
-            android:background="@drawable/bg_edit_text"
-            android:hint="Ingrese stock máximo"
-            android:padding="12dp"
-            android:inputType="number" />
-
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Ubicación en almacén"
+            android:layout_marginTop="16dp"
+            android:text="Ubicación"
             android:textColor="@color/text_primary"
             android:textStyle="bold" />
 
@@ -246,20 +215,61 @@
             android:layout_width="match_parent"
             android:layout_height="55dp"
             android:layout_marginTop="8dp"
-            android:layout_marginBottom="24dp"
+            android:layout_marginBottom="16dp"
             android:background="@drawable/bg_edit_text"
             android:hint="Ej: Estante A - Nivel 2"
             android:padding="12dp"
+            android:textSize="14sp"
             android:inputType="text" />
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Proveedor"
+            android:textColor="@color/text_primary"
+            android:textStyle="bold" />
 
-        <Button
-            android:id="@+id/btnGuardarRepuesto"
+        <EditText
+            android:id="@+id/etProveedorNombre"
             android:layout_width="match_parent"
             android:layout_height="55dp"
-            android:text="Guardar Repuesto"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="16dp"
+            android:background="@drawable/bg_edit_text"
+            android:hint="Nombre"
+            android:padding="12dp"
+            android:textSize="14sp"
+            android:inputType="text" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Contacto Proveedor"
+            android:textColor="@color/text_primary"
+            android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/etProveedorContacto"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="16dp"
+            android:background="@drawable/bg_edit_text"
+            android:hint="Teléfono / Email"
+            android:padding="12dp"
+            android:textSize="14sp"
+            android:inputType="text" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnGuardarRepuesto"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="24dp"
+            android:text="GUARDAR"
             android:textColor="@color/white"
-            android:background="@drawable/bg_button_primary" />
+            android:textStyle="bold"
+            app:cornerRadius="12dp"
+            app:backgroundTint="@color/primary" />
 
     </LinearLayout>
 

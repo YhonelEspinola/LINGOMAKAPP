@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background">
+    android:background="#F5F5F5">
 
     <androidx.core.widget.NestedScrollView
         android:id="@+id/scrollMaquinaria"
@@ -21,46 +21,38 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp"
+            android:padding="20dp"
             android:paddingBottom="120dp">
-
 
             <TextView
                 android:id="@+id/tvTituloMaquinaria"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Maquinaria"
-                android:textAlignment="center"
-                android:textColor="@color/text_primary"
-                android:textSize="30sp"
-                android:textStyle="bold"
-                />
-
+                android:text="FLOTA DE MAQUINARIA"
+                android:textColor="#212121"
+                android:textSize="24sp"
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/tvSubtituloMaquinaria"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Gestión de maquinaria pesada"
-                android:textAlignment="center"
-                android:textColor="@color/text_secondary"
+                android:text="Control de estado y horómetros activos"
+                android:textColor="#757575"
                 android:textSize="14sp"
                 android:layout_marginTop="4dp" />
-
 
             <EditText
                 android:id="@+id/etBuscarMaquinaria"
                 android:layout_width="match_parent"
-                android:layout_height="55dp"
-                android:layout_marginTop="20dp"
+                android:layout_height="50dp"
+                android:layout_marginTop="24dp"
                 android:background="@drawable/bg_edit_text"
-                android:drawableStart="@android:drawable/ic_menu_search"
-                android:drawablePadding="10dp"
-                android:hint="Buscar máquina, código o placa"
-                android:inputType="text"
+                android:hint="Buscar por nombre, código o placa"
                 android:paddingHorizontal="16dp"
+                android:textSize="14sp"
+                android:inputType="text"
                 android:singleLine="true" />
-
 
             <HorizontalScrollView
                 android:layout_width="match_parent"
@@ -95,7 +87,7 @@
                         style="@style/Widget.MaterialComponents.Chip.Choice"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="En mantenimiento" />
+                        android:text="Mantenimiento" />
 
                     <com.google.android.material.chip.Chip
                         android:id="@+id/chipEstadoInactiva"
@@ -108,25 +100,23 @@
 
             </HorizontalScrollView>
 
-
             <LinearLayout
                 android:id="@+id/layoutResumenMaquinaria"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:weightSum="4"
-                android:layout_marginTop="20dp">
-
+                android:layout_marginTop="24dp">
 
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="0dp"
-                    android:layout_height="100dp"
+                    android:layout_height="80dp"
                     android:layout_weight="1"
                     android:layout_marginEnd="4dp"
-                    app:cardBackgroundColor="#EFF6FF"
-                    app:cardCornerRadius="16dp"
-                    app:cardElevation="2dp"
-                    app:strokeColor="#DBEAFE"
+                    app:cardBackgroundColor="#FFFFFF"
+                    app:cardCornerRadius="8dp"
+                    app:cardElevation="0dp"
+                    app:strokeColor="#E0E0E0"
                     app:strokeWidth="1dp">
 
                     <LinearLayout
@@ -140,31 +130,31 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="0"
-                            android:textColor="@color/primary"
-                            android:textSize="26sp"
+                            android:textColor="#212121"
+                            android:textSize="20sp"
                             android:textStyle="bold" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Total"
-                            android:textColor="@color/text_primary"
-                            android:textSize="11sp" />
+                            android:text="TOTAL"
+                            android:textColor="#757575"
+                            android:textSize="9sp"
+                            android:textStyle="bold" />
 
                     </LinearLayout>
 
                 </com.google.android.material.card.MaterialCardView>
 
-
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="0dp"
-                    android:layout_height="100dp"
+                    android:layout_height="80dp"
                     android:layout_weight="1"
                     android:layout_marginHorizontal="4dp"
-                    app:cardBackgroundColor="#F0FDF4"
-                    app:cardCornerRadius="16dp"
-                    app:cardElevation="2dp"
-                    app:strokeColor="#BBF7D0"
+                    app:cardBackgroundColor="#FFFFFF"
+                    app:cardCornerRadius="8dp"
+                    app:cardElevation="0dp"
+                    app:strokeColor="#E0E0E0"
                     app:strokeWidth="1dp">
 
                     <LinearLayout
@@ -178,31 +168,31 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="0"
-                            android:textColor="@android:color/holo_green_dark"
-                            android:textSize="26sp"
+                            android:textColor="#15803D"
+                            android:textSize="20sp"
                             android:textStyle="bold" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Oper."
-                            android:textColor="@color/text_primary"
-                            android:textSize="11sp" />
+                            android:text="OPER."
+                            android:textColor="#757575"
+                            android:textSize="9sp"
+                            android:textStyle="bold" />
 
                     </LinearLayout>
 
                 </com.google.android.material.card.MaterialCardView>
 
-
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="0dp"
-                    android:layout_height="100dp"
+                    android:layout_height="80dp"
                     android:layout_weight="1"
                     android:layout_marginHorizontal="4dp"
-                    app:cardBackgroundColor="#FFF7ED"
-                    app:cardCornerRadius="16dp"
-                    app:cardElevation="2dp"
-                    app:strokeColor="#FED7AA"
+                    app:cardBackgroundColor="#FFFFFF"
+                    app:cardCornerRadius="8dp"
+                    app:cardElevation="0dp"
+                    app:strokeColor="#E0E0E0"
                     app:strokeWidth="1dp">
 
                     <LinearLayout
@@ -216,16 +206,17 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="0"
-                            android:textColor="@android:color/holo_orange_dark"
-                            android:textSize="26sp"
+                            android:textColor="#B45309"
+                            android:textSize="20sp"
                             android:textStyle="bold" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Mant."
-                            android:textColor="@color/text_primary"
-                            android:textSize="11sp" />
+                            android:text="MANT."
+                            android:textColor="#757575"
+                            android:textSize="9sp"
+                            android:textStyle="bold" />
 
                     </LinearLayout>
 
@@ -233,13 +224,13 @@
 
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="0dp"
-                    android:layout_height="100dp"
+                    android:layout_height="80dp"
                     android:layout_weight="1"
                     android:layout_marginStart="4dp"
-                    app:cardBackgroundColor="#FEF2F2"
-                    app:cardCornerRadius="16dp"
-                    app:cardElevation="2dp"
-                    app:strokeColor="#FECACA"
+                    app:cardBackgroundColor="#FFFFFF"
+                    app:cardCornerRadius="8dp"
+                    app:cardElevation="0dp"
+                    app:strokeColor="#E0E0E0"
                     app:strokeWidth="1dp">
 
                     <LinearLayout
@@ -253,23 +244,23 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="0"
-                            android:textColor="@android:color/holo_red_dark"
-                            android:textSize="26sp"
+                            android:textColor="#B91C1C"
+                            android:textSize="20sp"
                             android:textStyle="bold" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Inact."
-                            android:textColor="@color/text_primary"
-                            android:textSize="11sp" />
+                            android:text="INACT."
+                            android:textColor="#757575"
+                            android:textSize="9sp"
+                            android:textStyle="bold" />
 
                     </LinearLayout>
 
                 </com.google.android.material.card.MaterialCardView>
 
             </LinearLayout>
-
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvMaquinarias"
@@ -283,17 +274,18 @@
 
     </androidx.core.widget.NestedScrollView>
 
-
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/fabAgregarMaquinaria"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Agregar"
-        android:textColor="@android:color/white"
+        android:text="REGISTRAR ACTIVO"
+        android:textColor="#FFFFFF"
+        android:textStyle="bold"
         android:layout_margin="20dp"
+        app:elevation="0dp"
         app:icon="@android:drawable/ic_input_add"
-        app:backgroundTint="@color/primary"
-        app:tint="@android:color/white"
+        app:iconTint="#FFFFFF"
+        app:backgroundTint="#7F0000"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 

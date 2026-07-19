@@ -15,15 +15,17 @@ class ScannerOverlayView @JvmOverloads constructor(
         style = Paint.Style.FILL
     }
 
-    private val framePaint = Paint().apply {
-        color = Color.parseColor("#E67E22") // color primary
-        style = Paint.Style.STROKE
-        strokeWidth = 8f
-        isAntiAlias = true
+    private val transparentPaint = Paint().apply {
+        xfermode = PorterDuffXfermode(PorterDuff.Mode.CLEAR)
     }
 
     private val rect = RectF()
     private val frameSize = 250f // dp
+
+    init {
+        // Necesario para que PorterDuff.Mode.CLEAR funcione correctamente
+        setLayerType(LAYER_TYPE_HARDWARE, null)
+    }
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
@@ -40,13 +42,10 @@ class ScannerOverlayView @JvmOverloads constructor(
         
         rect.set(left, top, right, bottom)
 
-        // Dibujar máscara oscura
-        canvas.drawRect(0f, 0f, width, top, maskPaint) // arriba
-        canvas.drawRect(0f, bottom, width, height, maskPaint) // abajo
-        canvas.drawRect(0f, top, left, bottom, maskPaint) // izquierda
-        canvas.drawRect(right, top, width, bottom, maskPaint) // derecha
+        // 1. Dibujar el fondo oscuro en toda la pantalla
+        canvas.drawRect(0f, 0f, width, height, maskPaint)
 
-        // Dibujar recuadro claro
-        canvas.drawRoundRect(rect, 8f * density, 8f * density, framePaint)
+        // 2. Limpiar el área del recuadro central (hacerlo transparente sin bordes)
+        canvas.drawRoundRect(rect, 12f * density, 12f * density, transparentPaint)
     }
 }

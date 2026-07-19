@@ -8,7 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.lingomak.lingomakapp.data.model.MaquinariaModel
 import com.lingomak.lingomakapp.data.model.MovimientoModel
 import com.lingomak.lingomakapp.data.model.RepuestoModel
-import com.lingomak.lingomakapp.data.repository.MaquinariaRepositoryOp
+import com.lingomak.lingomakapp.data.repository.MaquinariaRepository
 import com.lingomak.lingomakapp.data.repository.MovimientoRepository
 import com.lingomak.lingomakapp.data.repository.RepuestoRepository
 import kotlinx.coroutines.launch
@@ -17,7 +17,7 @@ class MovimientosOpViewModel(application: Application) : AndroidViewModel(applic
 
     private val movimientoRepository = MovimientoRepository(application)
     private val repuestoRepository = RepuestoRepository(application)
-    private val maquinariaRepository = MaquinariaRepositoryOp(application)
+    private val maquinariaRepository = MaquinariaRepository(application)
 
     val todosLosRepuestos: LiveData<List<RepuestoModel>> = repuestoRepository.obtenerRepuestosObservable()
     val todasLasMaquinas: LiveData<List<MaquinariaModel>> = maquinariaRepository.obtenerMaquinariasObservable()

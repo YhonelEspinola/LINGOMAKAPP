@@ -15,6 +15,8 @@ data class RepuestoModel(
     val ubicacionAlmacen: String = "",
     val imagenUrl: String = "",
     val codigoQR: String = "",
+    val proveedorNombre: String = "",
+    val proveedorContacto: String = "",
     val estado: String = "ACTIVO",
     val fechaRegistro: Date? = null,
     val fechaActualizacion: Date? = null,

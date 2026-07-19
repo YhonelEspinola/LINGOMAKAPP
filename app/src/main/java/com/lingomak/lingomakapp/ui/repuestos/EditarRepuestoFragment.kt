@@ -181,6 +181,8 @@ class EditarRepuestoFragment : Fragment() {
         binding.etStockMinimo.setText(repuesto.stockMinimo.toString())
         binding.etStockMaximo.setText(repuesto.stockMaximo.toString())
         binding.etUbicacionAlmacen.setText(repuesto.ubicacionAlmacen)
+        binding.etProveedorNombre.setText(repuesto.proveedorNombre)
+        binding.etProveedorContacto.setText(repuesto.proveedorContacto)
         
         val index = categorias.indexOf(repuesto.categoria)
         if (index >= 0) binding.spinnerCategoria.setSelection(index)
@@ -238,7 +240,9 @@ class EditarRepuestoFragment : Fragment() {
                 stockActual = stockActual,
                 stockMinimo = stockMinimo,
                 stockMaximo = stockMaximo,
-                ubicacionAlmacen = binding.etUbicacionAlmacen.text.toString()
+                ubicacionAlmacen = binding.etUbicacionAlmacen.text.toString().trim(),
+                proveedorNombre = binding.etProveedorNombre.text.toString().trim(),
+                proveedorContacto = binding.etProveedorContacto.text.toString().trim()
             )
             repuestoEditado?.let { viewModel.actualizarRepuesto(it, imagenLocalPath, qrLocalPath) }
         }

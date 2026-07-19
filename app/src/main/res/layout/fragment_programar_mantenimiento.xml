@@ -2,6 +2,7 @@
 <androidx.core.widget.NestedScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background">
@@ -17,43 +18,42 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Programar Mantenimiento"
-            android:textColor="@color/text_primary"
+            android:textColor="@color/secondary"
             android:textAlignment="center"
-            android:textSize="26sp"
+            android:textSize="24sp"
             android:textStyle="bold" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Registra un mantenimiento preventivo, correctivo o predictivo"
+            android:text="Registra un mantenimiento preventivo o correctivo"
             android:textColor="@color/text_secondary"
             android:textSize="14sp"
             android:textAlignment="center"
             android:layout_marginTop="4dp"
-            android:layout_marginBottom="20dp" />
+            android:layout_marginBottom="24dp" />
 
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:cardCornerRadius="18dp"
-            app:cardElevation="4dp"
-            app:strokeColor="#E5E7EB"
-            app:strokeWidth="1dp"
+            app:cardCornerRadius="14dp"
+            app:cardElevation="2dp"
+            app:strokeWidth="0dp"
             app:cardBackgroundColor="@android:color/white">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="18dp">
-
+                android:padding="20dp">
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Tipo de mantenimiento"
                     android:textColor="@color/text_primary"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:textSize="13sp" />
 
                 <Spinner
                     android:id="@+id/spTipoMantenimiento"
@@ -64,13 +64,13 @@
                     android:background="@drawable/bg_edit_text"
                     android:padding="12dp" />
 
-
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Maquinaria"
                     android:textColor="@color/text_primary"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:textSize="13sp" />
 
                 <Spinner
                     android:id="@+id/spMaquinaria"
@@ -86,7 +86,8 @@
                     android:layout_height="wrap_content"
                     android:text="Prioridad"
                     android:textColor="@color/text_primary"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:textSize="13sp" />
 
                 <RadioGroup
                     android:id="@+id/rgPrioridad"
@@ -101,7 +102,8 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Alta" />
+                        android:text="Alta"
+                        android:buttonTint="@color/primary"/>
 
                     <RadioButton
                         android:id="@+id/rbPrioridadMedia"
@@ -109,23 +111,25 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Media"
-                        android:checked="true" />
+                        android:checked="true"
+                        android:buttonTint="@color/primary"/>
 
                     <RadioButton
                         android:id="@+id/rbPrioridadBaja"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Baja" />
-
+                        android:text="Baja"
+                        android:buttonTint="@color/primary"/>
                 </RadioGroup>
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Descripción"
+                    android:text="Descripción técnica"
                     android:textColor="@color/text_primary"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:textSize="13sp" />
 
                 <EditText
                     android:id="@+id/etDescripcion"
@@ -135,37 +139,37 @@
                     android:layout_marginBottom="16dp"
                     android:background="@drawable/bg_edit_text"
                     android:gravity="top"
-                    android:hint="Ejemplo: Cambio de aceite, revisión hidráulica..."
+                    android:hint="Describa el trabajo a realizar"
                     android:inputType="textMultiLine"
-                    android:padding="12dp" />
+                    android:padding="12dp"
+                    android:textSize="14sp" />
 
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Fecha Programada" android:textStyle="bold" android:textColor="@color/text_primary" android:textSize="13sp"/>
+                        <EditText android:id="@+id/etFechaProgramada" android:layout_width="match_parent" android:layout_height="55dp" android:layout_marginTop="8dp" android:background="@drawable/bg_edit_text" android:hint="Seleccionar" android:padding="12dp" android:focusable="false" android:inputType="none" android:textSize="14sp"/>
+                    </LinearLayout>
+
+                    <View android:layout_width="12dp" android:layout_height="1dp"/>
+
+                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Horómetro Prog." android:textStyle="bold" android:textColor="@color/text_primary" android:textSize="13sp"/>
+                        <EditText android:id="@+id/etHorometroProgramado" android:layout_width="match_parent" android:layout_height="55dp" android:layout_marginTop="8dp" android:background="@drawable/bg_edit_text" android:hint="Ej: 3500" android:padding="12dp" android:inputType="number" android:textSize="14sp"/>
+                    </LinearLayout>
+                </LinearLayout>
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Fecha programada"
-                    android:textColor="@color/text_primary"
-                    android:textStyle="bold" />
-
-                <EditText
-                    android:id="@+id/etFechaProgramada"
-                    android:layout_width="match_parent"
-                    android:layout_height="55dp"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginBottom="16dp"
-                    android:background="@drawable/bg_edit_text"
-                    android:focusable="false"
-                    android:hint="Seleccionar fecha"
-                    android:inputType="none"
-                    android:padding="12dp" />
-
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
                     android:text="Responsable / Operario"
                     android:textColor="@color/text_primary"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:textSize="13sp" />
 
                 <Spinner
                     android:id="@+id/spResponsable"
@@ -179,82 +183,123 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Horómetro programado"
+                    android:text="Costo estimado (S/)"
                     android:textColor="@color/text_primary"
-                    android:textStyle="bold" />
-
-                <EditText
-                    android:id="@+id/etHorometroProgramado"
-                    android:layout_width="match_parent"
-                    android:layout_height="55dp"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginBottom="16dp"
-                    android:background="@drawable/bg_edit_text"
-                    android:hint="Ejemplo: 3500"
-                    android:inputType="number"
-                    android:padding="12dp" />
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Costo estimado"
-                    android:textColor="@color/text_primary"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:textSize="13sp" />
 
                 <EditText
                     android:id="@+id/etCostoEstimado"
                     android:layout_width="match_parent"
                     android:layout_height="55dp"
                     android:layout_marginTop="8dp"
-                    android:layout_marginBottom="16dp"
+                    android:layout_marginBottom="20dp"
                     android:background="@drawable/bg_edit_text"
-                    android:hint="Ejemplo: 250.00"
+                    android:hint="0.00"
                     android:inputType="numberDecimal"
-                    android:padding="12dp" />
+                    android:padding="12dp"
+                    android:textSize="14sp" />
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:text="Imágenes de referencia"
+                    android:textColor="@color/text_primary"
+                    android:textStyle="bold"
+                    android:textSize="13sp" />
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardSubirImagenReferencia"
+                    android:layout_width="match_parent"
+                    android:layout_height="100dp"
+                    android:layout_marginTop="8dp"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="0dp"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="@color/border"
+                    app:cardBackgroundColor="@color/white"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:gravity="center"
+                        android:orientation="vertical">
+                        <ImageView
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:src="@android:drawable/ic_menu_camera"
+                            app:tint="@color/text_secondary" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="Subir fotos"
+                            android:textColor="@color/text_secondary"
+                            android:textStyle="bold"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Botón antiguo oculto -->
+                <ImageButton
+                    android:id="@+id/btnAgregarImagenReporte"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvImagenesReporte"
+                    android:layout_width="match_parent"
+                    android:layout_height="80dp"
+                    android:layout_marginTop="12dp"
+                    android:orientation="horizontal"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                    tools:listitem="@layout/item_evidencia_mantenimiento" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
                     android:text="Observaciones"
                     android:textColor="@color/text_primary"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:textSize="13sp" />
 
                 <EditText
                     android:id="@+id/etObservaciones"
                     android:layout_width="match_parent"
-                    android:layout_height="95dp"
+                    android:layout_height="80dp"
                     android:layout_marginTop="8dp"
                     android:layout_marginBottom="24dp"
                     android:background="@drawable/bg_edit_text"
                     android:gravity="top"
-                    android:hint="Observaciones opcionales"
+                    android:hint="Notas adicionales"
                     android:inputType="textMultiLine"
-                    android:padding="12dp" />
-
+                    android:padding="12dp"
+                    android:textSize="14sp" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnGuardarMantenimiento"
                     android:layout_width="match_parent"
                     android:layout_height="56dp"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginBottom="40dp"
-                    android:text="Guardar mantenimiento"
-                    android:textAllCaps="false"
-                    android:textColor="@android:color/white"
-                    android:textSize="16sp"
+                    android:text="GUARDAR MANTENIMIENTO"
+                    android:textColor="@color/white"
                     android:textStyle="bold"
-                    app:cornerRadius="14dp"
+                    app:cornerRadius="12dp"
                     app:backgroundTint="@color/primary" />
 
                 <ProgressBar
                     android:id="@+id/progressGuardarMantenimiento"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_gravity="center"
                     android:layout_marginTop="16dp"
                     android:visibility="gone"
-                    app:layout_constraintTop_toBottomOf="@id/btnGuardarMaquinaria"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"/>
+                    android:indeterminateTint="@color/primary" />
 
             </LinearLayout>
 

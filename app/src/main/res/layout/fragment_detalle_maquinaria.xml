@@ -2,6 +2,7 @@
 <androidx.core.widget.NestedScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background">
@@ -16,127 +17,155 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Detalle de Maquinaria"
+            android:text="Ficha de Maquinaria"
             android:textAlignment="center"
-            android:textColor="@color/text_primary"
-            android:textSize="28sp"
+            android:textColor="@color/secondary"
+            android:textSize="24sp"
             android:textStyle="bold" />
 
-        <ImageView
+        <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/imgDetalleMaquinaria"
             android:layout_width="match_parent"
-            android:layout_height="210dp"
-            android:layout_marginTop="18dp"
-            android:background="@drawable/bg_image_placeholder"
+            android:layout_height="220dp"
+            android:layout_marginTop="20dp"
             android:scaleType="centerCrop"
-            android:src="@drawable/ic_maquinaria_placeholder" />
+            android:background="@color/white"
+            android:src="@drawable/ic_maquinaria_placeholder"
+            app:shapeAppearanceOverlay="@style/ShapeAppearance.MaterialComponents.MediumComponent"
+            app:strokeWidth="1dp"
+            app:strokeColor="@color/border"
+            android:padding="2dp" />
 
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
-            app:cardCornerRadius="18dp"
-            app:cardElevation="4dp"
+            android:layout_marginTop="20dp"
+            app:cardCornerRadius="14dp"
+            app:cardElevation="2dp"
+            app:strokeWidth="0dp"
             app:cardBackgroundColor="@android:color/white">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="18dp">
+                android:padding="20dp">
 
                 <TextView
                     android:id="@+id/tvNombreDetalleMaquinaria"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Excavadora CAT 320"
-                    android:textColor="@color/text_primary"
-                    android:textSize="22sp"
+                    android:textColor="@color/secondary"
+                    android:textSize="20sp"
                     android:textStyle="bold" />
 
-                <TextView
-                    android:id="@+id/tvCodigoDetalleMaquinaria"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Código: EXC-20260629-1234"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="14sp"
-                    android:layout_marginTop="4dp" />
+                    android:layout_marginTop="4dp"
+                    android:orientation="horizontal">
+                    <TextView
+                        android:id="@+id/tvCodigoDetalleMaquinaria"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="CÓDIGO: EXC-1234"
+                        android:textColor="@color/primary"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text=" • "
+                        android:textColor="@color/text_secondary" />
+                    <TextView
+                        android:id="@+id/tvEstadoDetalleMaquinaria"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="OPERATIVA"
+                        android:textColor="@color/success"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
 
-                <TextView
-                    android:id="@+id/tvEstadoDetalleMaquinaria"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="OPERATIVA"
-                    android:textStyle="bold"
-                    android:textColor="@android:color/holo_green_dark"
-                    android:layout_marginTop="14dp" />
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#EEEEEE" android:layout_marginVertical="16dp"/>
 
-                <TextView
-                    android:id="@+id/tvTipoDetalleMaquinaria"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Tipo: Excavadora"
-                    android:layout_marginTop="16dp" />
+                <!-- Información Técnica -->
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="INFORMACIÓN TÉCNICA" android:textSize="11sp" android:textStyle="bold" android:textColor="@color/text_secondary"/>
 
-                <TextView
-                    android:id="@+id/tvMarcaDetalleMaquinaria"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Marca: CAT"
-                    android:layout_marginTop="10dp" />
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:orientation="horizontal">
+                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="TIPO" android:textSize="10sp" android:textStyle="bold" android:textColor="@color/text_secondary"/>
+                        <TextView android:id="@+id/tvTipoDetalleMaquinaria" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Excavadora" android:textColor="@color/text_primary" android:textSize="15sp"/>
+                    </LinearLayout>
+                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="MARCA" android:textSize="10sp" android:textStyle="bold" android:textColor="@color/text_secondary"/>
+                        <TextView android:id="@+id/tvMarcaDetalleMaquinaria" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="CAT" android:textColor="@color/text_primary" android:textSize="15sp"/>
+                    </LinearLayout>
+                </LinearLayout>
 
-                <TextView
-                    android:id="@+id/tvModeloDetalleMaquinaria"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Modelo: 320D"
-                    android:layout_marginTop="10dp" />
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:orientation="horizontal">
+                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="MODELO" android:textSize="10sp" android:textStyle="bold" android:textColor="@color/text_secondary"/>
+                        <TextView android:id="@+id/tvModeloDetalleMaquinaria" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="320D" android:textColor="@color/text_primary" android:textSize="15sp"/>
+                    </LinearLayout>
+                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="AÑO" android:textSize="10sp" android:textStyle="bold" android:textColor="@color/text_secondary"/>
+                        <TextView android:id="@+id/tvAnioDetalleMaquinaria" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="2020" android:textColor="@color/text_primary" android:textSize="15sp"/>
+                    </LinearLayout>
+                </LinearLayout>
 
-                <TextView
-                    android:id="@+id/tvPlacaDetalleMaquinaria"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Placa/Serie: ABC-123"
-                    android:layout_marginTop="10dp" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:text="PLACA / SERIE" android:textSize="10sp" android:textStyle="bold" android:textColor="@color/text_secondary"/>
+                <TextView android:id="@+id/tvPlacaDetalleMaquinaria" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="SER-12345678" android:textColor="@color/text_primary" android:textSize="15sp"/>
 
-                <TextView
-                    android:id="@+id/tvAnioDetalleMaquinaria"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Año: 2020"
-                    android:layout_marginTop="10dp" />
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#EEEEEE" android:layout_marginVertical="16dp"/>
 
-                <TextView
-                    android:id="@+id/tvHorometroDetalleMaquinaria"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Horómetro actual: 3500 h"
-                    android:layout_marginTop="10dp" />
+                <!-- Control de Uso -->
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="CONTROL DE USO" android:textSize="11sp" android:textStyle="bold" android:textColor="@color/text_secondary"/>
 
-                <TextView
-                    android:id="@+id/tvHorometroUltimoDetalleMaquinaria"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Último mantenimiento: 3000 h"
-                    android:layout_marginTop="10dp" />
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:orientation="horizontal">
+                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="HORÓMETRO ACTUAL" android:textSize="10sp" android:textStyle="bold" android:textColor="@color/text_secondary"/>
+                        <TextView android:id="@+id/tvHorometroDetalleMaquinaria" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="3500 h" android:textColor="@color/primary" android:textSize="18sp" android:textStyle="bold"/>
+                    </LinearLayout>
+                </LinearLayout>
 
-                <TextView
-                    android:id="@+id/tvUbicacionDetalleMaquinaria"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Ubicación: Obra Norte"
-                    android:layout_marginTop="10dp" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:text="ÚLTIMO MANTENIMIENTO" android:textSize="10sp" android:textStyle="bold" android:textColor="@color/text_secondary"/>
+                <TextView android:id="@+id/tvHorometroUltimoDetalleMaquinaria" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="3200 h" android:textColor="@color/text_primary" android:textSize="15sp"/>
 
-                <TextView
-                    android:id="@+id/tvObservacionesDetalleMaquinaria"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Observaciones: Sin observaciones"
-                    android:layout_marginTop="10dp" />
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#EEEEEE" android:layout_marginVertical="16dp"/>
+
+                <!-- Ubicación y Notas -->
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="UBICACIÓN Y NOTAS" android:textSize="11sp" android:textStyle="bold" android:textColor="@color/text_secondary"/>
+
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:text="UBICACIÓN ACTUAL" android:textSize="10sp" android:textStyle="bold" android:textColor="@color/text_secondary"/>
+                <TextView android:id="@+id/tvUbicacionDetalleMaquinaria" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Obra Central - Sector B" android:textColor="@color/text_primary" android:textSize="14sp"/>
+
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:text="OBSERVACIONES" android:textSize="10sp" android:textStyle="bold" android:textColor="@color/text_secondary"/>
+                <TextView android:id="@+id/tvObservacionesDetalleMaquinaria" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Sin observaciones registradas." android:textColor="@color/text_primary" android:textSize="14sp"/>
 
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnEditarMaquinaria"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="24dp"
+            android:text="EDITAR MAQUINARIA"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            app:cornerRadius="12dp"
+            app:backgroundTint="@color/primary" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnVolverMaquinaria"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="VOLVER"
+            android:textColor="@color/secondary"
+            android:textStyle="bold" />
 
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

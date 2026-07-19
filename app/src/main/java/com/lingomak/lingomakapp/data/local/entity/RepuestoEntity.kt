@@ -42,6 +42,8 @@ data class RepuestoEntity(
     val ubicacionAlmacen: String = "",
     val imagenUrl: String = "",
     val codigoQR: String = "",
+    val proveedorNombre: String = "",
+    val proveedorContacto: String = "",
     val imagenLocalPath: String? = null, // Path local de la imagen para subir en background
     val qrLocalPath: String? = null, // Path local del QR para subir en background
     val estado: String = "ACTIVO",

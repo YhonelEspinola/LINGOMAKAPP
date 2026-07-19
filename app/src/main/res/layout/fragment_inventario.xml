@@ -2,16 +2,20 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/background">
 
     <EditText
         android:id="@+id/etBuscar"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="50dp"
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="16dp"
+        android:background="@drawable/bg_edit_text"
         android:hint="Buscar por nombre o código"
+        android:paddingHorizontal="16dp"
+        android:textSize="14sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -19,10 +23,12 @@
     <Spinner
         android:id="@+id/spinnerCategoria"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="50dp"
         android:layout_marginStart="16dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="16dp"
+        android:background="@drawable/bg_edit_text"
+        android:paddingHorizontal="8dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/etBuscar" />
@@ -31,10 +37,9 @@
         android:id="@+id/scrollFiltrosStock"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="12dp"
         android:clipToPadding="false"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
+        android:paddingHorizontal="16dp"
         android:scrollbars="none"
         app:layout_constraintTop_toBottomOf="@id/spinnerCategoria">
 
@@ -42,7 +47,6 @@
             android:id="@+id/chipGroupStock"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
             app:selectionRequired="true"
             app:singleSelection="true">
 
@@ -51,32 +55,41 @@
                 style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="4dp"
                 android:checked="true"
-                android:text="Todos" />
+                android:text="Todos"
+                app:chipBackgroundColor="@color/selector_chip_choice"
+                app:chipStrokeWidth="0dp"
+                android:textColor="@color/selector_chip_text" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chipEnStock"
                 style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="4dp"
-                android:text="Con stock" />
+                android:text="Con stock"
+                app:chipBackgroundColor="@color/selector_chip_choice"
+                app:chipStrokeWidth="0dp"
+                android:textColor="@color/selector_chip_text" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chipBajoStock"
                 style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="4dp"
-                android:text="Bajo stock" />
+                android:text="Bajo stock"
+                app:chipBackgroundColor="@color/selector_chip_choice"
+                app:chipStrokeWidth="0dp"
+                android:textColor="@color/selector_chip_text" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chipSinStock"
                 style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Sin stock" />
+                android:text="Sin stock"
+                app:chipBackgroundColor="@color/selector_chip_choice"
+                app:chipStrokeWidth="0dp"
+                android:textColor="@color/selector_chip_text" />
 
         </com.google.android.material.chip.ChipGroup>
     </HorizontalScrollView>
@@ -87,8 +100,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
         android:clipToPadding="false"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
+        android:paddingHorizontal="16dp"
         android:scrollbars="none"
         app:layout_constraintTop_toBottomOf="@id/scrollFiltrosStock">
 
@@ -96,7 +108,6 @@
             android:id="@+id/chipGroupEstado"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
             app:selectionRequired="true"
             app:singleSelection="true">
 
@@ -105,24 +116,31 @@
                 style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="4dp"
                 android:checked="true"
-                android:text="TODOS" />
+                android:text="Todos"
+                app:chipBackgroundColor="@color/selector_chip_choice"
+                app:chipStrokeWidth="0dp"
+                android:textColor="@color/selector_chip_text" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chipActivos"
                 style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="4dp"
-                android:text="ACTIVOS" />
+                android:text="Activos"
+                app:chipBackgroundColor="@color/selector_chip_choice"
+                app:chipStrokeWidth="0dp"
+                android:textColor="@color/selector_chip_text" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chipInactivos"
                 style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="INACTIVOS" />
+                android:text="Inactivos"
+                app:chipBackgroundColor="@color/selector_chip_choice"
+                app:chipStrokeWidth="0dp"
+                android:textColor="@color/selector_chip_text" />
 
         </com.google.android.material.chip.ChipGroup>
     </HorizontalScrollView>
@@ -131,11 +149,9 @@
         android:id="@+id/rvRepuestos"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="12dp"
         android:clipToPadding="false"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        android:paddingBottom="80dp"
+        android:paddingBottom="100dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -143,9 +159,10 @@
 
     <ProgressBar
         android:id="@+id/progressBar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
         android:visibility="gone"
+        android:indeterminateTint="@color/primary"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -158,6 +175,8 @@
         android:layout_margin="16dp"
         android:text="REGISTRAR"
         android:textColor="@color/white"
+        android:textStyle="bold"
+        app:elevation="4dp"
         app:icon="@android:drawable/ic_input_add"
         app:iconTint="@color/white"
         app:backgroundTint="@color/primary"

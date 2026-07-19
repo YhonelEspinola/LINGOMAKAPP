@@ -11,7 +11,6 @@
         android:orientation="vertical"
         android:padding="24dp">
 
-
         <ImageView
             android:id="@+id/ivBotonRegresar"
             android:layout_width="28dp"
@@ -65,335 +64,165 @@
                     android:textColor="@color/text_secondary"/>
 
             </LinearLayout>
-
         </com.google.android.material.card.MaterialCardView>
 
-        <ImageView
+        <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/ivImagenRepuesto"
             android:layout_width="match_parent"
-            android:layout_height="180dp"
+            android:layout_height="200dp"
             android:layout_marginBottom="24dp"
-            android:background="@drawable/bg_edit_text"
-            android:scaleType="centerCrop"
+            android:scaleType="fitCenter"
+            android:background="@color/white"
             android:src="@android:drawable/ic_menu_gallery"
-            android:contentDescription="Imagen del repuesto" />
-
+            app:shapeAppearanceOverlay="@style/ShapeAppearance.MaterialComponents.MediumComponent"
+            app:strokeWidth="1dp"
+            app:strokeColor="@color/border"
+            android:padding="4dp"/>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="12dp">
+            android:orientation="vertical"
+            android:layout_marginBottom="24dp">
 
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Nombre:"
-                android:textColor="@color/text_primary"
-                android:textStyle="bold" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="NOMBRE" android:textSize="11sp" android:textStyle="bold" android:textColor="@color/text_secondary"/>
+            <TextView android:id="@+id/tvNombre" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Nombre del producto" android:textColor="@color/text_primary" android:textSize="16sp" android:textStyle="bold"/>
 
-            <TextView
-                android:id="@+id/tvNombre"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="2"
-                android:text="Nombre del producto"
-                android:textColor="@color/text_primary" />
+            <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#EEEEEE" android:layout_marginVertical="12dp"/>
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+                <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="CÓDIGO INTERNO" android:textSize="11sp" android:textStyle="bold" android:textColor="@color/text_secondary"/>
+                    <TextView android:id="@+id/tvCodigoInterno" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Código" android:textColor="@color/text_primary" android:textSize="15sp"/>
+                </LinearLayout>
+                <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="MARCA" android:textSize="11sp" android:textStyle="bold" android:textColor="@color/text_secondary"/>
+                    <TextView android:id="@+id/tvMarca" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Marca" android:textColor="@color/text_primary" android:textSize="15sp"/>
+                </LinearLayout>
+            </LinearLayout>
+
+            <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#EEEEEE" android:layout_marginVertical="12dp"/>
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+                <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="CATEGORÍA" android:textSize="11sp" android:textStyle="bold" android:textColor="@color/text_secondary"/>
+                    <TextView android:id="@+id/tvCategoria" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Categoría" android:textColor="@color/text_primary" android:textSize="15sp"/>
+                </LinearLayout>
+                <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="ESTADO" android:textSize="11sp" android:textStyle="bold" android:textColor="@color/text_secondary"/>
+                    <TextView android:id="@+id/tvEstado" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="ACTIVO" android:textColor="@color/success" android:textSize="15sp" android:textStyle="bold"/>
+                </LinearLayout>
+            </LinearLayout>
+
+            <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#EEEEEE" android:layout_marginVertical="12dp"/>
+
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="DESCRIPCIÓN" android:textSize="11sp" android:textStyle="bold" android:textColor="@color/text_secondary"/>
+            <TextView android:id="@+id/tvDescripcion" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Descripción" android:textColor="@color/text_primary" android:textSize="14sp"/>
+
+            <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#EEEEEE" android:layout_marginVertical="12dp"/>
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:weightSum="3">
+                <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="STOCK" android:textSize="11sp" android:textStyle="bold" android:textColor="@color/text_secondary"/>
+                    <TextView android:id="@+id/tvStockActual" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="0" android:textColor="@color/primary" android:textSize="18sp" android:textStyle="bold"/>
+                </LinearLayout>
+                <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="MÍN" android:textSize="11sp" android:textStyle="bold" android:textColor="@color/text_secondary"/>
+                    <TextView android:id="@+id/tvStockMinimo" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="0" android:textColor="@color/text_primary" android:textSize="15sp"/>
+                </LinearLayout>
+                <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="MÁX" android:textSize="11sp" android:textStyle="bold" android:textColor="@color/text_secondary"/>
+                    <TextView android:id="@+id/tvStockMaximo" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="0" android:textColor="@color/text_primary" android:textSize="15sp"/>
+                </LinearLayout>
+            </LinearLayout>
+
+            <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#EEEEEE" android:layout_marginVertical="12dp"/>
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="UBICACIÓN" android:textSize="11sp" android:textStyle="bold" android:textColor="@color/text_secondary"/>
+                <TextView android:id="@+id/tvUbicacionAlmacen" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="No especificada" android:textColor="@color/text_primary" android:textSize="14sp"/>
+
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:text="PROVEEDOR" android:textSize="11sp" android:textStyle="bold" android:textColor="@color/text_secondary"/>
+                <TextView android:id="@+id/tvProveedorNombre" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="No especificado" android:textColor="@color/text_primary" android:textSize="14sp"/>
+
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:text="CONTACTO PROVEEDOR" android:textSize="11sp" android:textStyle="bold" android:textColor="@color/text_secondary"/>
+                <TextView android:id="@+id/tvProveedorContacto" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="No especificado" android:textColor="@color/text_primary" android:textSize="14sp"/>
+            </LinearLayout>
 
         </LinearLayout>
 
-
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="12dp">
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Código interno:"
-                android:textColor="@color/text_primary"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/tvCodigoInterno"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="2"
-                android:text="Código"
-                android:textColor="@color/text_primary" />
-
-        </LinearLayout>
-
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="12dp">
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Marca:"
-                android:textColor="@color/text_primary"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/tvMarca"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="2"
-                android:text="Marca"
-                android:textColor="@color/text_primary" />
-
-        </LinearLayout>
-
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="12dp">
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Categoría:"
-                android:textColor="@color/text_primary"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/tvCategoria"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="2"
-                android:text="Categoría"
-                android:textColor="@color/text_primary" />
-
-        </LinearLayout>
-
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="12dp">
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Descripción:"
-                android:textColor="@color/text_primary"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/tvDescripcion"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="2"
-                android:text="Descripción"
-                android:textColor="@color/text_primary" />
-
-        </LinearLayout>
-
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="12dp">
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Stock actual:"
-                android:textColor="@color/text_primary"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/tvStockActual"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="2"
-                android:text="0"
-                android:textColor="@color/text_primary" />
-
-        </LinearLayout>
-
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="12dp">
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Stock mínimo:"
-                android:textColor="@color/text_primary"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/tvStockMinimo"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="2"
-                android:text="0"
-                android:textColor="@color/text_primary" />
-
-        </LinearLayout>
-
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="12dp">
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Stock máximo:"
-                android:textColor="@color/text_primary"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/tvStockMaximo"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="2"
-                android:text="0"
-                android:textColor="@color/text_primary" />
-
-        </LinearLayout>
-
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="12dp">
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Ubicación:"
-                android:textColor="@color/text_primary"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/tvUbicacionAlmacen"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="2"
-                android:text="Ubicación"
-                android:textColor="@color/text_primary" />
-
-        </LinearLayout>
-
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
             android:orientation="horizontal"
             android:layout_marginBottom="24dp">
 
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Estado:"
-                android:textColor="@color/text_primary"
-                android:textStyle="bold" />
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/ivCodigoQR"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:background="@color/white"
+                android:scaleType="centerInside"
+                android:src="@android:drawable/ic_menu_gallery"
+                app:shapeAppearanceOverlay="@style/ShapeAppearance.MaterialComponents.SmallComponent"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/border"
+                android:padding="8dp"/>
 
-            <TextView
-                android:id="@+id/tvEstado"
-                android:layout_width="0dp"
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnImprimirQR"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="2"
-                android:text="ACTIVO"
+                android:layout_marginStart="16dp"
+                android:text="IMPRIMIR QR"
+                android:textColor="@color/primary"
                 android:textStyle="bold"
-                android:textColor="@color/success" />
-
+                app:icon="@drawable/qr"
+                app:iconTint="@color/primary"/>
         </LinearLayout>
 
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Código QR"
-            android:textColor="@color/text_primary"
-            android:textStyle="bold"
-            android:gravity="center"
-            android:layout_marginBottom="8dp" />
-
-        <ImageView
-            android:id="@+id/ivCodigoQR"
-            android:layout_width="160dp"
-            android:layout_height="160dp"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginBottom="24dp"
-            android:background="@drawable/bg_edit_text"
-            android:scaleType="centerInside"
-            android:src="@android:drawable/ic_menu_gallery"
-            android:contentDescription="Código QR del repuesto" />
-
-
-        <Button
-            android:id="@+id/btnImprimirQR"
-            android:layout_width="match_parent"
-            android:layout_height="55dp"
-            android:layout_marginBottom="12dp"
-            android:text="Imprimir QR"
-            android:textColor="@color/white"
-            android:background="@drawable/bg_button_secondary" />
-
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnEditar"
             android:layout_width="match_parent"
-            android:layout_height="55dp"
+            android:layout_height="56dp"
             android:layout_marginBottom="12dp"
-            android:text="Editar"
+            android:text="EDITAR FICHA"
             android:textColor="@color/white"
-            android:background="@drawable/bg_button_primary" />
+            android:textStyle="bold"
+            app:cornerRadius="12dp"
+            app:backgroundTint="@color/primary" />
 
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnCambiarEstado"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="match_parent"
-            android:layout_height="55dp"
+            android:layout_height="56dp"
             android:layout_marginBottom="12dp"
-            android:text="Activar / Inactivar"
-            android:textColor="@color/white"
-            android:background="@drawable/bg_button_primary" />
-
-        <Button
-            android:id="@+id/btnVerMovimientos"
-            android:layout_width="match_parent"
-            android:layout_height="55dp"
-            android:layout_marginBottom="12dp"
-            android:text="Ver movimientos"
+            android:text="ACTIVAR / INACTIVAR"
             android:textColor="@color/primary"
-            android:background="@android:color/transparent" />
+            app:strokeColor="@color/primary"
+            app:cornerRadius="12dp" />
 
-        <Button
-            android:id="@+id/btnVolver"
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnVerMovimientos"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
             android:layout_width="match_parent"
-            android:layout_height="55dp"
-            android:text="Volver"
+            android:layout_height="56dp"
+            android:layout_marginBottom="8dp"
+            android:text="VER MOVIMIENTOS"
             android:textColor="@color/secondary"
-            android:background="@android:color/transparent" />
+            android:textStyle="bold" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnVolver"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="VOLVER"
+            android:textColor="@color/text_secondary"
+            android:textStyle="bold" />
 
     </LinearLayout>
 

@@ -4,13 +4,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginHorizontal="10dp"
-    android:layout_marginVertical="7dp"
+    android:layout_marginHorizontal="12dp"
+    android:layout_marginVertical="6dp"
     app:cardBackgroundColor="@android:color/white"
-    app:cardCornerRadius="18dp"
-    app:cardElevation="3dp"
-    app:strokeColor="#E5E7EB"
-    app:strokeWidth="1dp">
+    app:cardCornerRadius="12dp"
+    app:cardElevation="2dp"
+    app:strokeWidth="0dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -30,51 +29,39 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Excavadora CAT 320"
-                android:textColor="@color/text_primary"
-                android:textSize="17sp"
+                android:textColor="@color/secondary"
+                android:textSize="16sp"
                 android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/tvUrgenciaSolicitud"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="@drawable/bg_chip_estado_operativa"
+                android:background="@drawable/bg_chip_estado_pendiente"
                 android:paddingHorizontal="10dp"
                 android:paddingVertical="5dp"
-                android:text="PRÓXIMO"
-                android:textColor="#B45309"
-                android:textSize="11sp"
+                android:text="URGENTE"
+                android:textColor="@color/primary"
+                android:textSize="10sp"
                 android:textStyle="bold" />
-
         </LinearLayout>
 
         <TextView
             android:id="@+id/tvCodigoMaquinariaSolicitud"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="3dp"
+            android:layout_marginTop="2dp"
             android:text="Código: CAT-0001"
-            android:textColor="@color/text_secondary"
-            android:textSize="12sp" />
-
-        <TextView
-            android:id="@+id/tvTipoMaquinariaSolicitud"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="3dp"
-            android:text="Tipo: Excavadora"
             android:textColor="@color/text_secondary"
             android:textSize="12sp" />
 
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
-            app:cardBackgroundColor="#F9FAFB"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="0dp"
-            app:strokeColor="#E5E7EB"
-            app:strokeWidth="1dp">
+            android:layout_marginTop="12dp"
+            app:cardBackgroundColor="#F5F5F5"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="0dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -86,32 +73,21 @@
                     android:id="@+id/tvHorometroActualSolicitud"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Horómetro actual: 0 h"
+                    android:text="Horómetro actual: 3450 h"
                     android:textColor="@color/text_primary"
                     android:textSize="13sp"
                     android:textStyle="bold" />
 
                 <TextView
-                    android:id="@+id/tvIntervaloSolicitud"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="5dp"
-                    android:text="Intervalo: cada 250 h"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="12sp" />
-
-                <TextView
                     android:id="@+id/tvHorasRestantesSolicitud"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="5dp"
-                    android:text="Horas restantes: 12 h"
-                    android:textColor="#B45309"
+                    android:layout_marginTop="4dp"
+                    android:text="Restante para mantenimiento: 10 h"
+                    android:textColor="@color/primary"
                     android:textSize="13sp"
                     android:textStyle="bold" />
-
             </LinearLayout>
-
         </com.google.android.material.card.MaterialCardView>
 
         <TextView
@@ -119,58 +95,45 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:text="La maquinaria está próxima a cumplir el intervalo de mantenimiento."
+            android:text="Alerta automática por cercanía a intervalo de servicio."
             android:textColor="@color/text_primary"
             android:textSize="13sp" />
 
-        <TextView
-            android:id="@+id/tvOperarioSolicitud"
+        <View
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:text="Registrado por: Operario"
-            android:textColor="@color/text_secondary"
-            android:textSize="12sp" />
-
-        <TextView
-            android:id="@+id/tvFechaSolicitud"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="3dp"
-            android:text="Fecha: 10/07/2026"
-            android:textColor="@color/text_secondary"
-            android:textSize="12sp" />
+            android:layout_height="1dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
+            android:background="#EEEEEE" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
             android:orientation="horizontal"
             android:weightSum="2">
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnRechazarSolicitud"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
                 android:layout_width="0dp"
                 android:layout_height="48dp"
-                android:layout_marginEnd="6dp"
+                android:layout_marginEnd="8dp"
                 android:layout_weight="1"
-                android:text="Rechazar"
-                android:textAllCaps="false"
-                android:textColor="@color/danger"
-                app:cornerRadius="12dp"
-                app:strokeColor="@color/danger" />
+                android:text="IGNORAR"
+                android:textColor="@color/text_secondary"
+                android:textStyle="bold"
+                app:cornerRadius="12dp" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnRevisarSolicitud"
                 android:layout_width="0dp"
                 android:layout_height="48dp"
-                android:layout_marginStart="6dp"
                 android:layout_weight="1"
-                android:text="Revisar"
-                android:textAllCaps="false"
-                app:cornerRadius="12dp" />
-
+                android:text="PROGRAMAR"
+                android:textColor="@color/white"
+                android:textStyle="bold"
+                app:cornerRadius="12dp"
+                app:backgroundTint="@color/primary" />
         </LinearLayout>
 
     </LinearLayout>

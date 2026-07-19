@@ -23,7 +23,12 @@ class RepuestosAdapter(
             binding.tvNombre.text = repuesto.nombre
             binding.tvCategoria.text = repuesto.categoria
             binding.tvStockActual.text = repuesto.stockActual.toString()
-            binding.tvEstado.text = repuesto.estado
+            // Manejo de visibilidad y overlay según estado
+            if (repuesto.estado.equals("INACTIVO", ignoreCase = true)) {
+                binding.overlayInactivo.visibility = android.view.View.VISIBLE
+            } else {
+                binding.overlayInactivo.visibility = android.view.View.GONE
+            }
 
             // Cargar imagen optimizada (thumbnail)
             if (repuesto.imagenUrl.isNotEmpty()) {

@@ -266,6 +266,8 @@ class InventarioViewModel(application: Application) : AndroidViewModel(applicati
         stockMinimo: Int,
         stockMaximo: Int,
         ubicacionAlmacen: String,
+        proveedorNombre: String = "",
+        proveedorContacto: String = "",
         imagenLocalPath: String? = null,
         qrLocalPath: String? = null
     ) {
@@ -292,6 +294,8 @@ class InventarioViewModel(application: Application) : AndroidViewModel(applicati
                 stockMinimo = stockMinimo,
                 stockMaximo = stockMaximo,
                 ubicacionAlmacen = ubicacionAlmacen,
+                proveedorNombre = proveedorNombre,
+                proveedorContacto = proveedorContacto,
                 estado = "ACTIVO",
                 fechaRegistro = Date(),
                 registradoPor = currentUserUid,

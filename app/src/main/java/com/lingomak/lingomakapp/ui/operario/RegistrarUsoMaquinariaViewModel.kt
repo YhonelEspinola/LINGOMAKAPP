@@ -1,13 +1,16 @@
 package com.lingomak.lingomakapp.ui.operario
 
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.lingomak.lingomakapp.data.repository.RegistroUsoMaquinariaRepository
+import kotlinx.coroutines.launch
 
-class RegistrarUsoMaquinariaViewModel : ViewModel() {
+class RegistrarUsoMaquinariaViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repository = RegistroUsoMaquinariaRepository()
+    private val repository = RegistroUsoMaquinariaRepository(application)
 
     private val _registroExitoso = MutableLiveData<Boolean>()
     val registroExitoso: LiveData<Boolean> get() = _registroExitoso
@@ -44,21 +47,23 @@ class RegistrarUsoMaquinariaViewModel : ViewModel() {
 
         _cargando.value = true
 
-        repository.registrarUsoMaquinaria(
-            uidMaquinaria = uidMaquinaria,
-            uidOperario = uidOperario,
-            nombreOperario = nombreOperario,
-            correoOperario = correoOperario,
-            horasUso = horasUso,
-            observacion = observacion,
-            onSuccess = {
-                _cargando.value = false
-                _registroExitoso.value = true
-            },
-            onError = { error ->
-                _cargando.value = false
-                _mensajeError.value = error
-            }
-        )
+        viewModelScope.launch {
+            repository.registrarUsoMaquinaria(
+                uidMaquinaria = uidMaquinaria,
+                uidOperario = uidOperario,
+                nombreOperario = nombreOperario,
+                correoOperario = correoOperario,
+                horasUso = horasUso,
+                observacion = observacion,
+                onSuccess = {
+                    _cargando.postValue(false)
+                    _registroExitoso.postValue(true)
+                },
+                onError = { error ->
+                    _cargando.postValue(false)
+                    _mensajeError.postValue(error)
+                }
+            )
+        }
     }
 }

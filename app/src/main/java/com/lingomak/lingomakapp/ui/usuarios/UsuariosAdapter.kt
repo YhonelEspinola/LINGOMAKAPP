@@ -20,14 +20,14 @@ class UsuariosAdapter(
             binding.tvNombre.text = usuario.nombre
             binding.tvCorreo.text = usuario.correo
             binding.tvRol.text = usuario.rol
-            binding.tvEstado.text = usuario.estado
-            if (usuario.estado == "ACTIVO"){
-                binding.tvEstado.setTextColor(
-                    binding.root.context.getColor(com.lingomak.lingomakapp.R.color.success)
-                )
-            }else{
-                binding.tvEstado.setTextColor(
-                    binding.root.context.getColor(com.lingomak.lingomakapp.R.color.danger))
+            
+            // Si está ACTIVO no se muestra texto, si está INACTIVO se muestra en rojo
+            if (usuario.estado.equals("ACTIVO", ignoreCase = true)) {
+                binding.tvEstado.visibility = android.view.View.GONE
+            } else {
+                binding.tvEstado.visibility = android.view.View.VISIBLE
+                binding.tvEstado.text = "INACTIVO"
+                binding.tvEstado.setTextColor(binding.root.context.getColor(com.lingomak.lingomakapp.R.color.danger))
             }
 
             binding.ivEditar.setOnClickListener {

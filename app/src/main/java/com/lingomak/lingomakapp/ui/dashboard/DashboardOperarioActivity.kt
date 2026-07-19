@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.messaging.FirebaseMessaging
 import com.lingomak.lingomakapp.R
 import com.lingomak.lingomakapp.databinding.DashboardOperarioBinding
 import com.lingomak.lingomakapp.ui.alertas.AlertasFragment
@@ -100,12 +101,15 @@ class DashboardOperarioActivity : AppCompatActivity() {
                 }
 
                 R.id.menu_cerrar_sesion_operario -> {
-                    FirebaseAuth.getInstance().signOut()
-                    val intent = Intent(this, LoginActivity::class.java).apply {
-                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                    }
-                    startActivity(intent)
-                    finish()
+                    FirebaseMessaging.getInstance().unsubscribeFromTopic("administradores")
+                        .addOnCompleteListener {
+                            FirebaseAuth.getInstance().signOut()
+                            val intent = Intent(this, LoginActivity::class.java).apply {
+                                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                            }
+                            startActivity(intent)
+                            finish()
+                        }
                     true
                 }
 

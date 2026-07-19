@@ -49,36 +49,8 @@ class MovimientoRepository(private val context: Context) {
         SincronizacionRepuestosWorker.encolar(context)
 
         // 3. Crear alerta de actividad para el administrador si es una salida de operario
-        crearNotificacionActividad(movimiento)
-        
         // 4. Encolar Worker de sincronización
         encolarSincronizacion()
-    }
-
-    private suspend fun crearNotificacionActividad(movimiento: MovimientoModel) {
-        // Obtenemos el nombre del repuesto para el mensaje
-        val repuesto = repuestoDao.obtenerPorUid(movimiento.repuestoUid)
-        val nombreProducto = repuesto?.nombre ?: "Repuesto"
-        
-        val userEmail = FirebaseAuth.getInstance().currentUser?.email ?: "Operario"
-        
-        val alerta = com.lingomak.lingomakapp.data.model.AlertaModel(
-            uid = UUID.randomUUID().toString(),
-            categoria = "ACTIVIDAD",
-            tipo = "ACTIVIDAD_OPERARIO",
-            titulo = "Nueva salida registrada",
-            mensaje = "$userEmail retiró ${movimiento.cantidad} unidad(es) de '$nombreProducto'.",
-            prioridad = "BAJA",
-            fecha = java.text.SimpleDateFormat("dd/MM/yyyy HH:mm", java.util.Locale.getDefault()).format(Date()),
-            uidRepuesto = movimiento.repuestoUid
-        )
-        
-        // La guardamos directamente en Firestore en la colección de alertas
-        try {
-            db.collection("alertas").document(alerta.uid).set(alerta).await()
-        } catch (e: Exception) {
-            // Si falla la red, no es crítico para el flujo offline-first del movimiento
-        }
     }
 
     /**

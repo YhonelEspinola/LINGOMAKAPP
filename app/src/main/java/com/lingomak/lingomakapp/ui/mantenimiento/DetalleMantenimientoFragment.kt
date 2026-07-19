@@ -5,14 +5,18 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import com.lingomak.lingomakapp.databinding.FragmentDetalleMantenimientoBinding
 import com.lingomak.lingomakapp.R
+import com.lingomak.lingomakapp.data.model.MantenimientoModel
+import com.lingomak.lingomakapp.databinding.FragmentDetalleMantenimientoBinding
+import com.lingomak.lingomakapp.ui.dashboard.DashboardAdminActivity
+import com.lingomak.lingomakapp.utils.ImageOptimizer
 
 class DetalleMantenimientoFragment : Fragment() {
 
-    private var uidMaquinaria = ""
+    private var uidMaquinaria: String = ""
 
     private var _binding: FragmentDetalleMantenimientoBinding? = null
     private val binding get() = _binding!!
@@ -20,23 +24,24 @@ class DetalleMantenimientoFragment : Fragment() {
     private val viewModel: MantenimientoViewModel by viewModels()
     private var uidMantenimiento: String = ""
     private var estadoActual: String = ""
+    private var mantenimientoActual: MantenimientoModel? = null
 
-    private var codigoMantenimiento = ""
-    private var tipoMantenimiento = ""
-    private var nombreMaquinaria = ""
-    private var codigoMaquinaria = ""
-    private var tipoMaquinaria = ""
-    private var descripcion = ""
-    private var fechaProgramada = ""
-    private var responsable = ""
-    private var prioridad = ""
-    private var observaciones = ""
-    private var horometroProgramado = 0
-    private var costoEstimado = 0.0
+    private var codigoMantenimiento: String = ""
+    private var tipoMantenimiento: String = ""
+    private var nombreMaquinaria: String = ""
+    private var codigoMaquinaria: String = ""
+    private var tipoMaquinaria: String = ""
+    private var descripcion: String = ""
+    private var fechaProgramada: String = ""
+    private var responsable: String = ""
+    private var prioridad: String = ""
+    private var observaciones: String = ""
+    private var horometroProgramado: Int = 0
+    private var costoEstimado: Double = 0.0
 
-    private var origen = ""
-    private var tituloAlerta = ""
-    private var mensajeAlerta = ""
+    private var origen: String = ""
+    private var tituloAlerta: String = ""
+    private var mensajeAlerta: String = ""
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -44,6 +49,11 @@ class DetalleMantenimientoFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentDetalleMantenimientoBinding.inflate(inflater, container, false)
+
+        uidMantenimiento = arguments?.getString("uid") ?: ""
+        origen = arguments?.getString("origen") ?: ""
+        tituloAlerta = arguments?.getString("tituloAlerta") ?: ""
+        mensajeAlerta = arguments?.getString("mensajeAlerta") ?: ""
 
         cargarDatos()
         configurarEventos()
@@ -53,281 +63,223 @@ class DetalleMantenimientoFragment : Fragment() {
     }
 
     private fun cargarDatos() {
-        uidMantenimiento = arguments?.getString("uid") ?: ""
-        uidMaquinaria = arguments?.getString("uidMaquinaria") ?: ""
+        viewModel.obtenerMantenimientoPorUid(uidMantenimiento) { m ->
+            mantenimientoActual = m
+            uidMaquinaria = m.uidMaquinaria
+            estadoActual = m.estado
+            codigoMantenimiento = m.codigoMantenimiento
+            tipoMantenimiento = m.tipoMantenimiento
+            nombreMaquinaria = m.nombreMaquinaria
+            codigoMaquinaria = m.codigoMaquinaria
+            tipoMaquinaria = m.tipoMaquinaria
+            descripcion = m.descripcion
+            fechaProgramada = m.fechaProgramada
+            responsable = m.responsable
+            prioridad = m.prioridad
+            observaciones = m.observaciones
+            horometroProgramado = m.horometroProgramado
+            costoEstimado = m.costoEstimado
 
-        codigoMantenimiento = arguments?.getString("codigoMantenimiento") ?: ""
-        tipoMantenimiento = arguments?.getString("tipoMantenimiento") ?: ""
-        nombreMaquinaria = arguments?.getString("nombreMaquinaria") ?: ""
-        descripcion = arguments?.getString("descripcion") ?: ""
-        fechaProgramada = arguments?.getString("fechaProgramada") ?: ""
-        responsable = arguments?.getString("responsable") ?: ""
-        horometroProgramado = arguments?.getInt("horometroProgramado") ?: 0
-        estadoActual = arguments?.getString("estado") ?: ""
-        codigoMaquinaria = arguments?.getString("codigoMaquinaria") ?: ""
-        tipoMaquinaria = arguments?.getString("tipoMaquinaria") ?: ""
-        prioridad = arguments?.getString("prioridad") ?: ""
-        costoEstimado = arguments?.getDouble("costoEstimado") ?: 0.0
-        observaciones = arguments?.getString("observaciones") ?: ""
+            binding.tvCodigoDetalle.text = codigoMantenimiento
+            binding.tvTipoDetalle.text = tipoMantenimiento
+            binding.tvMaquinariaDetalle.text = nombreMaquinaria
+            binding.tvCodigoMaquinariaDetalle.text = codigoMaquinaria
+            binding.tvTipoMaquinariaDetalle.text = tipoMaquinaria
+            binding.tvDescripcionDetalle.text = descripcion
+            binding.tvFechaDetalle.text = fechaProgramada
+            binding.tvHorometroDetalle.text = "$horometroProgramado h"
+            binding.tvResponsableDetalle.text = responsable
+            binding.tvPrioridadDetalle.text = prioridad
+            binding.tvCostoEstimadoDetalle.text = "S/ $costoEstimado"
+            binding.tvObservacionesDetalle.text = observaciones.ifEmpty { "Sin observaciones" }
 
-        origen = arguments?.getString("origen") ?: ""
-        tituloAlerta = arguments?.getString("tituloAlerta") ?: ""
-        mensajeAlerta = arguments?.getString("mensajeAlerta") ?: ""
-
-        binding.tvCodigoDetalle.text = codigoMantenimiento
-        binding.tvTipoDetalle.text = tipoMantenimiento
-        binding.tvMaquinariaDetalle.text = nombreMaquinaria
-        binding.tvDescripcionDetalle.text = descripcion
-        binding.tvFechaDetalle.text = fechaProgramada
-        binding.tvResponsableDetalle.text = responsable
-        binding.tvHorometroDetalle.text = "$horometroProgramado horas"
-        binding.tvEstadoDetalle.text = estadoActual
-        
-        aplicarColorEstado(estadoActual)
-
-        binding.tvCodigoMaquinariaDetalle.text = codigoMaquinaria
-        binding.tvTipoMaquinariaDetalle.text = tipoMaquinaria
-        binding.tvPrioridadDetalle.text = prioridad
-        binding.tvCostoEstimadoDetalle.text = "S/ $costoEstimado"
-        binding.tvObservacionesDetalle.text =
-            observaciones.ifEmpty { "Sin observaciones" }
-
-        actualizarAccionesPorEstado()
-
-        mostrarBannerAlerta()
+            aplicarColorEstado(estadoActual)
+            actualizarAccionesPorEstado()
+            configurarImagenes()
+            mostrarBannerAlerta()
+        }
     }
 
     private fun configurarEventos() {
-        binding.btnCambiarEstado.setOnClickListener {
-            mostrarDialogoCambiarEstado()
-        }
-        binding.btnEditarMantenimiento.setOnClickListener {
-            abrirEditarMantenimiento()
-        }
-
-        binding.btnFinalizarMantenimiento.setOnClickListener {
-            abrirFinalizarMantenimiento()
+        binding.btnEditarMantenimiento.setOnClickListener { abrirEditarMantenimiento() }
+        binding.btnCambiarEstado.setOnClickListener { mostrarDialogoCambiarEstado() }
+        binding.btnFinalizarMantenimiento.setOnClickListener { abrirFinalizarMantenimiento() }
+        
+        binding.btnGenerarReporteIA.setOnClickListener {
+            mantenimientoActual?.let { m ->
+                if (m.reporteIA.isNotEmpty()) {
+                    abrirDetalleReporteIA()
+                } else {
+                    viewModel.generarReporteIA(m)
+                }
+            }
         }
     }
 
     private fun mostrarDialogoCambiarEstado() {
-        if (estadoActual != "PENDIENTE" && estadoActual != "VENCIDO") {
-
-            Toast.makeText(
-                requireContext(),
-                "Solo los mantenimientos pendientes pueden iniciarse",
-                Toast.LENGTH_SHORT
-            ).show()
-
-            return
-        }
-
-        androidx.appcompat.app.AlertDialog.Builder(requireContext())
-            .setTitle("Iniciar mantenimiento")
-            .setMessage(
-                "¿Desea iniciar este mantenimiento?"
-            )
-
-            .setPositiveButton("Iniciar") { dialog, _ ->
-
-                if (uidMaquinaria.isEmpty()) {
-                    Toast.makeText(
-                        requireContext(),
-                        "No se encontró la maquinaria relacionada",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    return@setPositiveButton
-                }
-
-                viewModel.iniciarMantenimiento(
-                    uidMantenimiento = uidMantenimiento,
-                    uidMaquinaria = uidMaquinaria,
-                    onSuccess = {
-                        estadoActual = "EN_PROCESO"
-                        binding.tvEstadoDetalle.text = "EN_PROCESO"
-                        aplicarColorEstado("EN_PROCESO")
-                        actualizarAccionesPorEstado()
-                        Toast.makeText(
-                            requireContext(),
-                            "Mantenimiento iniciado correctamente",
-                            Toast.LENGTH_SHORT
-                        ).show()
+        val estados = arrayOf("PENDIENTE", "EN_PROCESO", "CANCELADO")
+        AlertDialog.Builder(requireContext())
+            .setTitle("Cambiar estado")
+            .setItems(estados) { _, which ->
+                val nuevoEstado = estados[which]
+                if (nuevoEstado == "EN_PROCESO") {
+                    viewModel.iniciarMantenimiento(uidMantenimiento, uidMaquinaria) {
+                        cargarDatos()
                     }
-                )
-
-                dialog.dismiss()
+                } else {
+                    viewModel.cambiarEstadoMantenimiento(uidMantenimiento, nuevoEstado) {
+                        cargarDatos()
+                    }
+                }
             }
-
-            .setNegativeButton("Cancelar") { dialog, _ ->
-                dialog.dismiss()
-            }
-
             .show()
     }
 
     private fun abrirEditarMantenimiento() {
-
         val fragment = EditarMantenimientoFragment()
-
-        val bundle = Bundle().apply {
-            putString("uid", uidMantenimiento)
-            putString("uidMaquinaria", uidMaquinaria)
-            putString("codigoMantenimiento", codigoMantenimiento)
-
-            putString("codigoMaquinaria", codigoMaquinaria)
-            putString("nombreMaquinaria", nombreMaquinaria)
-            putString("tipoMaquinaria", tipoMaquinaria)
-
-            putString("tipoMantenimiento", tipoMantenimiento)
-            putString("descripcion", descripcion)
-            putString("fechaProgramada", fechaProgramada)
-
-            putString("responsable", responsable)
-            putString("estado", estadoActual)
-            putString("prioridad", prioridad)
-
-            putInt("horometroProgramado", horometroProgramado)
-            putDouble("costoEstimado", costoEstimado)
-            putString("observaciones", observaciones)
-        }
-
+        val bundle = Bundle()
+        bundle.putString("uid", uidMantenimiento)
         fragment.arguments = bundle
-
-        val containerId = if (requireActivity() is com.lingomak.lingomakapp.ui.dashboard.DashboardAdminActivity) 
-            R.id.fragmentContainerAdmin else R.id.containerOperario
-
-        parentFragmentManager
-            .beginTransaction()
-            .replace(containerId, fragment)
+        parentFragmentManager.beginTransaction()
+            .replace((requireView().parent as ViewGroup).id, fragment)
             .addToBackStack(null)
             .commit()
     }
 
     private fun aplicarColorEstado(estado: String) {
+        binding.tvEstadoDetalle.text = estado
         val color = when (estado) {
             "PENDIENTE" -> R.color.warning
             "EN_PROCESO" -> R.color.primary
             "FINALIZADO" -> R.color.success
-            "VENCIDO" -> R.color.danger
-            "CANCELADO" -> R.color.text_secondary
-            else -> R.color.text_primary
+            else -> R.color.text_secondary
         }
         binding.tvEstadoDetalle.setTextColor(requireContext().getColor(color))
     }
 
     private fun actualizarAccionesPorEstado() {
+        val isAdmin = requireActivity() is DashboardAdminActivity
+        
+        // El botón de IA solo para Admin y si está Finalizado
+        if (isAdmin && estadoActual == "FINALIZADO") {
+            binding.btnGenerarReporteIA.visibility = View.VISIBLE
+        } else {
+            binding.btnGenerarReporteIA.visibility = View.GONE
+        }
+
+        if (!isAdmin) {
+            binding.btnEditarMantenimiento.visibility = View.GONE
+            binding.btnCambiarEstado.visibility = View.GONE
+            binding.btnFinalizarMantenimiento.visibility = View.GONE
+            return
+        }
 
         when (estadoActual) {
-
-            /*
-             * PENDIENTE:
-             * El administrador todavía puede editar,
-             * iniciar o cancelar desde otras opciones.
-             */
             "PENDIENTE" -> {
                 binding.btnEditarMantenimiento.visibility = View.VISIBLE
                 binding.btnCambiarEstado.visibility = View.VISIBLE
                 binding.btnFinalizarMantenimiento.visibility = View.GONE
-
-                binding.btnCambiarEstado.text = "Iniciar mantenimiento"
             }
-
-            /*
-             * VENCIDO:
-             * Todavía no se realizó.
-             * Por eso permitimos editar para reprogramar
-             * o iniciar mantenimiento.
-             */
-            "VENCIDO" -> {
-                binding.btnEditarMantenimiento.visibility = View.VISIBLE
-                binding.btnCambiarEstado.visibility = View.VISIBLE
-                binding.btnFinalizarMantenimiento.visibility = View.GONE
-
-                binding.btnCambiarEstado.text = "Iniciar mantenimiento"
-            }
-
-            /*
-             * EN_PROCESO:
-             * Ya no se debe editar.
-             * Aquí la acción correcta es finalizar.
-             */
             "EN_PROCESO" -> {
                 binding.btnEditarMantenimiento.visibility = View.GONE
                 binding.btnCambiarEstado.visibility = View.GONE
                 binding.btnFinalizarMantenimiento.visibility = View.VISIBLE
             }
-
-            /*
-             * FINALIZADO / CANCELADO:
-             * Son estados históricos.
-             * Solo se permite ver detalle.
-             */
-            "FINALIZADO", "CANCELADO" -> {
-                binding.btnEditarMantenimiento.visibility = View.GONE
-                binding.btnCambiarEstado.visibility = View.GONE
-                binding.btnFinalizarMantenimiento.visibility = View.GONE
-            }
-
-            else -> {
+            "FINALIZADO", "CANCELADO", "VENCIDO" -> {
                 binding.btnEditarMantenimiento.visibility = View.GONE
                 binding.btnCambiarEstado.visibility = View.GONE
                 binding.btnFinalizarMantenimiento.visibility = View.GONE
             }
         }
+    }
+
+    private fun configurarImagenes() {
+        mantenimientoActual?.let { m ->
+            if (m.imagenesReporte.isNotEmpty()) {
+                binding.tvLabelImagenesReporte.visibility = View.VISIBLE
+                binding.rvImagenesReporteDetalle.visibility = View.VISIBLE
+                val adapter = EvidenciasReadOnlyAdapter(m.imagenesReporte) { url ->
+                    mostrarImagenAmpliada(url)
+                }
+                binding.rvImagenesReporteDetalle.adapter = adapter
+            }
+            if (m.imagenesFinalizacion.isNotEmpty()) {
+                binding.tvLabelImagenesFinal.visibility = View.VISIBLE
+                binding.rvImagenesFinalDetalle.visibility = View.VISIBLE
+                val adapter = EvidenciasReadOnlyAdapter(m.imagenesFinalizacion) { url ->
+                    mostrarImagenAmpliada(url)
+                }
+                binding.rvImagenesFinalDetalle.adapter = adapter
+            }
+        }
+    }
+
+    private fun mostrarImagenAmpliada(url: String) {
+        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_imagen_ampliada, null)
+        val imageView = dialogView.findViewById<android.widget.ImageView>(R.id.ivImagenAmpliada)
+        
+        com.bumptech.glide.Glide.with(this)
+            .load(url)
+            .into(imageView)
+
+        AlertDialog.Builder(requireContext())
+            .setView(dialogView)
+            .setPositiveButton("Cerrar", null)
+            .show()
     }
 
     private fun observarViewModel() {
-        viewModel.mensajeError.observe(viewLifecycleOwner) { mensaje ->
-            Toast.makeText(requireContext(), mensaje, Toast.LENGTH_SHORT).show()
+        viewModel.mensajeError.observe(viewLifecycleOwner) { error ->
+            if (error.isNotEmpty()) Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show()
+        }
+
+        viewModel.reporteGenerado.observe(viewLifecycleOwner) { reporte ->
+            if (reporte != null) {
+                abrirDetalleReporteIA()
+            }
+        }
+
+        viewModel.loadingAI.observe(viewLifecycleOwner) { loading ->
+            // Se puede mostrar un progress si se desea
         }
     }
 
-    private fun abrirFinalizarMantenimiento() {
-
-        /*
-         * RN05:
-         * Solo se puede finalizar un mantenimiento
-         * que está en estado EN_PROCESO.
-         */
-        if (estadoActual != "EN_PROCESO") {
-            Toast.makeText(
-                requireContext(),
-                "Solo se puede finalizar un mantenimiento en proceso",
-                Toast.LENGTH_SHORT
-            ).show()
-            return
-        }
-
-        val fragment = FinalizarMantenimientoFragment()
-
-        val bundle = Bundle().apply {
-            putString("uid", uidMantenimiento)
-            putString("uidMaquinaria", uidMaquinaria)
-            putString("codigoMantenimiento", codigoMantenimiento)
-            putString("nombreMaquinaria", nombreMaquinaria)
-            putString("descripcion", descripcion)
-            putString("estado", estadoActual)
-        }
-
+    private fun abrirDetalleReporteIA() {
+        val fragment = DetalleReporteIAFragment()
+        val bundle = Bundle()
+        bundle.putString("uid", uidMantenimiento)
         fragment.arguments = bundle
+        
+        parentFragmentManager.beginTransaction()
+            .replace((requireView().parent as ViewGroup).id, fragment)
+            .addToBackStack(null)
+            .commit()
+            
+        viewModel.limpiarEstadoAI()
+    }
 
-        val containerId = if (requireActivity() is com.lingomak.lingomakapp.ui.dashboard.DashboardAdminActivity) 
-            R.id.fragmentContainerAdmin else R.id.containerOperario
-
-        parentFragmentManager
-            .beginTransaction()
-            .replace(containerId, fragment)
+    private fun abrirFinalizarMantenimiento() {
+        val fragment = FinalizarMantenimientoFragment()
+        val bundle = Bundle()
+        bundle.putString("uidMantenimiento", uidMantenimiento)
+        bundle.putString("uidMaquinaria", uidMaquinaria)
+        bundle.putString("codigoMantenimiento", codigoMantenimiento)
+        bundle.putString("nombreMaquinaria", nombreMaquinaria)
+        bundle.putString("descripcion", descripcion)
+        bundle.putInt("horometroActual", horometroProgramado)
+        fragment.arguments = bundle
+        parentFragmentManager.beginTransaction()
+            .replace((requireView().parent as ViewGroup).id, fragment)
             .addToBackStack(null)
             .commit()
     }
 
     private fun mostrarBannerAlerta() {
-        if (origen == "ALERTA") {
+        if (origen == "NOTIFICACION" || origen == "ALERTA") {
             binding.cardAlerta.visibility = View.VISIBLE
-            binding.tvTipoAlerta.text = tituloAlerta
+            binding.tvTituloAlerta.text = tituloAlerta
+            binding.tvTipoAlerta.text = tipoMantenimiento
             binding.tvMensajeAlerta.text = mensajeAlerta
-        } else {
-            binding.cardAlerta.visibility = View.GONE
         }
     }
 

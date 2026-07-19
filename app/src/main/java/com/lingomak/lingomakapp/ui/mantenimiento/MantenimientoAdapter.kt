@@ -8,6 +8,7 @@ import com.lingomak.lingomakapp.data.model.MantenimientoModel
 import com.lingomak.lingomakapp.databinding.ItemMantenimientoBinding
 import android.widget.PopupMenu
 import com.lingomak.lingomakapp.R
+
 class MantenimientoAdapter(
     private var listaMantenimientos: List<MantenimientoModel>,
     private val isOperario: Boolean = false,
@@ -24,59 +25,35 @@ class MantenimientoAdapter(
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(mantenimiento: MantenimientoModel) {
-
-
             binding.tvTipoMantenimiento.text = mantenimiento.tipoMantenimiento
-
             binding.tvCodigoMantenimiento.text = mantenimiento.codigoMantenimiento
-
             binding.tvDescripcionMantenimiento.text = mantenimiento.descripcion
-
             binding.tvMaquinariaMantenimiento.text = mantenimiento.nombreMaquinaria
-
             binding.tvFechaProgramada.text = "📅 ${mantenimiento.fechaProgramada}"
-
-            binding.tvHorometroMantenimiento.text =
-                "⏱ ${mantenimiento.horometroProgramado} h"
-
-            binding.tvResponsableMantenimiento.text =
-                "👤 ${mantenimiento.responsable}"
-
-            binding.tvEstadoMantenimiento.text = mantenimiento.estado
-
-            binding.tvPrioridadMantenimiento.text = "⚑ Prioridad: Media"
-
+            binding.tvHorometroMantenimiento.text = "⏱ ${mantenimiento.horometroProgramado} h"
+            binding.tvResponsableMantenimiento.text = "👤 ${mantenimiento.responsable}"
+            
             aplicarColorTipo(mantenimiento.tipoMantenimiento)
-
             aplicarColorEstado(mantenimiento.estado)
 
             binding.btnOpciones.setOnClickListener {
-
                 val popupMenu = PopupMenu(binding.root.context, binding.btnOpciones)
+                popupMenu.menuInflater.inflate(R.menu.menu_mantenimiento_item, popupMenu.menu)
 
-                popupMenu.menuInflater.inflate(
-                    R.menu.menu_mantenimiento_item,
-                    popupMenu.menu
-                )
-
-                // Restricciones por Rol
                 if (isOperario) {
                     popupMenu.menu.findItem(R.id.opcion_editar).isVisible = false
                     popupMenu.menu.findItem(R.id.opcion_cancelar).isVisible = false
                 }
 
                 when (mantenimiento.estado) {
-
                     "PENDIENTE" -> {
                         popupMenu.menu.findItem(R.id.opcion_finalizar).isVisible = false
                     }
-
                     "EN_PROCESO" -> {
                         popupMenu.menu.findItem(R.id.opcion_editar).isVisible = false
                         popupMenu.menu.findItem(R.id.opcion_cambiar_estado).isVisible = false
                         popupMenu.menu.findItem(R.id.opcion_cancelar).isVisible = false
                     }
-
                     "FINALIZADO", "VENCIDO", "CANCELADO" -> {
                         popupMenu.menu.findItem(R.id.opcion_editar).isVisible = false
                         popupMenu.menu.findItem(R.id.opcion_cambiar_estado).isVisible = false
@@ -86,38 +63,15 @@ class MantenimientoAdapter(
                 }
 
                 popupMenu.setOnMenuItemClickListener { item ->
-
                     when (item.itemId) {
-
-                        R.id.opcion_ver_detalle -> {
-                            onMantenimientoClick(mantenimiento)
-                            true
-                        }
-
-                        R.id.opcion_editar -> {
-                            onEditarClick(mantenimiento)
-                            true
-                        }
-
-                        R.id.opcion_cambiar_estado -> {
-                            onCambiarEstadoClick(mantenimiento)
-                            true
-                        }
-
-                        R.id.opcion_cancelar -> {
-                            onCancelarClick(mantenimiento)
-                            true
-                        }
-
-                        R.id.opcion_finalizar -> {
-                            onFinalizarClick(mantenimiento)
-                            true
-                        }
-
+                        R.id.opcion_ver_detalle -> { onMantenimientoClick(mantenimiento); true }
+                        R.id.opcion_editar -> { onEditarClick(mantenimiento); true }
+                        R.id.opcion_cambiar_estado -> { onCambiarEstadoClick(mantenimiento); true }
+                        R.id.opcion_cancelar -> { onCancelarClick(mantenimiento); true }
+                        R.id.opcion_finalizar -> { onFinalizarClick(mantenimiento); true }
                         else -> false
                     }
                 }
-
                 popupMenu.show()
             }
 
@@ -127,52 +81,41 @@ class MantenimientoAdapter(
         }
 
         private fun aplicarColorTipo(tipo: String) {
-
             when (tipo) {
-
-                "PREVENTIVO" -> {
-                    binding.tvTipoMantenimiento.setTextColor(Color.rgb(37, 99, 235))
-                }
-
-                "CORRECTIVO" -> {
-                    binding.tvTipoMantenimiento.setTextColor(Color.rgb(234, 88, 12))
-                }
-
-                "PREDICTIVO" -> {
-                    binding.tvTipoMantenimiento.setTextColor(Color.rgb(124, 58, 237))
-                }
-
-                else -> {
-                    binding.tvTipoMantenimiento.setTextColor(Color.rgb(55, 65, 81))
-                }
+                "PREVENTIVO" -> binding.tvTipoMantenimiento.setTextColor(Color.rgb(37, 99, 235))
+                "CORRECTIVO" -> binding.tvTipoMantenimiento.setTextColor(Color.rgb(234, 88, 12))
+                "PREDICTIVO" -> binding.tvTipoMantenimiento.setTextColor(Color.rgb(124, 58, 237))
+                else -> binding.tvTipoMantenimiento.setTextColor(Color.rgb(55, 65, 81))
             }
         }
 
         private fun aplicarColorEstado(estado: String) {
             val context = binding.root.context
-            val color = when (estado) {
-                "PENDIENTE" -> R.color.warning
-                "EN_PROCESO" -> R.color.primary
-                "FINALIZADO" -> R.color.success
-                "VENCIDO" -> R.color.danger
-                "CANCELADO" -> R.color.text_secondary
-                else -> R.color.text_primary
+            val color: Int
+            val background: Int
+
+            when (estado) {
+                "PENDIENTE" -> { color = R.color.warning; background = R.drawable.bg_chip_estado_pendiente }
+                "EN_PROCESO" -> { color = R.color.primary; background = R.drawable.bg_chip_estado_proceso }
+                "FINALIZADO" -> { color = R.color.success; background = R.drawable.bg_chip_estado_operativa }
+                "VENCIDO" -> { color = R.color.danger; background = R.drawable.bg_chip_estado_inactiva }
+                "CANCELADO" -> { color = R.color.text_secondary; background = R.drawable.bg_chip_estado_cancelado }
+                else -> { color = R.color.text_primary; background = R.drawable.bg_chip_estado_cancelado }
             }
+            
             binding.tvEstadoMantenimiento.setTextColor(context.getColor(color))
+            binding.tvEstadoMantenimiento.setBackgroundResource(background)
+            
             if (estado == "EN_PROCESO") {
                 binding.tvEstadoMantenimiento.text = "EN PROCESO"
+            } else {
+                binding.tvEstadoMantenimiento.text = estado
             }
         }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MantenimientoViewHolder {
-
-        val binding = ItemMantenimientoBinding.inflate(
-            LayoutInflater.from(parent.context),
-            parent,
-            false
-        )
-
+        val binding = ItemMantenimientoBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return MantenimientoViewHolder(binding)
     }
 
@@ -180,9 +123,7 @@ class MantenimientoAdapter(
         holder.bind(listaMantenimientos[position])
     }
 
-    override fun getItemCount(): Int {
-        return listaMantenimientos.size
-    }
+    override fun getItemCount(): Int = listaMantenimientos.size
 
     fun actualizarLista(nuevaLista: List<MantenimientoModel>) {
         listaMantenimientos = nuevaLista

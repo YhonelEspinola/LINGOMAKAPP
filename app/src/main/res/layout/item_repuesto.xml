@@ -3,116 +3,136 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
-    app:cardCornerRadius="8dp"
-    app:cardElevation="4dp">
+    android:layout_marginHorizontal="12dp"
+    android:layout_marginVertical="6dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="2dp"
+    app:strokeWidth="0dp"
+    app:cardBackgroundColor="#FFFFFF">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <ImageView
-            android:id="@+id/ivRepuesto"
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:layout_margin="8dp"
-            android:scaleType="centerCrop"
-            android:src="@android:drawable/ic_menu_gallery"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <TextView
-            android:id="@+id/labelNombre"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:layout_marginTop="8dp"
-            android:text="Nombre: "
-            android:textStyle="bold"
-            app:layout_constraintStart_toEndOf="@id/ivRepuesto"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <TextView
-            android:id="@+id/tvNombre"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="12dp"
-            android:text="Filtro de Aceite"
-            app:layout_constraintEnd_toStartOf="@id/viewIndicator"
-            app:layout_constraintStart_toEndOf="@id/labelNombre"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <TextView
-            android:id="@+id/labelCategoria"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="Categoria: "
-            android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="@id/labelNombre"
-            app:layout_constraintTop_toBottomOf="@id/tvNombre" />
-
-        <TextView
-            android:id="@+id/tvCategoria"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="12dp"
-            app:layout_constraintEnd_toStartOf="@id/viewIndicator"
-            app:layout_constraintStart_toEndOf="@id/labelCategoria"
-            app:layout_constraintTop_toTopOf="@id/labelCategoria" />
-
-        <TextView
-            android:id="@+id/labelStock"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="Stock actual: "
-            android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="@id/labelNombre"
-            app:layout_constraintTop_toBottomOf="@id/tvCategoria" />
-
-        <TextView
-            android:id="@+id/tvStockActual"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="12dp"
-            app:layout_constraintEnd_toStartOf="@id/viewIndicator"
-            app:layout_constraintStart_toEndOf="@id/labelStock"
-            app:layout_constraintTop_toTopOf="@id/labelStock" />
-
-        <TextView
-            android:id="@+id/labelEstado"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:layout_marginBottom="8dp"
-            android:text="Estado: "
-            android:textStyle="bold"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="@id/labelNombre"
-            app:layout_constraintTop_toBottomOf="@id/tvStockActual" />
-
-        <TextView
-            android:id="@+id/tvEstado"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="12dp"
-            android:layout_marginBottom="8dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/viewIndicator"
-            app:layout_constraintStart_toEndOf="@id/labelEstado"
-            app:layout_constraintTop_toTopOf="@id/labelEstado" />
-
         <View
             android:id="@+id/viewIndicator"
-            android:layout_width="8dp"
+            android:layout_width="6dp"
             android:layout_height="0dp"
-            android:background="@android:color/holo_orange_light"
+            android:background="@color/warning"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:padding="8dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/viewIndicator"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <FrameLayout
+                android:id="@+id/containerImagen"
+                android:layout_width="90dp"
+                android:layout_height="90dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <com.google.android.material.imageview.ShapeableImageView
+                    android:id="@+id/ivRepuesto"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="#F5F5F5"
+                    android:scaleType="centerCrop"
+                    android:src="@android:drawable/ic_menu_gallery"
+                    app:shapeAppearanceOverlay="@style/ShapeAppearance.MaterialComponents.SmallComponent" />
+
+                <!-- Overlay para Inactivo -->
+                <FrameLayout
+                    android:id="@+id/overlayInactivo"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@color/overlay_black_translucent"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:text="INACTIVO"
+                        android:textColor="@color/danger"
+                        android:textSize="10sp"
+                        android:textStyle="bold" />
+                </FrameLayout>
+            </FrameLayout>
+
+            <TextView
+                android:id="@+id/labelNombre"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="14dp"
+                android:text="Nombre"
+                android:textColor="#757575"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toEndOf="@id/containerImagen"
+                app:layout_constraintTop_toTopOf="@id/containerImagen" />
+
+            <TextView
+                android:id="@+id/tvNombre"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:text="Filtro de Aceite"
+                android:textColor="#212121"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="@id/labelNombre"
+                app:layout_constraintTop_toBottomOf="@id/labelNombre" />
+
+            <TextView
+                android:id="@+id/labelStock"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="STOCK DISPONIBLE"
+                android:textColor="#757575"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="@id/labelNombre"
+                app:layout_constraintTop_toBottomOf="@id/tvNombre" />
+
+            <TextView
+                android:id="@+id/tvStockActual"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="45"
+                android:textColor="@color/primary"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="@id/labelNombre"
+                app:layout_constraintTop_toBottomOf="@id/labelStock" />
+
+            <TextView
+                android:id="@+id/tvCategoria"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:background="@drawable/bg_chip_mantenimiento"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="3dp"
+                android:text="Aceites"
+                android:textColor="#757575"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="@id/tvStockActual"
+                app:layout_constraintStart_toEndOf="@id/tvStockActual"
+                app:layout_constraintTop_toTopOf="@id/tvStockActual" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

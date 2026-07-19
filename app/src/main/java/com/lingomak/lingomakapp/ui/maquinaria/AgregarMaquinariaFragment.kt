@@ -32,7 +32,8 @@ class AgregarMaquinariaFragment : Fragment() {
         registerForActivityResult(ActivityResultContracts.GetContent()){ uri ->
             if (uri != null){
                 imagenSeleccionadaUri = uri
-
+                binding.imgVistaPreviaMaquinaria.visibility = View.VISIBLE
+                binding.layoutPlaceholderMaquinaria.visibility = View.GONE
                 Glide.with(this)
                     .load(uri)
                     .centerCrop()
@@ -50,7 +51,6 @@ class AgregarMaquinariaFragment : Fragment() {
 
         configurarSpinnerEstado()
         configurarSpinnerTipoMaquinaria()
-        configurarSpinnerMarca()
         configurarEventos()
         observarViewModel()
 
@@ -75,7 +75,7 @@ class AgregarMaquinariaFragment : Fragment() {
     }
 
     private fun configurarEventos(){
-        binding.btnSeleccionarImagen.setOnClickListener {
+        binding.cardSubirImagenMaquinaria.setOnClickListener {
             seleccionadarImagenLauncher.launch("image/*")
         }
 
@@ -95,7 +95,7 @@ class AgregarMaquinariaFragment : Fragment() {
         val codigo = generarCodigoMaquinaria(binding.etNombreMaquinaria.text.toString().trim())
         val nombre = binding.etNombreMaquinaria.text.toString().trim()
         val tipo = binding.spTipoMaquinaria.selectedItem.toString()
-        val marca = binding.spMarcaMaquinaria.selectedItem.toString()
+        val marca = binding.etMarcaMaquinaria.text.toString().trim()
         val modelo = binding.etModeloMaquinaria.text.toString().trim()
         val placaSerie = binding.etPlacaSerie.text.toString().trim()
         val anioTexto = binding.etAnioMaquinaria.text.toString().trim()
@@ -355,133 +355,6 @@ class AgregarMaquinariaFragment : Fragment() {
         )
 
         binding.spTipoMaquinaria.adapter = adapter
-    }
-
-
-    private fun configurarSpinnerMarca() {
-
-        binding.spTipoMaquinaria.onItemSelectedListener =
-            object : AdapterView.OnItemSelectedListener {
-
-                override fun onItemSelected(
-                    parent: AdapterView<*>?,
-                    view: View?,
-                    position: Int,
-                    id: Long
-                ) {
-
-                    val tipoSeleccionado =
-                        binding.spTipoMaquinaria.selectedItem.toString()
-
-                    val marcas = when (tipoSeleccionado) {
-
-                        "Excavadora" -> listOf(
-                            "Seleccione una marca",
-                            "CAT",
-                            "Komatsu",
-                            "Hitachi",
-                            "Volvo",
-                            "Hyundai",
-                            "Doosan"
-                        )
-
-                        "Retroexcavadora" -> listOf(
-                            "Seleccione una marca",
-                            "JCB",
-                            "CAT",
-                            "Case",
-                            "John Deere"
-                        )
-
-                        "Volquete" -> listOf(
-                            "Seleccione una marca",
-                            "Volvo",
-                            "Scania",
-                            "Mercedes-Benz",
-                            "MAN",
-                            "Iveco"
-                        )
-
-                        "Cargador Frontal" -> listOf(
-                            "Seleccione una marca",
-                            "CAT",
-                            "Komatsu",
-                            "Volvo",
-                            "John Deere"
-                        )
-
-                        "Motoniveladora" -> listOf(
-                            "Seleccione una marca",
-                            "CAT",
-                            "Komatsu",
-                            "John Deere"
-                        )
-
-                        "Rodillo Compactador" -> listOf(
-                            "Seleccione una marca",
-                            "Bomag",
-                            "Dynapac",
-                            "CAT"
-                        )
-
-                        "Tractor Oruga" -> listOf(
-                            "Seleccione una marca",
-                            "CAT",
-                            "Komatsu",
-                            "John Deere"
-                        )
-
-                        "Camión Cisterna" -> listOf(
-                            "Seleccione una marca",
-                            "Volvo",
-                            "Scania",
-                            "Mercedes-Benz"
-                        )
-
-                        "Camión Grúa" -> listOf(
-                            "Seleccione una marca",
-                            "Volvo",
-                            "Scania",
-                            "Mercedes-Benz"
-                        )
-
-                        "Minicargador" -> listOf(
-                            "Seleccione una marca",
-                            "Bobcat",
-                            "CAT",
-                            "JCB"
-                        )
-
-                        "Compresora" -> listOf(
-                            "Seleccione una marca",
-                            "Atlas Copco",
-                            "Sullair",
-                            "Kaeser"
-                        )
-
-                        "Generador Eléctrico" -> listOf(
-                            "Seleccione una marca",
-                            "Caterpillar",
-                            "Cummins",
-                            "Perkins"
-                        )
-
-                        else -> listOf(
-                            "Seleccione una marca"
-                        )
-                    }
-
-                    val adapter = ArrayAdapter(
-                        requireContext(),
-                        android.R.layout.simple_spinner_dropdown_item,
-                        marcas
-                    )
-
-                    binding.spMarcaMaquinaria.adapter = adapter
-                }
-
-                override fun onNothingSelected(parent: AdapterView<*>?) {}
-            }
     }
 
     override fun onDestroyView() {

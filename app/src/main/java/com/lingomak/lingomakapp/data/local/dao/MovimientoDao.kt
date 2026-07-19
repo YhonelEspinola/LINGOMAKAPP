@@ -75,4 +75,7 @@ interface MovimientoDao {
     )
     suspend fun obtenerMovimientosDesde(fechaInicio: Long): List<MovimientoEntity>
 
+    @Query("SELECT * FROM movimientos WHERE ordenMantenimientoUid = :ordenUid")
+    suspend fun obtenerPorMantenimiento(ordenUid: String): List<MovimientoEntity>
+
 }

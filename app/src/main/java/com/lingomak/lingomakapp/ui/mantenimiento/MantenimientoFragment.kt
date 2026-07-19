@@ -7,13 +7,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.lingomak.lingomakapp.R
 import com.lingomak.lingomakapp.data.model.MantenimientoModel
 import com.lingomak.lingomakapp.databinding.FragmentMantenimientoBinding
-
+import com.lingomak.lingomakapp.ui.dashboard.DashboardAdminActivity
 
 class MantenimientoFragment : Fragment() {
 
@@ -22,10 +23,10 @@ class MantenimientoFragment : Fragment() {
 
     private val viewModel: MantenimientoViewModel by viewModels()
 
-    private var listaCompleta = listOf<MantenimientoModel>()
+    private var listaCompleta: List<MantenimientoModel> = emptyList()
 
-    private var filtroTipo = "TODOS"
-    private var filtroEstado = "TODOS"
+    private var filtroTipo: String = "TODOS"
+    private var filtroEstado: String = "TODOS"
 
     private lateinit var adapter: MantenimientoAdapter
 
@@ -34,405 +35,211 @@ class MantenimientoFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-
         _binding = FragmentMantenimientoBinding.inflate(inflater, container, false)
 
         configurarRecyclerView()
-        observarViewModel()
         configurarEventos()
         configurarFiltros()
         configurarBusqueda()
-        
-        val isOperario = requireActivity() is com.lingomak.lingomakapp.ui.dashboard.DashboardOperarioActivity
-        viewModel.listarMantenimientos(isOperario)
+        observarViewModel()
+
+        viewModel.listarMantenimientos()
 
         return binding.root
     }
 
     private fun configurarRecyclerView() {
-        val isOperario = requireActivity() is com.lingomak.lingomakapp.ui.dashboard.DashboardOperarioActivity
+        val isAdmin = requireActivity() is DashboardAdminActivity
 
         adapter = MantenimientoAdapter(
             listaMantenimientos = emptyList(),
-            isOperario = isOperario,
+            isOperario = !isAdmin,
             onMantenimientoClick = { mantenimiento ->
                 abrirDetalleMantenimiento(mantenimiento)
             },
-
             onEditarClick = { mantenimiento ->
                 abrirEditarMantenimiento(mantenimiento)
             },
-
             onCambiarEstadoClick = { mantenimiento ->
                 mostrarDialogoCambiarEstado(mantenimiento)
             },
-            onFinalizarClick = { mantenimiento ->
-                abrirFinalizarMantenimiento(mantenimiento)
-            },
             onCancelarClick = { mantenimiento ->
                 mostrarDialogoCancelarMantenimiento(mantenimiento)
+            },
+            onFinalizarClick = { mantenimiento ->
+                abrirFinalizarMantenimiento(mantenimiento)
             }
         )
 
-        binding.rvMantenimientos.layoutManager =
-            LinearLayoutManager(requireContext())
-
+        binding.rvMantenimientos.layoutManager = LinearLayoutManager(requireContext())
         binding.rvMantenimientos.adapter = adapter
-
-        // Scroll Infinito para Mantenimientos
-        binding.scrollMantenimiento.setOnScrollChangeListener(androidx.core.widget.NestedScrollView.OnScrollChangeListener { v, _, scrollY, _, _ ->
-            // Como es un NestedScrollView con un RecyclerView adentro, detectamos el final del scroll
-            if (scrollY == v.getChildAt(0).measuredHeight - v.measuredHeight) {
-                viewModel.cargarSiguienteLote()
-            }
-        })
     }
 
-    private fun observarViewModel(){
-        viewModel.listaMantenimientos.observe(viewLifecycleOwner){lista ->
+    private fun observarViewModel() {
+        viewModel.listaMantenimientos.observe(viewLifecycleOwner) { lista ->
             listaCompleta = lista
-
             aplicarFiltros()
         }
-        viewModel.mensajeError.observe(viewLifecycleOwner){ mensaje ->
-            Toast.makeText(requireContext(), mensaje, Toast.LENGTH_SHORT).show()
+
+        viewModel.mensajeError.observe(viewLifecycleOwner) { error ->
+            if (error.isNotEmpty()) {
+                Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
-
-    private fun abrirDetalleMantenimiento(mantenimiento : MantenimientoModel){
+    private fun abrirDetalleMantenimiento(mantenimiento: MantenimientoModel) {
         val fragment = DetalleMantenimientoFragment()
-
-        val bundle = Bundle().apply {
-            putString("uid", mantenimiento.uid)
-            putString("uidMaquinaria", mantenimiento.uidMaquinaria)
-            putString("codigoMantenimiento", mantenimiento.codigoMantenimiento)
-            putString("tipoMantenimiento", mantenimiento.tipoMantenimiento)
-            putString("nombreMaquinaria", mantenimiento.nombreMaquinaria)
-            putString("codigoMaquinaria", mantenimiento.codigoMaquinaria)
-            putString("tipoMaquinaria", mantenimiento.tipoMaquinaria)
-            putString("descripcion", mantenimiento.descripcion)
-            putString("fechaProgramada", mantenimiento.fechaProgramada)
-            putString("responsable", mantenimiento.responsable)
-            putInt("horometroProgramado", mantenimiento.horometroProgramado)
-            putString("estado", mantenimiento.estado)
-            putString("prioridad", mantenimiento.prioridad)
-            putDouble("costoEstimado", mantenimiento.costoEstimado)
-            putString("observaciones", mantenimiento.observaciones)
-        }
-
+        val bundle = Bundle()
+        bundle.putString("uid", mantenimiento.uid)
         fragment.arguments = bundle
 
-        val containerId = if (requireActivity() is com.lingomak.lingomakapp.ui.dashboard.DashboardAdminActivity) 
-            R.id.fragmentContainerAdmin else R.id.containerOperario
+        val isAdmin = requireActivity() is DashboardAdminActivity
+        val containerId = if (isAdmin) R.id.fragmentContainerAdmin else R.id.containerOperario
 
-        parentFragmentManager
-            .beginTransaction()
+        parentFragmentManager.beginTransaction()
             .replace(containerId, fragment)
             .addToBackStack(null)
             .commit()
-
     }
+
     private fun configurarEventos() {
-        if (requireActivity() is com.lingomak.lingomakapp.ui.dashboard.DashboardOperarioActivity) {
-            binding.fabAgregarMantenimiento.visibility = View.GONE
-        }
-
         binding.fabAgregarMantenimiento.setOnClickListener {
-
             val fragment = ProgramarMantenimientoFragment()
-
-            val containerId = if (requireActivity() is com.lingomak.lingomakapp.ui.dashboard.DashboardAdminActivity) 
-                R.id.fragmentContainerAdmin else R.id.containerOperario
-
-            parentFragmentManager
-                .beginTransaction()
-                .replace(
-                    containerId,
-                    fragment
-                )
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragmentContainerAdmin, fragment)
                 .addToBackStack(null)
                 .commit()
         }
+        
+        if (requireActivity() !is DashboardAdminActivity) {
+            binding.fabAgregarMantenimiento.visibility = View.GONE
+        }
     }
 
-    private fun configurarFiltros(){
+    private fun configurarFiltros() {
         binding.chipGroupTipoMantenimiento.setOnCheckedStateChangeListener { _, checkedIds ->
-            val checkedId = checkedIds.firstOrNull() ?: View.NO_ID
-            filtroTipo = when(checkedId){
-                binding.chipTipoPreventivo.id -> "PREVENTIVO"
-                binding.chipTipoCorrectivo.id -> "CORRECTIVO"
-                binding.chipTipoPredictivo.id -> "PREDICTIVO"
+            filtroTipo = when (checkedIds.firstOrNull()) {
+                R.id.chipTipoPreventivo -> "PREVENTIVO"
+                R.id.chipTipoCorrectivo -> "CORRECTIVO"
+                R.id.chipTipoPredictivo -> "PREDICTIVO"
                 else -> "TODOS"
             }
             aplicarFiltros()
         }
 
         binding.chipGroupEstadoMantenimiento.setOnCheckedStateChangeListener { _, checkedIds ->
-            val checkedId = checkedIds.firstOrNull() ?: View.NO_ID
-            filtroEstado = when (checkedId) {
-                binding.chipEstadoPendiente.id -> "PENDIENTE"
-                binding.chipEstadoProceso.id -> "EN_PROCESO"
-                binding.chipEstadoFinalizado.id -> "FINALIZADO"
-                binding.chipEstadoVencido.id -> "VENCIDO"
+            filtroEstado = when (checkedIds.firstOrNull()) {
+                R.id.chipEstadoPendiente -> "PENDIENTE"
+                R.id.chipEstadoProceso -> "EN_PROCESO"
+                R.id.chipEstadoFinalizado -> "FINALIZADO"
+                R.id.chipEstadoVencido -> "VENCIDO"
                 else -> "TODOS"
             }
             aplicarFiltros()
         }
     }
 
-    private fun aplicarFiltros(){
-        val textoBusqueda = binding.etBuscarMantenimiento.text
-            .toString()
-            .trim()
-            .lowercase()
+    private fun aplicarFiltros() {
+        var listaFiltrada = listaCompleta
 
-        val listaFiltrada = listaCompleta.filter { mantenimiento ->
-            val coincideBusqueda =
-                mantenimiento.nombreMaquinaria.lowercase().contains(textoBusqueda) ||
-                        mantenimiento.codigoMantenimiento.lowercase().contains(textoBusqueda) ||
-                        mantenimiento.descripcion.lowercase().contains(textoBusqueda)
+        if (filtroTipo != "TODOS") {
+            listaFiltrada = listaFiltrada.filter { it.tipoMantenimiento == filtroTipo }
+        }
 
-            val coincideTipo =
-                filtroTipo == "TODOS" ||
-                        mantenimiento.tipoMantenimiento == filtroTipo
+        if (filtroEstado != "TODOS") {
+            listaFiltrada = listaFiltrada.filter { it.estado == filtroEstado }
+        }
 
-            val coincideEstado =
-                filtroEstado == "TODOS" ||
-                        mantenimiento.estado == filtroEstado
-
-            coincideBusqueda && coincideTipo && coincideEstado
+        val query = binding.etBuscarMantenimiento.text.toString().trim()
+        if (query.isNotEmpty()) {
+            listaFiltrada = listaFiltrada.filter {
+                it.codigoMantenimiento.contains(query, ignoreCase = true) ||
+                        it.nombreMaquinaria.contains(query, ignoreCase = true) ||
+                        it.descripcion.contains(query, ignoreCase = true)
+            }
         }
 
         adapter.actualizarLista(listaFiltrada)
-        actualizarResumen(listaFiltrada)
+        actualizarResumen(listaCompleta)
     }
 
-    private fun configurarBusqueda(){
-        binding.etBuscarMantenimiento.addTextChangedListener(object  : TextWatcher{
-            override fun beforeTextChanged(
-                s: CharSequence?,
-                start: Int,
-                count: Int,
-                after: Int
-            ) {}
-
-            override fun onTextChanged(
-                s: CharSequence?,
-                start: Int,
-                before: Int,
-                count: Int
-            ) {
+    private fun configurarBusqueda() {
+        binding.etBuscarMantenimiento.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 aplicarFiltros()
             }
-
             override fun afterTextChanged(s: Editable?) {}
         })
     }
 
     private fun actualizarResumen(lista: List<MantenimientoModel>) {
+        val pendientes = lista.count { it.estado == "PENDIENTE" }
+        val vencidos = lista.count { it.estado == "VENCIDO" }
+        val finalizados = lista.count { it.estado == "FINALIZADO" }
 
-
-
-        binding.tvPendientesMantenimiento.text =
-            lista.count { it.estado == "PENDIENTE" }.toString()
-
-        binding.tvVencidosMantenimiento.text =
-            lista.count { it.estado == "VENCIDO" }.toString()
-
-        binding.tvFinalizadosMantenimiento.text =
-            lista.count { it.estado == "FINALIZADO" }.toString()
+        binding.tvPendientesMantenimiento.text = pendientes.toString()
+        binding.tvVencidosMantenimiento.text = vencidos.toString()
+        binding.tvFinalizadosMantenimiento.text = finalizados.toString()
     }
 
-    private fun mostrarDialogoCambiarEstado(mantenimiento : MantenimientoModel){
-        if (mantenimiento.estado != "PENDIENTE") {
-
-            Toast.makeText(
-                requireContext(),
-                "Solo los mantenimientos pendientes pueden iniciarse",
-                Toast.LENGTH_SHORT
-            ).show()
-
-            return
-        }
-
-        androidx.appcompat.app.AlertDialog.Builder(requireContext())
-            .setTitle("Iniciar mantenimiento")
-            .setMessage(
-                "¿Desea iniciar este mantenimiento?\n\n" +
-                        "La maquinaria pasará al estado EN PROCESO."
-            )
-
-            .setPositiveButton("Iniciar") { dialog, _ ->
-
-                if (mantenimiento.uidMaquinaria.isEmpty()) {
-                    Toast.makeText(
-                        requireContext(),
-                        "No se encontró la maquinaria relacionada",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    return@setPositiveButton
-                }
-
-                viewModel.iniciarMantenimiento(
-                    uidMantenimiento = mantenimiento.uid,
-                    uidMaquinaria = mantenimiento.uidMaquinaria,
-                    onSuccess = {
-                        Toast.makeText(
-                            requireContext(),
-                            "Mantenimiento iniciado correctamente",
-                            Toast.LENGTH_SHORT
-                        ).show()
+    private fun mostrarDialogoCambiarEstado(mantenimiento: MantenimientoModel) {
+        val estados = arrayOf("PENDIENTE", "EN_PROCESO", "CANCELADO")
+        AlertDialog.Builder(requireContext())
+            .setTitle("Cambiar estado")
+            .setItems(estados) { _, which ->
+                val nuevoEstado = estados[which]
+                if (nuevoEstado == "EN_PROCESO") {
+                    viewModel.iniciarMantenimiento(mantenimiento.uid, mantenimiento.uidMaquinaria) {
+                        Toast.makeText(requireContext(), "Mantenimiento iniciado", Toast.LENGTH_SHORT).show()
                     }
-                )
-
-                dialog.dismiss()
+                } else {
+                    viewModel.cambiarEstadoMantenimiento(mantenimiento.uid, nuevoEstado) {
+                        Toast.makeText(requireContext(), "Estado actualizado", Toast.LENGTH_SHORT).show()
+                    }
+                }
             }
-
-            .setNegativeButton("Cancelar") { dialog, _ ->
-                dialog.dismiss()
-            }
-
             .show()
-
     }
 
-    private fun abrirEditarMantenimiento(
-        mantenimiento: MantenimientoModel
-    ) {
-
+    private fun abrirEditarMantenimiento(mantenimiento: MantenimientoModel) {
         val fragment = EditarMantenimientoFragment()
-
-        val bundle = Bundle().apply {
-
-            putString("uid", mantenimiento.uid)
-            putString("codigoMantenimiento", mantenimiento.codigoMantenimiento)
-
-            putString("uidMaquinaria", mantenimiento.uidMaquinaria)
-            putString("codigoMaquinaria", mantenimiento.codigoMaquinaria)
-            putString("nombreMaquinaria", mantenimiento.nombreMaquinaria)
-            putString("tipoMaquinaria", mantenimiento.tipoMaquinaria)
-
-            putString("tipoMantenimiento", mantenimiento.tipoMantenimiento)
-            putString("descripcion", mantenimiento.descripcion)
-            putString("fechaProgramada", mantenimiento.fechaProgramada)
-
-            putString("responsable", mantenimiento.responsable)
-            putString("estado", mantenimiento.estado)
-            putString("prioridad", mantenimiento.prioridad)
-
-            putInt(
-                "horometroProgramado",
-                mantenimiento.horometroProgramado
-            )
-
-            putDouble(
-                "costoEstimado",
-                mantenimiento.costoEstimado
-            )
-
-            putString(
-                "observaciones",
-                mantenimiento.observaciones
-            )
-
-            putString(
-                "fechaRegistro",
-                mantenimiento.fechaRegistro
-            )
-
-            putString(
-                "registradoPor",
-                mantenimiento.registradoPor
-            )
-        }
-
+        val bundle = Bundle()
+        bundle.putString("uid", mantenimiento.uid)
         fragment.arguments = bundle
-
-        val containerId = if (requireActivity() is com.lingomak.lingomakapp.ui.dashboard.DashboardAdminActivity) 
-            R.id.fragmentContainerAdmin else R.id.containerOperario
-
-        parentFragmentManager
-            .beginTransaction()
-            .replace(
-                containerId,
-                fragment
-            )
+        parentFragmentManager.beginTransaction()
+            .replace(R.id.fragmentContainerAdmin, fragment)
             .addToBackStack(null)
             .commit()
     }
 
     private fun mostrarDialogoCancelarMantenimiento(mantenimiento: MantenimientoModel) {
-        if (
-            mantenimiento.estado == "EN_PROCESO" ||
-            mantenimiento.estado == "FINALIZADO" ||
-            mantenimiento.estado == "CANCELADO"
-        ) {
-            Toast.makeText(
-                requireContext(),
-                "No se puede cancelar un mantenimiento en estado ${mantenimiento.estado}",
-                Toast.LENGTH_LONG
-            ).show()
-            return
-        }
-        androidx.appcompat.app.AlertDialog.Builder(requireContext())
-            .setTitle("Cancelar mantenimiento")
-            .setMessage("¿Seguro que deseas cancelar este mantenimiento?")
-            .setPositiveButton("Sí, cancelar") { dialog, _ ->
-
-                viewModel.cambiarEstadoMantenimiento(
-                    uid = mantenimiento.uid,
-                    nuevoEstado = "CANCELADO",
-                    onSuccess = {
-                        Toast.makeText(
-                            requireContext(),
-                            "Mantenimiento cancelado correctamente",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                )
-
-                dialog.dismiss()
+        AlertDialog.Builder(requireContext())
+            .setTitle("Cancelar Mantenimiento")
+            .setMessage("¿Estás seguro de cancelar el mantenimiento ${mantenimiento.codigoMantenimiento}?")
+            .setPositiveButton("Sí, cancelar") { _, _ ->
+                viewModel.cambiarEstadoMantenimiento(mantenimiento.uid, "CANCELADO") {
+                    Toast.makeText(requireContext(), "Mantenimiento cancelado", Toast.LENGTH_SHORT).show()
+                }
             }
-            .setNegativeButton("No") { dialog, _ ->
-                dialog.dismiss()
-            }
+            .setNegativeButton("No", null)
             .show()
     }
 
-    private fun abrirFinalizarMantenimiento(mantenimiento : MantenimientoModel){
-        if(mantenimiento.estado != "EN_PROCESO"){
-            Toast.makeText(requireContext(), "Solo se puede finalizar un mantenimiento en proceso", Toast.LENGTH_SHORT).show()
-            return
-        }
-
+    private fun abrirFinalizarMantenimiento(mantenimiento: MantenimientoModel) {
         val fragment = FinalizarMantenimientoFragment()
-
-        val bundle = Bundle().apply {
-            putString("uid", mantenimiento.uid)
-            putString("uidMaquinaria", mantenimiento.uidMaquinaria)
-            putString("codigoMantenimiento", mantenimiento.codigoMantenimiento)
-            putString("nombreMaquinaria", mantenimiento.nombreMaquinaria)
-            putString("descripcion", mantenimiento.descripcion)
-            putString("estado", mantenimiento.estado)
-        }
-
+        val bundle = Bundle()
+        bundle.putString("uid", mantenimiento.uid)
         fragment.arguments = bundle
-
-        val containerId = if (requireActivity() is com.lingomak.lingomakapp.ui.dashboard.DashboardAdminActivity) 
-            R.id.fragmentContainerAdmin else R.id.containerOperario
-
-        parentFragmentManager
-            .beginTransaction()
-            .replace(containerId, fragment)
+        parentFragmentManager.beginTransaction()
+            .replace(R.id.fragmentContainerAdmin, fragment)
             .addToBackStack(null)
             .commit()
-
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-
         _binding = null
     }
 }

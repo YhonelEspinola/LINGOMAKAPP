@@ -1,6 +1,7 @@
 package com.lingomak.lingomakapp.ui.repuestos
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
@@ -8,7 +9,6 @@ import com.bumptech.glide.Glide
 import com.lingomak.lingomakapp.R
 import com.lingomak.lingomakapp.data.model.RepuestoModel
 import com.lingomak.lingomakapp.databinding.ItemRepuestoBinding
-
 import com.lingomak.lingomakapp.utils.ImageOptimizer
 
 class RepuestosOpAdapter(
@@ -23,7 +23,13 @@ class RepuestosOpAdapter(
             binding.tvNombre.text = repuesto.nombre
             binding.tvCategoria.text = repuesto.categoria
             binding.tvStockActual.text = repuesto.stockActual.toString()
-            binding.tvEstado.text = repuesto.estado
+
+            // Manejo de visibilidad y overlay según estado
+            if (repuesto.estado.equals("INACTIVO", ignoreCase = true)) {
+                binding.overlayInactivo.visibility = View.VISIBLE
+            } else {
+                binding.overlayInactivo.visibility = View.GONE
+            }
 
             if (repuesto.imagenUrl.isNotEmpty()) {
                 val optimizedUrl = ImageOptimizer.getOptimizedUrl(repuesto.imagenUrl, "512x512")

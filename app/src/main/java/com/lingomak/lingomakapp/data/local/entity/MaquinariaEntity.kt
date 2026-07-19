@@ -16,6 +16,7 @@ data class MaquinariaEntity(
     val estado: String,
     val horometroActual: Int,
     val horometroUltimoMantenimiento: Int,
+    val intervaloMantenimientoHoras: Int = 250,
     val ubicacionActual: String,
     val imagenUrl: String,
     val observaciones: String,
@@ -24,6 +25,6 @@ data class MaquinariaEntity(
     val registradoPor: String,
     
     // Campos para sincronización
-    val estadoSync: String = "SINCRONIZADO", // PENDIENTE_CREAR, PENDIENTE_ACTUALIZAR, SINCRONIZADO
+    val estadoSync: String = "SINCRONIZADO",
     val timestampLocal: Long = System.currentTimeMillis()
 )

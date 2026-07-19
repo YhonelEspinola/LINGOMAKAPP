@@ -89,6 +89,8 @@ class DetalleRepuestoFragment : Fragment() {
         binding.tvStockMinimo.text = repuesto.stockMinimo.toString()
         binding.tvStockMaximo.text = repuesto.stockMaximo.toString()
         binding.tvUbicacionAlmacen.text = repuesto.ubicacionAlmacen.ifEmpty { "No especificada" }
+        binding.tvProveedorNombre.text = repuesto.proveedorNombre.ifEmpty { "No especificado" }
+        binding.tvProveedorContacto.text = repuesto.proveedorContacto.ifEmpty { "No especificado" }
         binding.tvEstado.text = repuesto.estado
 
         val colorEstado = if (repuesto.estado == "ACTIVO") R.color.success else R.color.danger

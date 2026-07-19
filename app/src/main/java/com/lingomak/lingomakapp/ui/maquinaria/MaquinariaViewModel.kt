@@ -1,64 +1,54 @@
 package com.lingomak.lingomakapp.ui.maquinaria
 
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.lingomak.lingomakapp.data.model.MaquinariaModel
 import com.lingomak.lingomakapp.data.repository.MaquinariaRepository
 import android.net.Uri
+import kotlinx.coroutines.launch
 
-class MaquinariaViewModel : ViewModel() {
+class MaquinariaViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repository = MaquinariaRepository()
-
-    private val _listarMaquinarias = MutableLiveData<List<MaquinariaModel>>()
-    val listaMaquinarias: LiveData<List<MaquinariaModel>> get() = _listarMaquinarias
+    private val repository = MaquinariaRepository(application)
 
     private val _mensajeError = MutableLiveData<String>()
-    val mensajeError: LiveData<String>
-        get() = _mensajeError
+    val mensajeError: LiveData<String> get() = _mensajeError
 
+    val listaMaquinarias: LiveData<List<MaquinariaModel>> = repository.obtenerMaquinariasObservable()
 
     fun listarMaquinarias(){
-        repository.listarMaquinarias(
-            onSuccess = { lista ->
-                _listarMaquinarias.postValue(lista)
-            },
-            onError = {error ->
-                _mensajeError.postValue(error)
-            }
-        )
+        viewModelScope.launch {
+            repository.descargarMaquinariasDeFirestore()
+        }
     }
 
     fun agregarMaquinaria(
         maquinaria: MaquinariaModel,
         onSuccess: () -> Unit
     ){
-        repository.agregarMaquinaria(
-            maquinaria = maquinaria,
-
-            onSuccess = {
-                onSuccess()
-            },
-            onError = { error ->
-                _mensajeError.postValue(error)
-            }
-        )
+        viewModelScope.launch {
+            repository.agregarMaquinaria(
+                maquinaria = maquinaria,
+                onSuccess = onSuccess,
+                onError = { _mensajeError.postValue(it) }
+            )
+        }
     }
 
     fun actualizarMaquinaria(
         maquinaria: MaquinariaModel,
         onSuccess: () -> Unit
     ){
-        repository.actualizarMaquinaria(
-            maquinaria = maquinaria,
-            onSuccess = {
-                onSuccess()
-            },
-            onError = { error ->
-                _mensajeError.postValue(error)
-            }
-        )
+        viewModelScope.launch {
+            repository.actualizarMaquinaria(
+                maquinaria = maquinaria,
+                onSuccess = onSuccess,
+                onError = { _mensajeError.postValue(it) }
+            )
+        }
     }
 
     fun cambiarEstadoMaquinaria(
@@ -66,18 +56,14 @@ class MaquinariaViewModel : ViewModel() {
         nuevoEstado: String,
         onSuccess: () -> Unit
     ){
-        repository.cambiarEstadoMaquinaria(
-            uid = uid,
-            nuevoEstado = nuevoEstado,
-
-            onSuccess = {
-                onSuccess()
-            },
-
-            onError = { error ->
-                _mensajeError.postValue(error)
-            }
-        )
+        viewModelScope.launch {
+            repository.cambiarEstadoMaquinaria(
+                uid = uid,
+                nuevoEstado = nuevoEstado,
+                onSuccess = onSuccess,
+                onError = { _mensajeError.postValue(it) }
+            )
+        }
     }
 
     fun subirImagenMaquinaria(
@@ -88,13 +74,8 @@ class MaquinariaViewModel : ViewModel() {
         repository.subirImagenMaquinaria(
             imagenUri = imagenUri,
             uid = uid,
-            onSuccess = {urlImagen ->
-                onSuccess(urlImagen)
-            },
-            onError = {error ->
-                _mensajeError.postValue(error)
-            }
+            onSuccess = onSuccess,
+            onError = { _mensajeError.postValue(it) }
         )
     }
-
 }

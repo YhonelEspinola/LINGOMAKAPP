@@ -29,6 +29,13 @@ data class MantenimientoEntity(
     val actualizadoPor: String,
     val prioridad: String,
     
+    // Imágenes y rutas locales
+    val imagenesReporte: List<String> = emptyList(),
+    val imagenesFinalizacion: List<String> = emptyList(),
+    val imagenesReporteLocal: List<String> = emptyList(),
+    val imagenesFinalizacionLocal: List<String> = emptyList(),
+    val reporteIA: String = "", // Reporte narrativo generado por Gemini
+    
     // Campos para sincronización
     val estadoSync: String = "SINCRONIZADO",
     val timestampLocal: Long = System.currentTimeMillis()

@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 import com.lingomak.lingomakapp.data.local.dao.*
 import com.lingomak.lingomakapp.data.local.entity.*
 
@@ -19,11 +20,14 @@ import com.lingomak.lingomakapp.data.local.entity.*
           MovimientoEntity::class,
           ContadorEntity::class,
           MaquinariaEntity::class,
-          MantenimientoEntity::class
+          MantenimientoEntity::class,
+          RegistroUsoMaquinariaEntity::class,
+          SolicitudMantenimientoEntity::class
       ],
-      version = 10,
+      version = 14,
       exportSchema = false
   )
+  @TypeConverters(Converters::class)
   abstract class AppDatabase : RoomDatabase() {
   
       abstract fun repuestoDao(): RepuestoDao
@@ -31,6 +35,8 @@ import com.lingomak.lingomakapp.data.local.entity.*
       abstract fun maquinariaDao(): MaquinariaDao
       abstract fun mantenimientoDao(): MantenimientoDao
       abstract fun contadorDao(): ContadorDao
+      abstract fun registroUsoMaquinariaDao(): RegistroUsoMaquinariaDao
+      abstract fun solicitudMantenimientoDao(): SolicitudMantenimientoDao
 
     companion object {
         @Volatile

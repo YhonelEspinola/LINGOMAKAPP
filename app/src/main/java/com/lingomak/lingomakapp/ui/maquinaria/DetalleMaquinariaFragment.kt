@@ -53,18 +53,41 @@ class DetalleMaquinariaFragment : Fragment() {
         }
 
         binding.tvNombreDetalleMaquinaria.text = nombre
-        binding.tvCodigoDetalleMaquinaria.text = "Código: $codigo"
+        binding.tvCodigoDetalleMaquinaria.text = "CÓDIGO: $codigo"
         binding.tvEstadoDetalleMaquinaria.text = estado
-        binding.tvTipoDetalleMaquinaria.text = "Tipo: $tipo"
-        binding.tvMarcaDetalleMaquinaria.text = "Marca: $marca"
-        binding.tvModeloDetalleMaquinaria.text = "Modelo: $modelo"
-        binding.tvPlacaDetalleMaquinaria.text = "Placa/Serie: $placaSerie"
-        binding.tvAnioDetalleMaquinaria.text = "Año: $anio"
-        binding.tvHorometroDetalleMaquinaria.text = "Horómetro actual: $horometroActual h"
-        binding.tvHorometroUltimoDetalleMaquinaria.text = "Último mantenimiento: $horometroUltimo h"
-        binding.tvUbicacionDetalleMaquinaria.text = "Ubicación: $ubicacion"
-        binding.tvObservacionesDetalleMaquinaria.text =
-            "Observaciones: ${observaciones.ifEmpty { "Sin observaciones" }}"
+        
+        // Aplicar color según estado
+        val colorEstado = when(estado) {
+            "OPERATIVA" -> requireContext().getColor(R.color.success)
+            "INACTIVA" -> requireContext().getColor(R.color.danger)
+            else -> requireContext().getColor(R.color.warning)
+        }
+        binding.tvEstadoDetalleMaquinaria.setTextColor(colorEstado)
+
+        binding.tvTipoDetalleMaquinaria.text = tipo
+        binding.tvMarcaDetalleMaquinaria.text = marca
+        binding.tvModeloDetalleMaquinaria.text = modelo
+        binding.tvAnioDetalleMaquinaria.text = anio.toString()
+        binding.tvPlacaDetalleMaquinaria.text = placaSerie
+        binding.tvHorometroDetalleMaquinaria.text = "$horometroActual h"
+        binding.tvHorometroUltimoDetalleMaquinaria.text = "$horometroUltimo h"
+        binding.tvUbicacionDetalleMaquinaria.text = ubicacion
+        binding.tvObservacionesDetalleMaquinaria.text = observaciones.ifEmpty { "Sin observaciones registradas." }
+
+        // Configurar botones
+        binding.btnVolverMaquinaria.setOnClickListener { parentFragmentManager.popBackStack() }
+        
+        binding.btnEditarMaquinaria.setOnClickListener {
+            // Lógica para ir a editar (si existe el fragmento)
+            val fragment = EditarMaquinariaFragment()
+            val bundle = Bundle()
+            bundle.putString("uid", arguments?.getString("uid"))
+            fragment.arguments = bundle
+            parentFragmentManager.beginTransaction()
+                .replace((requireView().parent as ViewGroup).id, fragment)
+                .addToBackStack(null)
+                .commit()
+        }
     }
 
     override fun onDestroyView() {

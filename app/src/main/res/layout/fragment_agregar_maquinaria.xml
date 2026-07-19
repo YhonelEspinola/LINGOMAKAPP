@@ -17,11 +17,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Agregar Maquinaria"
-            android:textColor="@color/text_primary"
+            android:textColor="@color/secondary"
             android:textAlignment="center"
-            android:textSize="28sp"
+            android:textSize="24sp"
             android:textStyle="bold" />
-
 
         <TextView
             android:layout_width="match_parent"
@@ -31,82 +30,160 @@
             android:textAlignment="center"
             android:textSize="14sp"
             android:layout_marginTop="4dp"
-            android:layout_marginBottom="20dp" />
+            android:layout_marginBottom="24dp" />
 
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:cardCornerRadius="18dp"
-            app:cardElevation="4dp"
-            app:strokeColor="#E5E7EB"
-            app:strokeWidth="1dp"
+            app:cardCornerRadius="14dp"
+            app:cardElevation="2dp"
+            app:strokeWidth="0dp"
             app:cardBackgroundColor="@android:color/white">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="18dp">
+                android:padding="20dp">
 
-
-                <ImageView
-                    android:id="@+id/imgVistaPreviaMaquinaria"
+                <TextView
                     android:layout_width="match_parent"
-                    android:layout_height="190dp"
-                    android:background="@drawable/bg_image_placeholder"
-                    android:scaleType="centerCrop"
-                    android:src="@drawable/ic_maquinaria_placeholder" />
+                    android:layout_height="wrap_content"
+                    android:text="Imagen de la Maquinaria"
+                    android:textColor="@color/text_primary"
+                    android:textStyle="bold"
+                    android:textSize="14sp" />
 
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardSubirImagenMaquinaria"
+                    android:layout_width="match_parent"
+                    android:layout_height="160dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="20dp"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="0dp"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="@color/border"
+                    app:cardBackgroundColor="@color/white"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground">
 
+                    <FrameLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <ImageView
+                            android:id="@+id/imgVistaPreviaMaquinaria"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:scaleType="centerCrop"
+                            android:visibility="gone"/>
+
+                        <LinearLayout
+                            android:id="@+id/layoutPlaceholderMaquinaria"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:gravity="center"
+                            android:orientation="vertical">
+
+                            <ImageView
+                                android:layout_width="48dp"
+                                android:layout_height="48dp"
+                                android:src="@android:drawable/ic_menu_camera"
+                                app:tint="@color/text_secondary" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="8dp"
+                                android:text="Subir imagen"
+                                android:textColor="@color/text_secondary"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+                    </FrameLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Botón antiguo oculto para compatibilidad con código -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnSeleccionarImagen"
                     android:layout_width="match_parent"
-                    android:layout_height="52dp"
-                    android:layout_marginTop="12dp"
-                    android:text="Seleccionar imagen"
-                    android:textAllCaps="false"
-                    app:cornerRadius="14dp"
-                    app:icon="@android:drawable/ic_menu_gallery" />
+                    android:layout_height="wrap_content"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Información General"
+                    android:textColor="@color/text_primary"
+                    android:textStyle="bold"
+                    android:textSize="14sp" />
 
                 <EditText
                     android:id="@+id/etNombreMaquinaria"
                     android:layout_width="match_parent"
                     android:layout_height="55dp"
-                    android:layout_marginTop="12dp"
+                    android:layout_marginTop="8dp"
                     android:background="@drawable/bg_edit_text"
                     android:hint="Nombre de maquinaria"
                     android:padding="12dp"
-                    android:singleLine="true" />
+                    android:singleLine="true"
+                    android:textSize="14sp" />
 
-
-                <Spinner
-                    android:id="@+id/spTipoMaquinaria"
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="55dp"
+                    android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:background="@drawable/bg_edit_text"
-                    android:padding="12dp"/>
+                    android:orientation="horizontal">
+                    <Spinner
+                        android:id="@+id/spTipoMaquinaria"
+                        android:layout_width="0dp"
+                        android:layout_height="55dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_edit_text"
+                        android:padding="12dp"/>
+                    <View android:layout_width="12dp" android:layout_height="1dp"/>
+                    <EditText
+                        android:id="@+id/etMarcaMaquinaria"
+                        android:layout_width="0dp"
+                        android:layout_height="55dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_edit_text"
+                        android:hint="Marca"
+                        android:padding="12dp"
+                        android:singleLine="true"
+                        android:textSize="14sp" />
+                </LinearLayout>
 
-
-                <Spinner
-                    android:id="@+id/spMarcaMaquinaria"
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="55dp"
+                    android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:background="@drawable/bg_edit_text"
-                    android:padding="12dp"/>
-
-
-                <EditText
-                    android:id="@+id/etModeloMaquinaria"
-                    android:layout_width="match_parent"
-                    android:layout_height="55dp"
-                    android:layout_marginTop="12dp"
-                    android:background="@drawable/bg_edit_text"
-                    android:hint="Modelo"
-                    android:padding="12dp"
-                    android:singleLine="true" />
-
+                    android:orientation="horizontal">
+                    <EditText
+                        android:id="@+id/etModeloMaquinaria"
+                        android:layout_width="0dp"
+                        android:layout_height="55dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_edit_text"
+                        android:hint="Modelo"
+                        android:padding="12dp"
+                        android:singleLine="true"
+                        android:textSize="14sp" />
+                    <View android:layout_width="12dp" android:layout_height="1dp"/>
+                    <EditText
+                        android:id="@+id/etAnioMaquinaria"
+                        android:layout_width="0dp"
+                        android:layout_height="55dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_edit_text"
+                        android:hint="Año"
+                        android:inputType="number"
+                        android:padding="12dp"
+                        android:singleLine="true"
+                        android:textSize="14sp" />
+                </LinearLayout>
 
                 <EditText
                     android:id="@+id/etPlacaSerie"
@@ -116,52 +193,55 @@
                     android:background="@drawable/bg_edit_text"
                     android:hint="Placa o número de serie"
                     android:padding="12dp"
-                    android:singleLine="true" />
+                    android:singleLine="true"
+                    android:textSize="14sp" />
 
-                <EditText
-                    android:id="@+id/etAnioMaquinaria"
+                <TextView
                     android:layout_width="match_parent"
-                    android:layout_height="55dp"
-                    android:layout_marginTop="12dp"
-                    android:background="@drawable/bg_edit_text"
-                    android:hint="Año"
-                    android:inputType="number"
-                    android:padding="12dp"
-                    android:singleLine="true" />
-
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:text="Estado y Horómetro"
+                    android:textColor="@color/text_primary"
+                    android:textStyle="bold"
+                    android:textSize="14sp" />
 
                 <Spinner
                     android:id="@+id/spEstadoMaquinaria"
                     android:layout_width="match_parent"
                     android:layout_height="55dp"
-                    android:layout_marginTop="12dp"
+                    android:layout_marginTop="8dp"
                     android:background="@drawable/bg_edit_text"
                     android:padding="12dp" />
 
-
-                <EditText
-                    android:id="@+id/etHorometroActual"
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="55dp"
+                    android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:background="@drawable/bg_edit_text"
-                    android:hint="Horómetro actual"
-                    android:inputType="number"
-                    android:padding="12dp"
-                    android:singleLine="true" />
-
-
-                <EditText
-                    android:id="@+id/etHorometroUltimoMantenimiento"
-                    android:layout_width="match_parent"
-                    android:layout_height="55dp"
-                    android:layout_marginTop="12dp"
-                    android:background="@drawable/bg_edit_text"
-                    android:hint="Horómetro último mantenimiento"
-                    android:inputType="number"
-                    android:padding="12dp"
-                    android:singleLine="true" />
-
+                    android:orientation="horizontal">
+                    <EditText
+                        android:id="@+id/etHorometroActual"
+                        android:layout_width="0dp"
+                        android:layout_height="55dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_edit_text"
+                        android:hint="Horómetro Actual"
+                        android:inputType="number"
+                        android:padding="12dp"
+                        android:singleLine="true"
+                        android:textSize="14sp" />
+                    <View android:layout_width="12dp" android:layout_height="1dp"/>
+                    <EditText
+                        android:id="@+id/etHorometroUltimoMantenimiento"
+                        android:layout_width="0dp"
+                        android:layout_height="55dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_edit_text"
+                        android:hint="Último Mant."
+                        android:inputType="number"
+                        android:padding="12dp"
+                        android:singleLine="true"
+                        android:textSize="14sp" />
+                </LinearLayout>
 
                 <EditText
                     android:id="@+id/etUbicacionActual"
@@ -171,8 +251,8 @@
                     android:background="@drawable/bg_edit_text"
                     android:hint="Ubicación actual"
                     android:padding="12dp"
-                    android:singleLine="true" />
-
+                    android:singleLine="true"
+                    android:textSize="14sp" />
 
                 <EditText
                     android:id="@+id/etObservacionesMaquinaria"
@@ -181,30 +261,30 @@
                     android:layout_marginTop="12dp"
                     android:background="@drawable/bg_edit_text"
                     android:gravity="top"
-                    android:hint="Observaciones"
+                    android:hint="Observaciones adicionales"
                     android:inputType="textMultiLine"
-                    android:padding="12dp" />
-
+                    android:padding="12dp"
+                    android:textSize="14sp" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnGuardarMaquinaria"
                     android:layout_width="match_parent"
                     android:layout_height="56dp"
-                    android:layout_marginTop="20dp"
-                    android:text="Guardar maquinaria"
-                    android:textAllCaps="false"
+                    android:layout_marginTop="24dp"
+                    android:text="GUARDAR MAQUINARIA"
                     android:textColor="@android:color/white"
-                    android:textSize="16sp"
                     android:textStyle="bold"
                     app:backgroundTint="@color/primary"
-                    app:cornerRadius="14dp" />
+                    app:cornerRadius="12dp" />
+
                 <ProgressBar
                     android:id="@+id/progressGuardarMaquinaria"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
                     android:layout_gravity="center"
-                    android:layout_marginTop="12dp"
-                    android:visibility="gone" />
+                    android:layout_marginTop="16dp"
+                    android:visibility="gone"
+                    android:indeterminateTint="@color/primary" />
 
             </LinearLayout>
 

@@ -7,8 +7,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import com.lingomak.lingomakapp.databinding.FragmentPerfilBinding
 import androidx.fragment.app.viewModels
+import com.google.firebase.messaging.FirebaseMessaging
+import com.lingomak.lingomakapp.databinding.FragmentPerfilBinding
 import com.lingomak.lingomakapp.ui.auth.LoginActivity
 
 class PerfilFragment : Fragment() {
@@ -32,16 +33,20 @@ class PerfilFragment : Fragment() {
         viewModel.cargarUsuarioLogado()
 
         binding.btnCerrarSesion.setOnClickListener {
-            viewModel.cerrarSesion()
+            // Al cerrar sesión, eliminamos la suscripción al tópico de administradores
+            FirebaseMessaging.getInstance().unsubscribeFromTopic("administradores")
+                .addOnCompleteListener {
+                    viewModel.cerrarSesion()
 
-            val intent = Intent(
-                requireContext(),
-                LoginActivity::class.java
-            )
+                    val intent = Intent(
+                        requireContext(),
+                        LoginActivity::class.java
+                    )
 
-            startActivity(intent)
+                    startActivity(intent)
 
-            requireActivity().finish()
+                    requireActivity().finish()
+                }
         }
 
         return binding.root

@@ -13,8 +13,14 @@ interface MaquinariaDao {
     @Query("SELECT * FROM maquinarias ORDER BY nombre ASC")
     fun obtenerTodasObservable(): LiveData<List<MaquinariaEntity>>
 
-    @Query("SELECT * FROM maquinarias WHERE uid = :uid")
+    @Query("SELECT * FROM maquinarias WHERE uid = :uid LIMIT 1")
     suspend fun obtenerPorUid(uid: String): MaquinariaEntity?
+
+    @Query("SELECT * FROM maquinarias WHERE uid = :uid LIMIT 1")
+    fun obtenerPorUidObservable(uid: String): LiveData<MaquinariaEntity?>
+
+    @Query("UPDATE maquinarias SET estado = :nuevoEstado, fechaActualizacion = :fechaActualizacion, estadoSync = 'PENDIENTE_ACTUALIZAR', timestampLocal = :timestamp WHERE uid = :uid")
+    suspend fun cambiarEstadoLocal(uid: String, nuevoEstado: String, fechaActualizacion: String, timestamp: Long)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertarOActualizar(maquinaria: MaquinariaEntity)

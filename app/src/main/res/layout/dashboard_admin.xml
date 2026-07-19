@@ -4,7 +4,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/drawerLayoutAdmin"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="#F5F5F5">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -14,11 +15,12 @@
             android:id="@+id/toolbarAdmin"
             android:layout_width="0dp"
             android:layout_height="56dp"
-            android:background="@color/primary"
+            android:background="#7F0000"
             android:title="LINGOMAK"
-            android:titleTextColor="@color/white"
+            android:titleTextColor="#FFFFFF"
+            app:elevation="0dp"
             app:navigationIcon="@android:drawable/ic_menu_sort_by_size"
-            app:navigationIconTint="@color/white"
+            app:navigationIconTint="#FFFFFF"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
@@ -27,6 +29,7 @@
             android:id="@+id/fragmentContainerAdmin"
             android:layout_width="0dp"
             android:layout_height="0dp"
+            android:background="#F5F5F5"
             app:layout_constraintTop_toBottomOf="@id/toolbarAdmin"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -34,12 +37,17 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/navigationViewAdmin"
         android:layout_width="280dp"
         android:layout_height="match_parent"
         android:layout_gravity="start"
+        android:background="#FFFFFF"
+        app:itemIconTint="@color/nav_item_text_color"
+        app:itemTextColor="@color/nav_item_text_color"
+        app:itemBackground="@drawable/nav_item_background"
+        app:itemHorizontalPadding="16dp"
+        app:itemIconPadding="16dp"
         app:menu="@menu/drawer_menu_admin" />
 
 </androidx.drawerlayout.widget.DrawerLayout>

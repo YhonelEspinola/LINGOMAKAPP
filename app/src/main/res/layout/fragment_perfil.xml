@@ -11,32 +11,28 @@
         android:orientation="vertical"
         android:padding="24dp">
 
-
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Perfil del Administrador"
+            android:text="Perfil de Usuario"
             android:textColor="@color/secondary"
             android:textSize="22sp"
             android:textStyle="bold"
             android:gravity="center"
-            android:layout_marginBottom="24dp" >
-
-        </TextView>
-
+            android:layout_marginBottom="24dp" />
 
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:cardCornerRadius="12dp"
-            app:cardElevation="4dp">
+            app:cardElevation="2dp"
+            app:strokeWidth="0dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:padding="20dp">
-
 
                 <TextView
                     android:id="@+id/tvNombreUsuario"
@@ -45,10 +41,7 @@
                     android:text="Nombre: Administrador"
                     android:textColor="@color/text_primary"
                     android:textSize="16sp"
-                    android:layout_marginBottom="12dp">
-
-                </TextView>
-
+                    android:layout_marginBottom="12dp" />
 
                 <TextView
                     android:id="@+id/tvCorreoUsuario"
@@ -57,10 +50,7 @@
                     android:text="Correo: admin@lingomak.com"
                     android:textColor="@color/text_primary"
                     android:textSize="16sp"
-                    android:layout_marginBottom="12dp" >
-
-                </TextView>
-
+                    android:layout_marginBottom="12dp" />
 
                 <TextView
                     android:id="@+id/tvRolUsuario"
@@ -69,20 +59,17 @@
                     android:text="Rol: ADMIN"
                     android:textColor="@color/text_primary"
                     android:textSize="16sp"
-                    android:layout_marginBottom="24dp" >
+                    android:layout_marginBottom="24dp" />
 
-                </TextView>
-
-
-                <Button
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnCerrarSesion"
                     android:layout_width="match_parent"
-                    android:layout_height="55dp"
-                    android:text="Cerrar Sesión"
-                    android:textColor="@android:color/white"
-                    android:background="@drawable/bg_button_primary" >
-
-                </Button>
+                    android:layout_height="56dp"
+                    android:text="CERRAR SESIÓN"
+                    android:textColor="@color/white"
+                    android:textStyle="bold"
+                    app:cornerRadius="12dp"
+                    app:backgroundTint="@color/primary" />
 
             </LinearLayout>
 

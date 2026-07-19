@@ -9,22 +9,22 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="20dp">
+        android:padding="24dp">
 
         <TextView
             android:id="@+id/tvSaludoOperario"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Hola, operario"
-            android:textColor="@color/text_primary"
-            android:textSize="26sp"
+            android:textColor="@color/secondary"
+            android:textSize="24sp"
             android:textStyle="bold" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:text="¿Qué deseas realizar hoy?"
+            android:text="¿Qué actividad realizarás hoy?"
             android:textColor="@color/text_secondary"
             android:textSize="14sp" />
 
@@ -33,34 +33,37 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
-            app:cardCornerRadius="18dp"
-            app:cardElevation="3dp">
+            app:cardCornerRadius="14dp"
+            app:cardElevation="2dp"
+            app:strokeWidth="0dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
-                android:padding="18dp">
+                android:padding="16dp">
 
-                <TextView
+                <ImageView
                     android:layout_width="48dp"
                     android:layout_height="48dp"
-                    android:gravity="center"
-                    android:text="🚜"
-                    android:textSize="28sp" />
+                    android:src="@drawable/machine"
+                    app:tint="@color/primary" />
 
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="14dp"
+                    android:layout_marginStart="16dp"
                     android:layout_weight="1"
                     android:orientation="vertical">
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Registrar uso de maquinaria"
+                        android:text="Uso de Maquinaria"
                         android:textColor="@color/text_primary"
                         android:textSize="16sp"
                         android:textStyle="bold" />
@@ -68,50 +71,50 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text="Selecciona una máquina operativa y registra las horas trabajadas."
+                        android:layout_marginTop="2dp"
+                        android:text="Registrar horómetro y jornada"
                         android:textColor="@color/text_secondary"
                         android:textSize="13sp" />
-
                 </LinearLayout>
-
             </LinearLayout>
-
         </com.google.android.material.card.MaterialCardView>
 
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardMovimientos"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
-            app:cardCornerRadius="18dp"
-            app:cardElevation="3dp">
+            android:layout_marginTop="12dp"
+            app:cardCornerRadius="14dp"
+            app:cardElevation="2dp"
+            app:strokeWidth="0dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
-                android:padding="18dp">
+                android:padding="16dp">
 
-                <TextView
+                <ImageView
                     android:layout_width="48dp"
                     android:layout_height="48dp"
-                    android:gravity="center"
-                    android:text="📦"
-                    android:textSize="28sp" />
+                    android:src="@drawable/movimiento"
+                    app:tint="@color/primary" />
 
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="14dp"
+                    android:layout_marginStart="16dp"
                     android:layout_weight="1"
                     android:orientation="vertical">
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Movimientos de inventario"
+                        android:text="Inventario de Repuestos"
                         android:textColor="@color/text_primary"
                         android:textSize="16sp"
                         android:textStyle="bold" />
@@ -119,50 +122,50 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text="Consulta entradas y salidas de repuestos."
+                        android:layout_marginTop="2dp"
+                        android:text="Consulta y registro de stock"
                         android:textColor="@color/text_secondary"
                         android:textSize="13sp" />
-
                 </LinearLayout>
-
             </LinearLayout>
-
         </com.google.android.material.card.MaterialCardView>
 
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardEscanearQr"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
-            app:cardCornerRadius="18dp"
-            app:cardElevation="3dp">
+            android:layout_marginTop="12dp"
+            app:cardCornerRadius="14dp"
+            app:cardElevation="2dp"
+            app:strokeWidth="0dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
-                android:padding="18dp">
+                android:padding="16dp">
 
-                <TextView
+                <ImageView
                     android:layout_width="48dp"
                     android:layout_height="48dp"
-                    android:gravity="center"
-                    android:text="🔍"
-                    android:textSize="28sp" />
+                    android:src="@drawable/qr"
+                    app:tint="@color/primary" />
 
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="14dp"
+                    android:layout_marginStart="16dp"
                     android:layout_weight="1"
                     android:orientation="vertical">
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Escanear código QR"
+                        android:text="Lector de Código QR"
                         android:textColor="@color/text_primary"
                         android:textSize="16sp"
                         android:textStyle="bold" />
@@ -170,51 +173,51 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text="Identifica rápidamente un repuesto"
+                        android:layout_marginTop="2dp"
+                        android:text="Identificación de repuestos"
                         android:textColor="@color/text_secondary"
                         android:textSize="13sp" />
-
                 </LinearLayout>
-
             </LinearLayout>
-
         </com.google.android.material.card.MaterialCardView>
 
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardAlertas"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
-            android:layout_marginBottom="20dp"
-            app:cardCornerRadius="18dp"
-            app:cardElevation="3dp">
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="40dp"
+            app:cardCornerRadius="14dp"
+            app:cardElevation="2dp"
+            app:strokeWidth="0dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
-                android:padding="18dp">
+                android:padding="16dp">
 
-                <TextView
+                <ImageView
                     android:layout_width="48dp"
                     android:layout_height="48dp"
-                    android:gravity="center"
-                    android:text="🔔"
-                    android:textSize="28sp" />
+                    android:src="@drawable/alert"
+                    app:tint="@color/primary" />
 
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="14dp"
+                    android:layout_marginStart="16dp"
                     android:layout_weight="1"
                     android:orientation="vertical">
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Alertas"
+                        android:text="Mis Alertas"
                         android:textColor="@color/text_primary"
                         android:textSize="16sp"
                         android:textStyle="bold" />
@@ -222,15 +225,12 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text="Consulta avisos relacionados con tus actividades."
+                        android:layout_marginTop="2dp"
+                        android:text="Revisar avisos del sistema"
                         android:textColor="@color/text_secondary"
                         android:textSize="13sp" />
-
                 </LinearLayout>
-
             </LinearLayout>
-
         </com.google.android.material.card.MaterialCardView>
 
     </LinearLayout>

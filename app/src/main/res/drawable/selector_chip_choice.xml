@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Seleccionado (Rojo Primary) -->
+    <item android:state_checked="true">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/primary" />
+            <corners android:radius="16dp" />
+        </shape>
+    </item>
+    <!-- No seleccionado (Gris claro) -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/chip_unselected_bg" />
+            <corners android:radius="16dp" />
+        </shape>
+    </item>
+</selector>

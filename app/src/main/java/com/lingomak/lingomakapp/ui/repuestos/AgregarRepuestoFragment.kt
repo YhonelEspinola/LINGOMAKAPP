@@ -134,6 +134,8 @@ class AgregarRepuestoFragment : Fragment() {
             val inputStream = requireContext().contentResolver.openInputStream(uri)
             val bitmap = BitmapFactory.decodeStream(inputStream)
             binding.ivFotoRepuesto.setImageBitmap(bitmap)
+            binding.ivFotoRepuesto.visibility = View.VISIBLE
+            binding.layoutPlaceholder.visibility = View.GONE
             
             // Guardar imagen en almacenamiento interno persistente
             val fileName = "REP_${System.currentTimeMillis()}.jpg"
@@ -180,11 +182,10 @@ class AgregarRepuestoFragment : Fragment() {
     }
 
     private fun configurarEventos() {
-        binding.fabGaleria.setOnClickListener {
-            val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-            galleryLauncher.launch(intent)
+        binding.cardSubirImagen.setOnClickListener {
+            mostrarDialogoSeleccionImagen()
         }
-        binding.fabCamara.setOnClickListener { verificarPermisosYCamara() }
+
         binding.btnGuardarRepuesto.setOnClickListener {
             val nombre = binding.etNombre.text.toString().trim()
             val categoriaPos = binding.spinnerCategoria.selectedItemPosition
@@ -231,6 +232,8 @@ class AgregarRepuestoFragment : Fragment() {
                 stockMinimo = stockMinimo,
                 stockMaximo = stockMaximo,
                 ubicacionAlmacen = binding.etUbicacionAlmacen.text.toString().trim(),
+                proveedorNombre = binding.etProveedorNombre.text.toString().trim(),
+                proveedorContacto = binding.etProveedorContacto.text.toString().trim(),
                 imagenLocalPath = imagenLocalPath,
                 qrLocalPath = qrLocalPath
             )
@@ -281,6 +284,22 @@ class AgregarRepuestoFragment : Fragment() {
         val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
         val storageDir: File? = requireContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES)
         return File.createTempFile("JPEG_${timeStamp}_", ".jpg", storageDir).apply { currentPhotoPath = absolutePath }
+    }
+
+    private fun mostrarDialogoSeleccionImagen() {
+        val opciones = arrayOf("Cámara", "Galería")
+        androidx.appcompat.app.AlertDialog.Builder(requireContext())
+            .setTitle("Subir Imagen")
+            .setItems(opciones) { _, which ->
+                when (which) {
+                    0 -> verificarPermisosYCamara()
+                    1 -> {
+                        val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+                        galleryLauncher.launch(intent)
+                    }
+                }
+            }
+            .show()
     }
 
     override fun onDestroyView() {

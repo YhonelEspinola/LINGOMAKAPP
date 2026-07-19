@@ -28,8 +28,6 @@ class AlertasService(
         var queryMantenimientos = database.collection("mantenimientos")
         
         val mantenimientos = if (esOperario && userUid != null) {
-            // Firestore no soporta OR de forma tan directa en versiones antiguas, pero podemos simularlo
-            // o simplemente traer y filtrar localmente si la lista no es inmensa.
             queryMantenimientos.get().await().toObjects(MantenimientoModel::class.java)
                 .filter { it.responsableUid == userUid || it.responsableUid == "TODOS" }
         } else {
@@ -38,8 +36,6 @@ class AlertasService(
 
         cargarAlertasMantenimiento(mantenimientos, listaAlertas)
 
-        // Si es operario, solo mostramos las alertas de mantenimiento asignadas.
-        // Las alertas de inventario y movimientos suelen ser de nivel administrativo.
         if (!esOperario) {
             val repuestos = repuestoDao.obtenerRepuestosActivos()
             cargarAlertasInventario(repuestos, listaAlertas)
@@ -50,33 +46,9 @@ class AlertasService(
                 .get().await().toObjects(SolicitudMantenimientoModel::class.java)
 
             cargarAlertasSolicitudes(solicitudesPendientes, listaAlertas)
-            
-            // Cargar notificaciones de actividad de operarios (nueva categoría)
-            cargarNotificacionesActividad(listaAlertas)
         }
 
         return ordenarAlertas(listaAlertas)
-    }
-
-    private suspend fun cargarNotificacionesActividad(listaAlertas: MutableList<AlertaModel>) {
-        try {
-            // Calculamos la fecha de hace 7 días
-            val calendar = java.util.Calendar.getInstance()
-            calendar.add(java.util.Calendar.DAY_OF_YEAR, -7)
-            val haceSieteDias = java.text.SimpleDateFormat("dd/MM/yyyy HH:mm", java.util.Locale.getDefault()).format(calendar.time)
-
-            val snapshot = database.collection("alertas")
-                .whereEqualTo("tipo", "ACTIVIDAD_OPERARIO")
-                .whereGreaterThan("fecha", haceSieteDias) // Solo de los últimos 7 días
-                .limit(50)
-                .get()
-                .await()
-            
-            val actividades = snapshot.toObjects(AlertaModel::class.java)
-            listaAlertas.addAll(actividades)
-        } catch (e: Exception) {
-            // Manejar error de consulta si los índices no están listos
-        }
     }
 
     private fun cargarAlertasMantenimiento(
@@ -283,25 +255,23 @@ class AlertasService(
         return listaAlertas.sortedWith(
             compareBy<AlertaModel> { alerta ->
                 when (alerta.categoria) {
-                    "ACTIVIDAD" -> 1
-                    "MANTENIMIENTO" -> 2
-                    "INVENTARIO" -> 3
-                    "MOVIMIENTOS" -> 4
-                    else -> 5
+                    "MANTENIMIENTO" -> 1
+                    "INVENTARIO" -> 2
+                    "MOVIMIENTOS" -> 3
+                    else -> 4
                 }
             }.thenBy { alerta ->
                 when (alerta.tipo) {
                     "SOLICITUD_MANTENIMIENTO" -> 1
-                    "ACTIVIDAD_OPERARIO" -> 2
-                    "VENCIDO" -> 3
-                    "STOCK_AGOTADO" -> 4
-                    "STOCK_CRITICO" -> 5
-                    "PROXIMO" -> 6
-                    "STOCK_BAJO" -> 7
-                    "ALTO_CONSUMO" -> 8
-                    "SIN_ROTACION" -> 9
-                    "EN_PROCESO" -> 10
-                    else -> 11
+                    "VENCIDO" -> 2
+                    "STOCK_AGOTADO" -> 3
+                    "STOCK_CRITICO" -> 4
+                    "PROXIMO" -> 5
+                    "STOCK_BAJO" -> 6
+                    "ALTO_CONSUMO" -> 7
+                    "SIN_ROTACION" -> 8
+                    "EN_PROCESO" -> 9
+                    else -> 10
                 }
             }
         )

@@ -3,7 +3,14 @@ package com.lingomak.lingomakapp.ui.dashboard
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import com.google.firebase.Firebase
+import com.google.firebase.appcheck.appCheck
+import com.google.firebase.appcheck.debug.DebugAppCheckProviderFactory
+import com.google.firebase.appcheck.playintegrity.PlayIntegrityAppCheckProviderFactory
 import com.google.firebase.messaging.FirebaseMessaging
+import com.google.firebase.remoteconfig.remoteConfig
+import com.google.firebase.remoteconfig.remoteConfigSettings
+import com.lingomak.lingomakapp.BuildConfig
 import com.lingomak.lingomakapp.R
 import com.lingomak.lingomakapp.databinding.DashboardAdminBinding
 import com.lingomak.lingomakapp.ui.alertas.AlertasFragment
@@ -24,10 +31,26 @@ class DashboardAdminActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Configuración de App Check
+        if (BuildConfig.DEBUG) {
+            Firebase.appCheck.installAppCheckProviderFactory(
+                DebugAppCheckProviderFactory.getInstance()
+            )
+        } else {
+            Firebase.appCheck.installAppCheckProviderFactory(
+                PlayIntegrityAppCheckProviderFactory.getInstance()
+            )
+        }
+
         binding =
             DashboardAdminBinding.inflate(layoutInflater)
 
         setContentView(binding.root)
+
+        /*
+         * Configuramos Remote Config para el nombre del modelo de IA
+         */
+        configurarRemoteConfig()
 
         /*
          * Primero configuramos todos los componentes
@@ -44,6 +67,8 @@ class DashboardAdminActivity : AppCompatActivity() {
         /*
          * Este dispositivo recibirá las notificaciones
          * dirigidas a administradores.
+         *
+         * Nos aseguramos de suscribirnos solo si somos admin.
          */
         FirebaseMessaging.getInstance()
             .subscribeToTopic("administradores")
@@ -172,11 +197,6 @@ class DashboardAdminActivity : AppCompatActivity() {
     }
 
     /**
-     * Configura la navegación inferior del administrador.
-     */
-
-
-    /**
      * Configura el botón del Toolbar que abre
      * el NavigationDrawer.
      */
@@ -292,5 +312,25 @@ class DashboardAdminActivity : AppCompatActivity() {
             .commit()
 
         binding.drawerLayoutAdmin.close()
+    }
+
+    /**
+     * Configura y descarga los valores de Firebase Remote Config.
+     */
+    private fun configurarRemoteConfig() {
+        val remoteConfig = Firebase.remoteConfig
+        val configSettings = remoteConfigSettings {
+            minimumFetchIntervalInSeconds = if (BuildConfig.DEBUG) 0 else 3600
+        }
+        remoteConfig.setConfigSettingsAsync(configSettings)
+        
+        // Valores por defecto (mismo que el solicitado actualmente)
+        val defaultValues = mapOf(
+            "ia_model_name" to "gemini-2.5-flash-lite"
+        )
+        remoteConfig.setDefaultsAsync(defaultValues)
+        
+        // Descargar y activar valores
+        remoteConfig.fetchAndActivate()
     }
 }

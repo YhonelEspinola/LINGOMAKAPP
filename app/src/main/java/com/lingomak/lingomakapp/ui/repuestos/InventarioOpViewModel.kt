@@ -3,13 +3,14 @@ package com.lingomak.lingomakapp.ui.repuestos
 import android.app.Application
 import androidx.lifecycle.*
 import com.lingomak.lingomakapp.data.model.RepuestoModel
+import com.lingomak.lingomakapp.data.repository.MaquinariaRepository
 import com.lingomak.lingomakapp.data.repository.RepuestoRepository
 import kotlinx.coroutines.launch
 
 class InventarioOpViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository = RepuestoRepository(application)
-    private val maqRepository = com.lingomak.lingomakapp.data.repository.MaquinariaRepositoryOp(application)
+    private val maqRepository = MaquinariaRepository(application)
 
     private val _repuestosOriginales = repository.obtenerRepuestosObservable()
     

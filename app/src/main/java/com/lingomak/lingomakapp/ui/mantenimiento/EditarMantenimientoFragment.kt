@@ -1,6 +1,5 @@
 package com.lingomak.lingomakapp.ui.mantenimiento
 
-import android.app.DatePickerDialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -9,11 +8,11 @@ import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import com.google.android.material.datepicker.MaterialDatePicker
 import com.lingomak.lingomakapp.R
 import com.lingomak.lingomakapp.data.model.MantenimientoModel
 import com.lingomak.lingomakapp.databinding.FragmentEditarMantenimientoBinding
 import java.text.SimpleDateFormat
-import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
@@ -21,6 +20,7 @@ class EditarMantenimientoFragment : Fragment() {
 
     private var _binding: FragmentEditarMantenimientoBinding? = null
     private val binding get() = _binding!!
+
     private val viewModel: MantenimientoViewModel by viewModels()
 
     private var uidMantenimiento = ""
@@ -39,13 +39,8 @@ class EditarMantenimientoFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-
-        _binding =
-            FragmentEditarMantenimientoBinding.inflate(
-                inflater,
-                container,
-                false
-            )
+        _binding = FragmentEditarMantenimientoBinding.inflate(inflater, container, false)
+        uidMantenimiento = arguments?.getString("uid") ?: ""
 
         configurarSpinnerTipo()
         cargarDatos()
@@ -56,271 +51,132 @@ class EditarMantenimientoFragment : Fragment() {
     }
 
     private fun configurarSpinnerTipo() {
-
-        val tipos = listOf(
-            "PREVENTIVO",
-            "CORRECTIVO",
-            "PREDICTIVO"
-        )
-
-        val adapter = ArrayAdapter(
-            requireContext(),
-            android.R.layout.simple_spinner_dropdown_item,
-            tipos
-        )
-
+        val tipos = listOf("PREVENTIVO", "CORRECTIVO", "PREDICTIVO")
+        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, tipos)
         binding.spTipoMantenimientoEditar.adapter = adapter
     }
 
     private fun cargarDatos() {
+        viewModel.obtenerMantenimientoPorUid(uidMantenimiento) { m ->
+            codigoMantenimiento = m.codigoMantenimiento
+            uidMaquinaria = m.uidMaquinaria
+            codigoMaquinaria = m.codigoMaquinaria
+            nombreMaquinaria = m.nombreMaquinaria
+            tipoMaquinaria = m.tipoMaquinaria
+            responsable = m.responsable
+            estadoActual = m.estado
+            fechaRegistro = m.fechaRegistro
+            registradoPor = m.registradoPor
 
-        uidMantenimiento = arguments?.getString("uid") ?: ""
-        codigoMantenimiento = arguments?.getString("codigoMantenimiento") ?: ""
-        uidMaquinaria = arguments?.getString("uidMaquinaria") ?: ""
-        codigoMaquinaria = arguments?.getString("codigoMaquinaria") ?: ""
-        nombreMaquinaria = arguments?.getString("nombreMaquinaria") ?: ""
-        tipoMaquinaria = arguments?.getString("tipoMaquinaria") ?: ""
-        responsable = arguments?.getString("responsable") ?: ""
-        estadoActual = arguments?.getString("estado") ?: ""
-        fechaRegistro = arguments?.getString("fechaRegistro") ?: ""
-        registradoPor = arguments?.getString("registradoPor") ?: ""
+            binding.tvCodigoMantenimientoEditar.text = "Código: $codigoMantenimiento"
+            binding.tvMaquinariaEditar.text = "Maquinaria: $nombreMaquinaria"
+            binding.tvCodigoMaquinariaEditar.text = "Código maquinaria: $codigoMaquinaria"
+            binding.tvResponsableEditar.text = "Responsable: $responsable"
+            
+            binding.etDescripcionEditar.setText(m.descripcion)
+            binding.etFechaProgramadaEditar.setText(m.fechaProgramada)
+            binding.etHorometroProgramadoEditar.setText(m.horometroProgramado.toString())
+            binding.etCostoEstimadoEditar.setText(m.costoEstimado.toString())
+            binding.etObservacionesEditar.setText(m.observaciones)
 
-        val tipo = arguments?.getString("tipoMantenimiento") ?: ""
-        val descripcion = arguments?.getString("descripcion") ?: ""
-        val fecha = arguments?.getString("fechaProgramada") ?: ""
-        val prioridad = arguments?.getString("prioridad") ?: ""
-        val horometro = arguments?.getInt("horometroProgramado") ?: 0
-        val costo = arguments?.getDouble("costoEstimado") ?: 0.0
-        val observaciones = arguments?.getString("observaciones") ?: ""
+            val tipoPos = when (m.tipoMantenimiento) {
+                "PREVENTIVO" -> 0
+                "CORRECTIVO" -> 1
+                "PREDICTIVO" -> 2
+                else -> 0
+            }
+            binding.spTipoMantenimientoEditar.setSelection(tipoPos)
 
-        if (estadoActual == "FINALIZADO" || estadoActual == "CANCELADO") {
-
-            Toast.makeText(
-                requireContext(),
-                "Este mantenimiento no puede editarse porque ya está $estadoActual",
-                Toast.LENGTH_LONG
-            ).show()
-
-            parentFragmentManager.popBackStack()
-            return
-        }
-
-        binding.tvCodigoMantenimientoEditar.text =
-            "Código: $codigoMantenimiento"
-
-        binding.tvMaquinariaEditar.text =
-            "Maquinaria: $nombreMaquinaria"
-
-        binding.tvCodigoMaquinariaEditar.text =
-            "Código maquinaria: $codigoMaquinaria"
-
-        binding.tvResponsableEditar.text =
-            "Responsable: $responsable"
-
-
-        binding.etDescripcionEditar.setText(descripcion)
-        binding.etFechaProgramadaEditar.setText(fecha)
-        binding.etHorometroProgramadoEditar.setText(horometro.toString())
-        binding.etCostoEstimadoEditar.setText(costo.toString())
-        binding.etObservacionesEditar.setText(observaciones)
-
-        val posicionTipo =
-            (binding.spTipoMantenimientoEditar.adapter as ArrayAdapter<String>)
-                .getPosition(tipo)
-
-        binding.spTipoMantenimientoEditar.setSelection(posicionTipo)
-
-        when (prioridad) {
-            "ALTA" ->
-                binding.rbPrioridadAltaEditar.isChecked = true
-
-            "MEDIA" ->
-                binding.rbPrioridadMediaEditar.isChecked = true
-
-            "BAJA" ->
-                binding.rbPrioridadBajaEditar.isChecked = true
+            when (m.prioridad) {
+                "ALTA" -> binding.rbPrioridadAltaEditar.isChecked = true
+                "MEDIA" -> binding.rbPrioridadMediaEditar.isChecked = true
+                "BAJA" -> binding.rbPrioridadBajaEditar.isChecked = true
+            }
         }
     }
 
     private fun configurarEventos() {
-
-        binding.etFechaProgramadaEditar.setOnClickListener {
-            mostrarDatePicker()
-        }
-
-        binding.btnGuardarCambiosMantenimiento.setOnClickListener {
-            actualizarMantenimiento()
-        }
+        binding.etFechaProgramadaEditar.setOnClickListener { mostrarDatePicker() }
+        binding.btnGuardarCambiosMantenimiento.setOnClickListener { actualizarMantenimiento() }
+        // Nota: ivBotonRegresar no existe en este layout, se asume popBackStack por back button o toolbar si hubiera
     }
 
     private fun mostrarDatePicker() {
-
-        val calendario = Calendar.getInstance()
-
-        val datePicker = DatePickerDialog(
-            requireContext(),
-            { _, year, month, dayOfMonth ->
-
-                val fecha =
-                    "$dayOfMonth/${month + 1}/$year"
-
-                binding.etFechaProgramadaEditar.setText(fecha)
-            },
-            calendario.get(Calendar.YEAR),
-            calendario.get(Calendar.MONTH),
-            calendario.get(Calendar.DAY_OF_MONTH)
-        )
-
-        datePicker.show()
+        val builder = MaterialDatePicker.Builder.datePicker()
+        builder.setTitleText("Seleccionar fecha")
+        val picker = builder.build()
+        picker.addOnPositiveButtonClickListener { selection ->
+            val date = Date(selection)
+            val format = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+            binding.etFechaProgramadaEditar.setText(format.format(date))
+        }
+        picker.show(parentFragmentManager, "DATE_PICKER")
     }
 
     private fun obtenerPrioridad(): String {
-
         return when (binding.rgPrioridadEditar.checkedRadioButtonId) {
-
-            binding.rbPrioridadAltaEditar.id -> "ALTA"
-
-            binding.rbPrioridadMediaEditar.id -> "MEDIA"
-
-            binding.rbPrioridadBajaEditar.id -> "BAJA"
-
-            else -> ""
+            R.id.rbPrioridadAltaEditar -> "ALTA"
+            R.id.rbPrioridadMediaEditar -> "MEDIA"
+            R.id.rbPrioridadBajaEditar -> "BAJA"
+            else -> "MEDIA"
         }
     }
 
     private fun actualizarMantenimiento() {
+        val desc = binding.etDescripcionEditar.text.toString().trim()
+        val fecha = binding.etFechaProgramadaEditar.text.toString().trim()
+        val horometroStr = binding.etHorometroProgramadoEditar.text.toString().trim()
+        val costoStr = binding.etCostoEstimadoEditar.text.toString().trim()
 
-        val tipo =
-            binding.spTipoMantenimientoEditar.selectedItem.toString()
-
-        val prioridad = obtenerPrioridad()
-
-        val descripcion =
-            binding.etDescripcionEditar.text.toString().trim()
-
-        val fecha =
-            binding.etFechaProgramadaEditar.text.toString().trim()
-
-        val horometro =
-            binding.etHorometroProgramadoEditar.text.toString().trim()
-
-        val costo =
-            binding.etCostoEstimadoEditar.text.toString().trim()
-
-        val observaciones =
-            binding.etObservacionesEditar.text.toString().trim()
-
-        if (
-            descripcion.isEmpty() ||
-            fecha.isEmpty() ||
-            prioridad.isEmpty() ||
-            horometro.isEmpty()
-        ) {
-
-            Toast.makeText(
-                requireContext(),
-                "Complete los campos obligatorios",
-                Toast.LENGTH_SHORT
-            ).show()
-
+        if (desc.isEmpty() || fecha.isEmpty() || horometroStr.isEmpty()) {
+            Toast.makeText(requireContext(), "Complete los campos obligatorios", Toast.LENGTH_SHORT).show()
             return
         }
 
-        val mantenimiento = MantenimientoModel(
-
+        val m = MantenimientoModel(
             uid = uidMantenimiento,
             codigoMantenimiento = codigoMantenimiento,
-
             uidMaquinaria = uidMaquinaria,
             codigoMaquinaria = codigoMaquinaria,
             nombreMaquinaria = nombreMaquinaria,
             tipoMaquinaria = tipoMaquinaria,
-
-            tipoMantenimiento = tipo,
-            descripcion = descripcion,
+            tipoMantenimiento = binding.spTipoMantenimientoEditar.selectedItem.toString(),
+            descripcion = desc,
             fechaProgramada = fecha,
             estado = estadoActual,
+            prioridad = obtenerPrioridad(),
             responsable = responsable,
-            observaciones = observaciones,
-
-            costoEstimado = costo.toDoubleOrNull() ?: 0.0,
-
-            horometroProgramado =
-                horometro.toIntOrNull() ?: 0,
-
-            fechaRealizada = "",
-            costoReal = 0.0,
-            horometroReal = 0,
-
+            horometroProgramado = horometroStr.toIntOrNull() ?: 0,
+            costoEstimado = costoStr.toDoubleOrNull() ?: 0.0,
+            observaciones = binding.etObservacionesEditar.text.toString().trim(),
             fechaRegistro = fechaRegistro,
             fechaActualizacion = obtenerFechaActual(),
-
-            registradoPor = registradoPor,
-            actualizadoPor = registradoPor,
-
-            prioridad = prioridad
+            registradoPor = registradoPor
         )
+
         mostrarCargando(true)
-
-        viewModel.actualizarMantenimiento(
-            mantenimiento = mantenimiento,
-            onSuccess = {
-                mostrarCargando(false)
-                Toast.makeText(
-                    requireContext(),
-                    "Mantenimiento actualizado correctamente",
-                    Toast.LENGTH_SHORT
-                ).show()
-
-                val containerId = if (requireActivity() is com.lingomak.lingomakapp.ui.dashboard.DashboardAdminActivity) 
-                    R.id.fragmentContainerAdmin else R.id.containerOperario
-
-                parentFragmentManager
-                    .beginTransaction()
-                    .replace(
-                        containerId,
-                        MantenimientoFragment()
-                    )
-                    .commit()
-            }
-        )
-    }
-
-    private fun obtenerFechaActual(): String {
-
-        return SimpleDateFormat(
-            "yyyy-MM-dd",
-            Locale.getDefault()
-        ).format(Date())
-    }
-
-    private fun observarViewModel() {
-
-        viewModel.mensajeError.observe(viewLifecycleOwner) { mensaje ->
-            mostrarCargando(false)
-            Toast.makeText(
-                requireContext(),
-                mensaje,
-                Toast.LENGTH_SHORT
-            ).show()
+        viewModel.actualizarMantenimiento(m) {
+            Toast.makeText(requireContext(), "Mantenimiento actualizado", Toast.LENGTH_SHORT).show()
+            parentFragmentManager.popBackStack()
         }
     }
 
-    private fun mostrarCargando(cargando : Boolean){
+    private fun obtenerFechaActual(): String {
+        return SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+    }
 
-        binding.btnGuardarCambiosMantenimiento.isEnabled = !cargando
+    private fun observarViewModel() {
+        viewModel.mensajeError.observe(viewLifecycleOwner) { error ->
+            if (error.isNotEmpty()) {
+                mostrarCargando(false)
+                Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
 
-        binding.btnGuardarCambiosMantenimiento.text =
-            if(cargando)
-                "Guardando..."
-            else
-                "Guardar cambios"
-
-        binding.progressEditarMantenimiento.visibility =
-            if(cargando)
-                View.VISIBLE
-            else
-                View.GONE
+    private fun mostrarCargando(show: Boolean) {
+        binding.progressEditarMantenimiento.visibility = if (show) View.VISIBLE else View.GONE
+        binding.btnGuardarCambiosMantenimiento.isEnabled = !show
     }
 
     override fun onDestroyView() {

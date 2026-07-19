@@ -23,5 +23,10 @@ data class MantenimientoModel(
     var fechaActualizacion: String = "",
     var registradoPor: String = "",
     var actualizadoPor: String = "",
-    var prioridad: String = ""
+    var prioridad: String = "",
+    var imagenesReporte: List<String> = emptyList(),
+    var imagenesFinalizacion: List<String> = emptyList(),
+    var imagenesReporteLocal: List<String> = emptyList(), // Solo uso local
+    var imagenesFinalizacionLocal: List<String> = emptyList(), // Solo uso local
+    var reporteIA: String = "" // Reporte narrativo generado por Gemini
 )
