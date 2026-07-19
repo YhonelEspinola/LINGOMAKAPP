@@ -40,6 +40,9 @@ class AlertasFragment : Fragment() {
         configurarRecyclerView()
         observarViewModel()
         solicitarPermisoNotificaciones()
+        
+        val isOperario = requireActivity() is com.lingomak.lingomakapp.ui.dashboard.DashboardOperarioActivity
+        viewModel.listarAlertas(isOperario)
 
         return binding.root
     }
@@ -56,10 +59,20 @@ class AlertasFragment : Fragment() {
         viewModel.listaAlertas.observe(viewLifecycleOwner) { lista ->
             if (lista.isEmpty()) {
                 binding.rvAlertas.visibility = View.GONE
-                // Si tienes un layout para vacio, úsalo aquí
+                binding.tvSinAlertas.visibility = View.VISIBLE
+                actualizarContadores(0, 0, 0)
             } else {
                 binding.rvAlertas.visibility = View.VISIBLE
+                binding.tvSinAlertas.visibility = View.GONE
                 adapter.actualizarLista(lista)
+                
+                val criticas = lista.count { 
+                    it.tipo == "STOCK_CRITICO" || 
+                    it.tipo == "MANTENIMIENTO_VENCIDO" || 
+                    it.prioridad == "ALTA" 
+                }
+                val avisos = lista.size - criticas
+                actualizarContadores(criticas, avisos, lista.size)
             }
         }
 
@@ -68,6 +81,12 @@ class AlertasFragment : Fragment() {
                 Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show()
             }
         }
+    }
+
+    private fun actualizarContadores(criticas: Int, avisos: Int, total: Int) {
+        binding.tvAlertasCriticas.text = criticas.toString()
+        binding.tvAlertasAdvertencias.text = avisos.toString()
+        binding.tvAlertasTotal.text = total.toString()
     }
 
     private val permisoNotificacionesLauncher =
@@ -117,8 +136,11 @@ class AlertasFragment : Fragment() {
         bundle.putString("mensajeAlerta", alerta.mensaje)
         fragment.arguments = bundle
 
+        val containerId = if (requireActivity() is com.lingomak.lingomakapp.ui.dashboard.DashboardAdminActivity) 
+            com.lingomak.lingomakapp.R.id.fragmentContainerAdmin else com.lingomak.lingomakapp.R.id.containerOperario
+
         parentFragmentManager.beginTransaction()
-            .replace(com.lingomak.lingomakapp.R.id.fragmentContainerAdmin, fragment)
+            .replace(containerId, fragment)
             .addToBackStack(null)
             .commit()
     }
@@ -132,8 +154,11 @@ class AlertasFragment : Fragment() {
         bundle.putString("mensajeAlerta", alerta.mensaje)
         fragment.arguments = bundle
 
+        val containerId = if (requireActivity() is com.lingomak.lingomakapp.ui.dashboard.DashboardAdminActivity) 
+            com.lingomak.lingomakapp.R.id.fragmentContainerAdmin else com.lingomak.lingomakapp.R.id.containerOperario
+
         parentFragmentManager.beginTransaction()
-            .replace(com.lingomak.lingomakapp.R.id.fragmentContainerAdmin, fragment)
+            .replace(containerId, fragment)
             .addToBackStack(null)
             .commit()
     }
@@ -147,8 +172,11 @@ class AlertasFragment : Fragment() {
         bundle.putString("mensajeAlerta", alerta.mensaje)
         fragment.arguments = bundle
 
+        val containerId = if (requireActivity() is com.lingomak.lingomakapp.ui.dashboard.DashboardAdminActivity) 
+            com.lingomak.lingomakapp.R.id.fragmentContainerAdmin else com.lingomak.lingomakapp.R.id.containerOperario
+
         parentFragmentManager.beginTransaction()
-            .replace(com.lingomak.lingomakapp.R.id.fragmentContainerAdmin, fragment)
+            .replace(containerId, fragment)
             .addToBackStack(null)
             .commit()
     }

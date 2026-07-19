@@ -72,14 +72,31 @@
                     android:textStyle="bold"
                     android:textSize="13sp" />
 
-                <Spinner
-                    android:id="@+id/spMaquinaria"
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilMaquinaria"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                     android:layout_width="match_parent"
-                    android:layout_height="55dp"
+                    android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:layout_marginBottom="16dp"
-                    android:background="@drawable/bg_edit_text"
-                    android:padding="12dp" />
+                    app:hintEnabled="false"
+                    app:boxStrokeColor="@color/primary"
+                    app:boxStrokeWidthFocused="2dp"
+                    app:startIconDrawable="@drawable/machine"
+                    app:startIconTint="@color/text_secondary">
+
+                    <AutoCompleteTextView
+                        android:id="@+id/actvMaquinaria"
+                        android:layout_width="match_parent"
+                        android:layout_height="55dp"
+                        android:hint="Seleccione maquinaria"
+                        android:inputType="text"
+                        android:padding="12dp"
+                        android:textSize="14sp"
+                        android:background="@android:color/transparent"
+                        android:completionThreshold="1" />
+
+                </com.google.android.material.textfield.TextInputLayout>
 
                 <TextView
                     android:layout_width="match_parent"
@@ -171,14 +188,31 @@
                     android:textStyle="bold"
                     android:textSize="13sp" />
 
-                <Spinner
-                    android:id="@+id/spResponsable"
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilResponsable"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                     android:layout_width="match_parent"
-                    android:layout_height="55dp"
+                    android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:layout_marginBottom="16dp"
-                    android:background="@drawable/bg_edit_text"
-                    android:padding="12dp" />
+                    app:hintEnabled="false"
+                    app:boxStrokeColor="@color/primary"
+                    app:boxStrokeWidthFocused="2dp"
+                    app:startIconDrawable="@drawable/person"
+                    app:startIconTint="@color/text_secondary">
+
+                    <AutoCompleteTextView
+                        android:id="@+id/actvResponsable"
+                        android:layout_width="match_parent"
+                        android:layout_height="55dp"
+                        android:hint="Seleccione responsable"
+                        android:inputType="text"
+                        android:padding="12dp"
+                        android:textSize="14sp"
+                        android:background="@android:color/transparent"
+                        android:completionThreshold="1" />
+
+                </com.google.android.material.textfield.TextInputLayout>
 
                 <TextView
                     android:layout_width="match_parent"

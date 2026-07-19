@@ -102,7 +102,14 @@ class DetalleMantenimientoFragment : Fragment() {
 
     private fun configurarEventos() {
         binding.btnEditarMantenimiento.setOnClickListener { abrirEditarMantenimiento() }
-        binding.btnCambiarEstado.setOnClickListener { mostrarDialogoCambiarEstado() }
+        binding.btnCambiarEstado.setOnClickListener { 
+            val isAdmin = requireActivity() is DashboardAdminActivity
+            if (isAdmin) {
+                mostrarDialogoCambiarEstado()
+            } else {
+                confirmarInicioMantenimiento()
+            }
+        }
         binding.btnFinalizarMantenimiento.setOnClickListener { abrirFinalizarMantenimiento() }
         
         binding.btnGenerarReporteIA.setOnClickListener {
@@ -114,6 +121,19 @@ class DetalleMantenimientoFragment : Fragment() {
                 }
             }
         }
+    }
+
+    private fun confirmarInicioMantenimiento() {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Iniciar Mantenimiento")
+            .setMessage("¿Desea marcar este mantenimiento como EN PROCESO?")
+            .setPositiveButton("Sí, iniciar") { _, _ ->
+                viewModel.iniciarMantenimiento(uidMantenimiento, uidMaquinaria) {
+                    cargarDatos()
+                }
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
     }
 
     private fun mostrarDialogoCambiarEstado() {
@@ -140,8 +160,11 @@ class DetalleMantenimientoFragment : Fragment() {
         val bundle = Bundle()
         bundle.putString("uid", uidMantenimiento)
         fragment.arguments = bundle
+        
+        val containerId = if (requireActivity() is DashboardAdminActivity) R.id.fragmentContainerAdmin else R.id.containerOperario
+        
         parentFragmentManager.beginTransaction()
-            .replace((requireView().parent as ViewGroup).id, fragment)
+            .replace(containerId, fragment)
             .addToBackStack(null)
             .commit()
     }
@@ -167,16 +190,10 @@ class DetalleMantenimientoFragment : Fragment() {
             binding.btnGenerarReporteIA.visibility = View.GONE
         }
 
-        if (!isAdmin) {
-            binding.btnEditarMantenimiento.visibility = View.GONE
-            binding.btnCambiarEstado.visibility = View.GONE
-            binding.btnFinalizarMantenimiento.visibility = View.GONE
-            return
-        }
-
+        // Acciones generales por estado (para todos los roles autorizados)
         when (estadoActual) {
             "PENDIENTE" -> {
-                binding.btnEditarMantenimiento.visibility = View.VISIBLE
+                binding.btnEditarMantenimiento.visibility = if (isAdmin) View.VISIBLE else View.GONE
                 binding.btnCambiarEstado.visibility = View.VISIBLE
                 binding.btnFinalizarMantenimiento.visibility = View.GONE
             }
@@ -185,7 +202,7 @@ class DetalleMantenimientoFragment : Fragment() {
                 binding.btnCambiarEstado.visibility = View.GONE
                 binding.btnFinalizarMantenimiento.visibility = View.VISIBLE
             }
-            "FINALIZADO", "CANCELADO", "VENCIDO" -> {
+            else -> {
                 binding.btnEditarMantenimiento.visibility = View.GONE
                 binding.btnCambiarEstado.visibility = View.GONE
                 binding.btnFinalizarMantenimiento.visibility = View.GONE
@@ -261,15 +278,13 @@ class DetalleMantenimientoFragment : Fragment() {
     private fun abrirFinalizarMantenimiento() {
         val fragment = FinalizarMantenimientoFragment()
         val bundle = Bundle()
-        bundle.putString("uidMantenimiento", uidMantenimiento)
-        bundle.putString("uidMaquinaria", uidMaquinaria)
-        bundle.putString("codigoMantenimiento", codigoMantenimiento)
-        bundle.putString("nombreMaquinaria", nombreMaquinaria)
-        bundle.putString("descripcion", descripcion)
-        bundle.putInt("horometroActual", horometroProgramado)
+        bundle.putString("uid", uidMantenimiento) // Corregido: FinalizarMantenimientoFragment espera "uid"
         fragment.arguments = bundle
+        
+        val containerId = if (requireActivity() is DashboardAdminActivity) R.id.fragmentContainerAdmin else R.id.containerOperario
+        
         parentFragmentManager.beginTransaction()
-            .replace((requireView().parent as ViewGroup).id, fragment)
+            .replace(containerId, fragment)
             .addToBackStack(null)
             .commit()
     }

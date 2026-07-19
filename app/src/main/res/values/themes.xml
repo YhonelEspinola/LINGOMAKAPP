@@ -1,9 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.LingomakApp"
-        parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <style name="Theme.LingomakApp" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Colores principales -->
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryVariant">@color/primary_dark</item>
+        <item name="colorOnPrimary">@color/white</item>
 
+        <!-- Colores secundarios -->
+        <item name="colorSecondary">@color/secondary</item>
+        <item name="colorOnSecondary">@color/white</item>
+
+        <!-- Estado y Fondo -->
+        <item name="android:statusBarColor">@color/primary_dark</item>
+        <item name="android:windowBackground">@color/background</item>
+
+        <!-- Definición de tema para el selector de fecha -->
+        <item name="materialCalendarTheme">@style/CustomDatePickerTheme</item>
+    </style>
+
+    <!-- Tema específico para el MaterialDatePicker -->
+    <style name="CustomDatePickerTheme" parent="ThemeOverlay.MaterialComponents.MaterialCalendar">
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorAccent">@color/primary</item>
+
+        <!-- Intentamos restaurar el radio de borde de forma segura -->
+        <item name="shapeAppearanceMediumComponent">@style/ShapeAppearance.LargeComponent.Rounded</item>
+    </style>
+
+    <style name="ShapeAppearance.LargeComponent.Rounded" parent="ShapeAppearance.MaterialComponents.LargeComponent">
+        <item name="cornerSize">28dp</item>
     </style>
 
 </resources>

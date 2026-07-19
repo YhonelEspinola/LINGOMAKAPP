@@ -18,6 +18,8 @@ import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
 import com.lingomak.lingomakapp.R
 import com.lingomak.lingomakapp.databinding.FragmentEscaneoQrBinding
+import com.lingomak.lingomakapp.ui.dashboard.DashboardOperarioActivity
+import com.lingomak.lingomakapp.ui.repuestos.InventarioOpFragment
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -56,7 +58,20 @@ class EscaneoQRFragment : Fragment() {
         }
 
         binding.btnRegistroManual.setOnClickListener { abrirRegistroManual() }
-        binding.btnClose.setOnClickListener { parentFragmentManager.popBackStack() }
+        binding.btnClose.setOnClickListener { 
+            val isOperario = requireActivity() is DashboardOperarioActivity
+            if (isOperario) {
+                if (parentFragmentManager.backStackEntryCount > 0) {
+                    parentFragmentManager.popBackStack()
+                } else {
+                    parentFragmentManager.beginTransaction()
+                        .replace(R.id.containerOperario, InventarioOpFragment())
+                        .commit()
+                }
+            } else {
+                parentFragmentManager.popBackStack()
+            }
+        }
     }
 
     private fun startCamera() {
