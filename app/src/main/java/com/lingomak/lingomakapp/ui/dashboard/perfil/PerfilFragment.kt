@@ -33,9 +33,11 @@ class PerfilFragment : Fragment() {
         viewModel.cargarUsuarioLogado()
 
         binding.btnCerrarSesion.setOnClickListener {
-            // Al cerrar sesión, eliminamos la suscripción al tópico de administradores
-            FirebaseMessaging.getInstance().unsubscribeFromTopic("administradores")
+
+            FirebaseMessaging.getInstance()
+                .unsubscribeFromTopic("administradores")
                 .addOnCompleteListener {
+
                     viewModel.cerrarSesion()
 
                     val intent = Intent(

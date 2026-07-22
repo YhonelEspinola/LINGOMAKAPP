@@ -101,15 +101,25 @@ class DashboardOperarioActivity : AppCompatActivity() {
                 }
 
                 R.id.menu_cerrar_sesion_operario -> {
-                    FirebaseMessaging.getInstance().unsubscribeFromTopic("administradores")
+
+                    FirebaseMessaging.getInstance()
+                        .unsubscribeFromTopic("administradores")
                         .addOnCompleteListener {
+
                             FirebaseAuth.getInstance().signOut()
-                            val intent = Intent(this, LoginActivity::class.java).apply {
-                                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+
+                            val intent = Intent(
+                                this,
+                                LoginActivity::class.java
+                            ).apply {
+                                flags = Intent.FLAG_ACTIVITY_NEW_TASK or
+                                        Intent.FLAG_ACTIVITY_CLEAR_TASK
                             }
+
                             startActivity(intent)
                             finish()
                         }
+
                     true
                 }
 

@@ -17,6 +17,7 @@ import com.lingomak.lingomakapp.data.model.MantenimientoModel
 import com.lingomak.lingomakapp.databinding.FragmentAlertasBinding
 import com.lingomak.lingomakapp.ui.mantenimiento.DetalleMantenimientoFragment
 import com.lingomak.lingomakapp.ui.mantenimiento.MantenimientoViewModel
+import com.lingomak.lingomakapp.ui.mantenimiento.SolicitudesMantenimientoFragment
 import com.lingomak.lingomakapp.ui.repuestos.DetalleRepuestoFragment
 import com.lingomak.lingomakapp.ui.repuestos.MovimientosFragment
 
@@ -109,22 +110,67 @@ class AlertasFragment : Fragment() {
     }
 
     private fun tomarAccionAlerta(alerta: AlertaModel) {
+
         when (alerta.tipo) {
+
+            "SOLICITUD_MANTENIMIENTO" -> {
+                abrirSolicitudesMantenimiento()
+            }
+
+            "VENCIDO", "PROXIMO", "EN_PROCESO",
             "MANTENIMIENTO_PENDIENTE", "MANTENIMIENTO_VENCIDO" -> {
-                mantenimientoViewModel.obtenerMantenimientoPorUid(alerta.uidMantenimiento) { mantenimiento ->
-                    abrirDetalleMantenimientoDesdeAlerta(mantenimiento, alerta)
+
+                if (alerta.uidMantenimiento.isBlank()) {
+                    Toast.makeText(
+                        requireContext(),
+                        "No se encontró el mantenimiento relacionado",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    return
+                }
+
+                mantenimientoViewModel.obtenerMantenimientoPorUid(
+                    alerta.uidMantenimiento
+                ) { mantenimiento ->
+
+                    abrirDetalleMantenimientoDesdeAlerta(
+                        mantenimiento,
+                        alerta
+                    )
                 }
             }
-            "STOCK_CRITICO", "STOCK_MINIMO" -> {
+
+            "STOCK_AGOTADO", "STOCK_CRITICO",
+            "STOCK_BAJO", "STOCK_MINIMO" -> {
                 abrirDetalleRepuestoDesdeAlerta(alerta)
             }
+
+            "ALTO_CONSUMO", "SIN_ROTACION",
             "MOVIMIENTO_ANORMAL" -> {
                 abrirMovimientosDesdeAlerta(alerta)
             }
+
             else -> {
-                Toast.makeText(requireContext(), alerta.mensaje, Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    requireContext(),
+                    alerta.mensaje,
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
+    }
+
+    private fun abrirSolicitudesMantenimiento() {
+
+        val fragment = SolicitudesMantenimientoFragment()
+
+        parentFragmentManager.beginTransaction()
+            .replace(
+                com.lingomak.lingomakapp.R.id.fragmentContainerAdmin,
+                fragment
+            )
+            .addToBackStack(null)
+            .commit()
     }
 
     private fun abrirDetalleMantenimientoDesdeAlerta(m: MantenimientoModel, alerta: AlertaModel) {
