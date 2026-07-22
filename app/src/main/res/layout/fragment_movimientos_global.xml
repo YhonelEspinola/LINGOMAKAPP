@@ -91,47 +91,25 @@
         android:layout_marginTop="8dp"
         android:clipToPadding="false"
         android:paddingBottom="8dp"
-        app:layout_constraintBottom_toTopOf="@id/layoutBotones"
+        app:layout_constraintBottom_toTopOf="@id/btnRegistrar"
         app:layout_constraintTop_toBottomOf="@id/selectorFechas"
         tools:listitem="@layout/item_movimiento_global" />
 
-    <LinearLayout
-        android:id="@+id/layoutBotones"
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnRegistrar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="56dp"
         android:layout_margin="16dp"
-        android:orientation="horizontal"
-        android:weightSum="2"
-        app:layout_constraintBottom_toBottomOf="parent">
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnEstadisticas"
-            android:layout_width="0dp"
-            android:layout_height="56dp"
-            android:layout_marginEnd="8dp"
-            android:layout_weight="1"
-            android:text="ESTADÍSTICAS"
-            android:textColor="@color/white"
-            android:textStyle="bold"
-            app:cornerRadius="12dp"
-            app:backgroundTint="@color/primary" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnRegistrar"
-            android:layout_width="0dp"
-            android:layout_height="56dp"
-            android:layout_weight="1"
-            android:text="REGISTRAR"
-            android:textColor="@color/white"
-            android:textStyle="bold"
-            app:cornerRadius="12dp"
-            app:backgroundTint="@color/primary"
-            app:icon="@drawable/qr"
-            app:iconGravity="textStart"
-            app:iconPadding="8dp"
-            app:iconSize="20dp"
-            app:iconTint="@color/white" />
-
-    </LinearLayout>
+        android:text="REGISTRAR"
+        android:textColor="@color/white"
+        android:textStyle="bold"
+        app:cornerRadius="12dp"
+        app:backgroundTint="@color/primary"
+        app:icon="@drawable/qr"
+        app:iconGravity="textStart"
+        app:iconPadding="8dp"
+        app:iconSize="20dp"
+        app:iconTint="@color/white"
+        app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -8,11 +8,12 @@ import java.util.Locale
 
 object DateUtils {
 
+    const val FORMATO_ESTANDAR = "yyyy-MM-dd"
 
     fun obtenerFechaActual(): String {
 
         return SimpleDateFormat(
-            "yyyy-MM-dd",
+            FORMATO_ESTANDAR,
             Locale.getDefault()
         ).format(Date())
     }
@@ -26,7 +27,7 @@ object DateUtils {
 
             val formato =
                 SimpleDateFormat(
-                    "d/M/yyyy",
+                    FORMATO_ESTANDAR,
                     Locale.getDefault()
                 )
 
@@ -72,7 +73,7 @@ object DateUtils {
 
             val formato =
                 SimpleDateFormat(
-                    "d/M/yyyy",
+                    FORMATO_ESTANDAR,
                     Locale.getDefault()
                 )
 
@@ -105,6 +106,8 @@ object DateUtils {
                 0
             )
 
+            val hoyDate = hoy.time
+
             val limite =
                 Calendar.getInstance()
 
@@ -113,9 +116,11 @@ object DateUtils {
                 3
             )
 
-            fechaProgramada.after(hoy.time)
+            val limiteDate = limite.time
+
+            fechaProgramada.after(hoyDate)
                     &&
-                    fechaProgramada.before(limite.time)
+                    fechaProgramada.before(limiteDate)
 
         } catch (e: Exception) {
 
@@ -130,7 +135,7 @@ object DateUtils {
         return try {
 
             SimpleDateFormat(
-                "d/M/yyyy",
+                FORMATO_ESTANDAR,
                 Locale.getDefault()
             ).parse(fechaTexto)
 

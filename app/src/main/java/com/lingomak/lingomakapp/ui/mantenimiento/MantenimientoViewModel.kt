@@ -2,25 +2,27 @@ package com.lingomak.lingomakapp.ui.mantenimiento
 
 import android.app.Application
 import androidx.lifecycle.*
-import com.google.firebase.Firebase
-import com.google.firebase.ai.ai
-import com.google.firebase.ai.type.GenerativeBackend
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.remoteconfig.remoteConfig
+import com.google.firebase.functions.FirebaseFunctions
+import com.google.firebase.functions.FirebaseFunctionsException
+import java.util.concurrent.TimeUnit
 import com.lingomak.lingomakapp.data.local.AppDatabase
 import com.lingomak.lingomakapp.data.model.MaquinariaModel
 import com.lingomak.lingomakapp.data.model.MantenimientoModel
+import com.lingomak.lingomakapp.data.model.ReporteIAData
 import com.lingomak.lingomakapp.data.repository.ConsumoRepuesto
 import com.lingomak.lingomakapp.data.repository.MantenimientoRepository
 import com.lingomak.lingomakapp.data.repository.MaquinariaRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 class MantenimientoViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository = MantenimientoRepository(application)
     private val maquinariaRepository = MaquinariaRepository(application)
     private val movimientoDao = AppDatabase.getInstance(application).movimientoDao()
+    private val functions = FirebaseFunctions.getInstance()
 
     private val _listaMantenimientosOriginales = MediatorLiveData<List<MantenimientoModel>>()
     val listaMantenimientos: LiveData<List<MantenimientoModel>> = _listaMantenimientosOriginales
@@ -28,15 +30,18 @@ class MantenimientoViewModel(application: Application) : AndroidViewModel(applic
     private val _mensajeError = MutableLiveData<String>()
     val mensajeError: LiveData<String> = _mensajeError
 
-    private val _reporteGenerado = MutableLiveData<String?>()
-    val reporteGenerado: LiveData<String?> = _reporteGenerado
+    private val _reporteGenerado = MutableLiveData<ReporteIAData?>()
+    val reporteGenerado: LiveData<ReporteIAData?> = _reporteGenerado
 
     private val _loadingAI = MutableLiveData<Boolean>()
     val loadingAI: LiveData<Boolean> = _loadingAI
 
     private val auth = FirebaseAuth.getInstance()
+    private var sourceActual: LiveData<List<MantenimientoModel>>? = null
 
     fun listarMantenimientos(soloAsignados: Boolean = false) {
+        sourceActual?.let { _listaMantenimientosOriginales.removeSource(it) }
+
         val liveData = if (soloAsignados) {
             val userUid = auth.currentUser?.uid ?: ""
             repository.obtenerAsignadosObservable(userUid)
@@ -44,8 +49,18 @@ class MantenimientoViewModel(application: Application) : AndroidViewModel(applic
             repository.obtenerTodosObservable()
         }
 
+        sourceActual = liveData
         _listaMantenimientosOriginales.addSource(liveData) { lista ->
             _listaMantenimientosOriginales.value = lista
+        }
+
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                repository.descargarCambiosDeFirestore()
+                repository.actualizarMantenimientosVencidos({}, {})
+            } catch (e: Exception) {
+                _mensajeError.postValue("No se pudo sincronizar: ${e.message}")
+            }
         }
     }
 
@@ -133,49 +148,54 @@ class MantenimientoViewModel(application: Application) : AndroidViewModel(applic
     }
 
     // ===================================================================
-    // LÓGICA DE REPORTES CON IA (CENTRALIZADA)
+    // LÓGICA DE REPORTES CON CLOUD FUNCTIONS (GROQ)
     // ===================================================================
-
-    private fun getModelName(): String {
-        val model = Firebase.remoteConfig.getString("ia_model_name")
-        return if (model.isBlank()) "gemini-2.5-flash-lite" else model
-    }
 
     fun generarReporteIA(mantenimiento: MantenimientoModel) {
         viewModelScope.launch(Dispatchers.IO) {
             _loadingAI.postValue(true)
+            _reporteGenerado.postValue(null) // Resetear estado anterior
             try {
-                val generativeModel = Firebase.ai(backend = GenerativeBackend.googleAI())
-                    .generativeModel(modelName = getModelName())
-
                 val movimientos = movimientoDao.obtenerPorMantenimiento(mantenimiento.uid)
-                val repuestosStr = if (movimientos.isEmpty()) "Ninguno registrado"
+                val insumosStr = if (movimientos.isEmpty()) "Ninguno registrado"
                 else movimientos.joinToString(", ") { "${it.cantidad} unidades (ID: ${it.repuestoUid})" }
 
-                val prompt = """
-                    Genera un reporte técnico profesional de mantenimiento para la empresa Lingomak.
-                    Contexto real de campo:
-                    - Maquinaria: ${mantenimiento.nombreMaquinaria}
-                    - Tipo de Mantenimiento: ${mantenimiento.tipoMantenimiento}
-                    - Descripción inicial: ${mantenimiento.descripcion}
-                    - Observaciones técnico: ${mantenimiento.observaciones}
-                    - Horómetro Real: ${mantenimiento.horometroReal} h (Programado: ${mantenimiento.horometroProgramado} h)
-                    - Costo Real: S/ ${mantenimiento.costoReal}
-                    - Repuestos e Insumos: $repuestosStr
+                val params = hashMapOf(
+                    "tipoMantenimiento" to mantenimiento.tipoMantenimiento,
+                    "descripcion" to mantenimiento.descripcion,
+                    "observaciones" to mantenimiento.observaciones,
+                    "fechaRealizada" to mantenimiento.fechaRealizada,
+                    "horometroReal" to mantenimiento.horometroReal,
+                    "costoReal" to mantenimiento.costoReal,
+                    "nombreMaquinaria" to mantenimiento.nombreMaquinaria,
+                    "insumosStr" to insumosStr
+                )
 
-                    Estructura en español:
-                    1. Síntoma/Problema reportado
-                    2. Causa probable
-                    3. Acciones realizadas
-                    4. Resultado final
+                // Llamar a la Cloud Function con timeout de 20 segundos
+                val result = functions
+                    .getHttpsCallable("generarReporteMantenimiento")
+                    .withTimeout(20, TimeUnit.SECONDS)
+                    .call(params)
+                    .await()
 
-                    Tono: Técnico y formal. No inventes datos.
-                """.trimIndent()
+                val data = result.data as? Map<*, *>
+                val reporteMap = data?.get("reporte") as? Map<*, *>
+                val reporteData = ReporteIAData.desdeMapa(reporteMap)
 
-                val response = generativeModel.generateContent(prompt)
-                _reporteGenerado.postValue(response.text)
+                if (reporteData != null) {
+                    _reporteGenerado.postValue(reporteData)
+                } else {
+                    _mensajeError.postValue("La IA respondió pero el formato no es válido.")
+                }
+            } catch (e: FirebaseFunctionsException) {
+                val msg = when (e.code) {
+                    FirebaseFunctionsException.Code.DEADLINE_EXCEEDED -> "Tiempo de espera agotado. Groq no respondió."
+                    FirebaseFunctionsException.Code.UNAVAILABLE -> "El servicio de IA no está disponible en este momento."
+                    else -> e.message ?: "Error en el servidor de IA"
+                }
+                _mensajeError.postValue(msg)
             } catch (e: Exception) {
-                _mensajeError.postValue("Error en IA: ${e.message}")
+                _mensajeError.postValue("Error: ${e.localizedMessage ?: "Fallo de conexión"}")
             } finally {
                 _loadingAI.postValue(false)
             }

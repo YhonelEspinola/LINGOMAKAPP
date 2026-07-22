@@ -1,5 +1,7 @@
 package com.lingomak.lingomakapp.data.model
 
+import org.json.JSONObject
+
 data class ReporteIAData(
     val sintoma: String = "",
     val causa: String = "",
@@ -7,14 +9,29 @@ data class ReporteIAData(
     val resultado: String = ""
 ) {
     fun aJson(): String {
-        return com.google.gson.Gson().toJson(this)
+        return try {
+            val json = JSONObject()
+            json.put("sintoma", sintoma)
+            json.put("causa", causa)
+            json.put("acciones", acciones)
+            json.put("resultado", resultado)
+            json.toString()
+        } catch (e: Exception) {
+            ""
+        }
     }
 
     companion object {
-        fun desdeJson(json: String?): ReporteIAData? {
-            if (json.isNullOrEmpty()) return null
+        fun desdeJson(jsonStr: String?): ReporteIAData? {
+            if (jsonStr.isNullOrEmpty()) return null
             return try {
-                com.google.gson.Gson().fromJson(json, ReporteIAData::class.java)
+                val json = JSONObject(jsonStr)
+                ReporteIAData(
+                    sintoma = json.optString("sintoma", ""),
+                    causa = json.optString("causa", ""),
+                    acciones = json.optString("acciones", ""),
+                    resultado = json.optString("resultado", "")
+                )
             } catch (e: Exception) {
                 null
             }

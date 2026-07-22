@@ -15,18 +15,22 @@ class RoundedBarChartRenderer(
     private val mRadius: Float
 ) : BarChartRenderer(chart, animator, viewPortHandler) {
 
-    private val mBarRect = RectF()
+    private val mBarCustomRect = RectF()
+    private val mPath = Path()
 
     override fun drawDataSet(c: Canvas, dataSet: IBarDataSet, index: Int) {
         val trans = mChart.getTransformer(dataSet.axisDependency)
 
-        mBarPaint.color = dataSet.color
-        mBarPaint.alpha = dataSet.alpha
+        mRenderPaint.color = dataSet.getColor(0)
 
         val phaseX = mAnimator.phaseX
         val phaseY = mAnimator.phaseY
 
-        // initialize the buffer
+        // Asegurar que los buffers estén inicializados
+        if (mBarBuffers == null || mBarBuffers.size <= index) {
+            initBuffers()
+        }
+        
         val buffer = mBarBuffers[index]
         buffer.setPhases(phaseX, phaseY)
         buffer.setDataSet(index)
@@ -38,10 +42,6 @@ class RoundedBarChartRenderer(
         trans.pointValuesToPixel(buffer.buffer)
 
         val isSingleColor = dataSet.colors.size == 1
-
-        if (isSingleColor) {
-            mBarPaint.color = dataSet.color
-        }
 
         var j = 0
         while (j < buffer.size()) {
@@ -56,15 +56,20 @@ class RoundedBarChartRenderer(
             }
 
             if (!isSingleColor) {
-                // Set the color for the currently drawn value. If the index is out of bounds, reuse colors.
-                mBarPaint.color = dataSet.getColor(j / 4)
+                mRenderPaint.color = dataSet.getColor(j / 4)
+            } else {
+                mRenderPaint.color = dataSet.getColor(0)
             }
 
-            mBarRect.set(buffer.buffer[j], buffer.buffer[j + 1], buffer.buffer[j + 2], buffer.buffer[j + 3])
+            mBarCustomRect.set(buffer.buffer[j], buffer.buffer[j + 1], buffer.buffer[j + 2], buffer.buffer[j + 3])
 
-            val path = Path()
-            path.addRoundRect(mBarRect, floatArrayOf(mRadius, mRadius, mRadius, mRadius, 0f, 0f, 0f, 0f), Path.Direction.CW)
-            c.drawPath(path, mBarPaint)
+            mPath.reset()
+            mPath.addRoundRect(
+                mBarCustomRect, 
+                floatArrayOf(mRadius, mRadius, mRadius, mRadius, 0f, 0f, 0f, 0f), 
+                Path.Direction.CW
+            )
+            c.drawPath(mPath, mRenderPaint)
 
             j += 4
         }

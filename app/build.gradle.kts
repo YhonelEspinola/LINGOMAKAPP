@@ -53,6 +53,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.lifecycle.livedata.ktx)
+    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
 
     // Room
     implementation(libs.androidx.room.runtime)
@@ -94,4 +95,7 @@ dependencies {
 
     // Charts
     implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
+    
+    // JSON Parsing
+    implementation("com.google.code.gson:gson:2.11.0")
 }

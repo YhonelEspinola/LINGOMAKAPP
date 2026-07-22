@@ -19,6 +19,15 @@
             android:textSize="18sp"
             android:textStyle="bold" />
 
+        <TextView
+            android:id="@+id/tvSubtituloPagina"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textColor="@color/text_secondary"
+            android:textSize="13sp"
+            android:visibility="gone" />
+
         <!-- Página 1: Resumen Global -->
         <LinearLayout
             android:id="@+id/layoutP1Resumen"
@@ -33,7 +42,6 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:weightSum="3">
-                <!-- Card Entradas -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -45,7 +53,6 @@
                         <TextView android:id="@+id/tvP1Entradas" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0" android:textColor="@color/success" android:textSize="16sp" android:textStyle="bold" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
-                <!-- Card Salidas -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -57,7 +64,6 @@
                         <TextView android:id="@+id/tvP1Salidas" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0" android:textColor="@color/danger" android:textSize="16sp" android:textStyle="bold" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
-                <!-- Card Total -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -96,6 +102,47 @@
             android:orientation="vertical"
             android:visibility="gone">
 
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/chipGroupTendencia"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginBottom="16dp"
+                app:selectionRequired="true"
+                app:singleSelection="true">
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip3M"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="3M"
+                    android:layout_marginEnd="8dp"
+                    app:chipBackgroundColor="@color/selector_chip_choice"
+                    android:textColor="@color/selector_chip_text"
+                    app:chipStrokeWidth="0dp" />
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip6M"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:text="6M"
+                    android:layout_marginHorizontal="8dp"
+                    app:chipBackgroundColor="@color/selector_chip_choice"
+                    android:textColor="@color/selector_chip_text"
+                    app:chipStrokeWidth="0dp" />
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip12M"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="12M"
+                    android:layout_marginStart="8dp"
+                    app:chipBackgroundColor="@color/selector_chip_choice"
+                    android:textColor="@color/selector_chip_text"
+                    app:chipStrokeWidth="0dp" />
+            </com.google.android.material.chip.ChipGroup>
+
             <com.github.mikephil.charting.charts.LineChart
                 android:id="@+id/chartP2"
                 android:layout_width="match_parent"
@@ -109,24 +156,49 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:orientation="vertical"
-            android:visibility="gone">
+            android:visibility="gone"
+            android:background="@drawable/bg_table_card"
+            android:padding="1dp">
 
             <TableLayout
                 android:id="@+id/tableGenerica"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:stretchColumns="0">
-                <TableRow android:background="#F3F4F6" android:paddingVertical="8dp">
-                    <TextView android:id="@+id/tvCol1Header" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Item" android:textStyle="bold" android:paddingHorizontal="8dp"/>
-                    <TextView android:id="@+id/tvCol2Header" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Valor" android:textStyle="bold" android:paddingHorizontal="8dp" android:gravity="end"/>
+                <TableRow android:background="#F9FAFB" android:paddingVertical="12dp">
+                    <TextView android:id="@+id/tvCol1Header" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Item" android:textStyle="bold" android:paddingHorizontal="16dp" android:textColor="@color/text_primary"/>
+                    <TextView android:id="@+id/tvCol2Header" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Valor" android:textStyle="bold" android:paddingHorizontal="16dp" android:gravity="end" android:textColor="@color/text_primary"/>
                 </TableRow>
+                <!-- Divider initial -->
+                <View android:layout_height="1dp" android:background="@color/border" />
             </TableLayout>
+
+            <FrameLayout
+                android:id="@+id/frameVerMas"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone">
+                <View
+                    android:id="@+id/viewFade"
+                    android:layout_width="match_parent"
+                    android:layout_height="60dp"
+                    android:background="@drawable/bg_fade_bottom" />
+                <ImageButton
+                    android:id="@+id/btnVerMas"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_gravity="bottom|center_horizontal"
+                    android:layout_marginBottom="4dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_chevron_down"
+                    app:tint="@color/primary" />
+            </FrameLayout>
 
             <TextView
                 android:id="@+id/tvEstadoVacioTabla"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
+                android:padding="32dp"
                 android:text="No hay datos disponibles"
                 android:textAlignment="center"
                 android:visibility="gone" />
@@ -140,10 +212,17 @@
             android:orientation="vertical"
             android:visibility="gone">
 
-            <com.github.mikephil.charting.charts.BarChart
-                android:id="@+id/chartBarGenerico"
+            <HorizontalScrollView
+                android:id="@+id/scrollChartBar"
                 android:layout_width="match_parent"
-                android:layout_height="300dp" />
+                android:layout_height="wrap_content"
+                android:scrollbars="none"
+                android:visibility="gone">
+                <com.github.mikephil.charting.charts.BarChart
+                    android:id="@+id/chartBarGenerico"
+                    android:layout_width="wrap_content"
+                    android:layout_height="320dp" />
+            </HorizontalScrollView>
 
             <com.github.mikephil.charting.charts.PieChart
                 android:id="@+id/chartPieGenerico"

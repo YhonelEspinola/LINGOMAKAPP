@@ -1,7 +1,9 @@
 package com.lingomak.lingomakapp.data.model
 
+import androidx.annotation.Keep
 import java.util.Date
 
+@Keep
 data class MovimientoModel(
     val uid: String = "",
     val repuestoUid: String = "",

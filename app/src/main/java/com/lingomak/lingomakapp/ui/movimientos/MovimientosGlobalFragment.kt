@@ -106,7 +106,7 @@ class MovimientosGlobalFragment : Fragment() {
                 .commit()
         }
 
-        binding.btnEstadisticas.setOnClickListener {
+        /*binding.btnEstadisticas.setOnClickListener {
             val fragment = MovimientosEstadisticasFragment()
             val containerId = if (requireActivity() is com.lingomak.lingomakapp.ui.dashboard.DashboardAdminActivity) 
                 R.id.fragmentContainerAdmin else R.id.containerOperario
@@ -115,7 +115,7 @@ class MovimientosGlobalFragment : Fragment() {
                 .replace(containerId, fragment)
                 .addToBackStack(null)
                 .commit()
-        }
+        }*/
         filtroInicialTexto = arguments?.getString("filtroTexto") ?: ""
     }
 

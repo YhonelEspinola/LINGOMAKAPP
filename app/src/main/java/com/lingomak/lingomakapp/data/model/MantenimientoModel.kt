@@ -1,5 +1,8 @@
 package com.lingomak.lingomakapp.data.model
 
+import androidx.annotation.Keep
+
+@Keep
 data class MantenimientoModel(
     var uid: String = "",
     var codigoMantenimiento: String = "",

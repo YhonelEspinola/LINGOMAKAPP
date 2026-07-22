@@ -31,17 +31,6 @@ class DashboardAdminActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Configuración de App Check
-        if (BuildConfig.DEBUG) {
-            Firebase.appCheck.installAppCheckProviderFactory(
-                DebugAppCheckProviderFactory.getInstance()
-            )
-        } else {
-            Firebase.appCheck.installAppCheckProviderFactory(
-                PlayIntegrityAppCheckProviderFactory.getInstance()
-            )
-        }
-
         binding =
             DashboardAdminBinding.inflate(layoutInflater)
 
@@ -324,7 +313,7 @@ class DashboardAdminActivity : AppCompatActivity() {
         }
         remoteConfig.setConfigSettingsAsync(configSettings)
         
-        // Valores por defecto (mismo que el solicitado actualmente)
+        // Valores por defecto: Usaremos Gemini 2.5 Flash Lite para lógica de la app
         val defaultValues = mapOf(
             "ia_model_name" to "gemini-2.5-flash-lite"
         )

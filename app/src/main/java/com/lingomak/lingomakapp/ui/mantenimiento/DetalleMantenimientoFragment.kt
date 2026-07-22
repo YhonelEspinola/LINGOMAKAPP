@@ -113,13 +113,7 @@ class DetalleMantenimientoFragment : Fragment() {
         binding.btnFinalizarMantenimiento.setOnClickListener { abrirFinalizarMantenimiento() }
         
         binding.btnGenerarReporteIA.setOnClickListener {
-            mantenimientoActual?.let { m ->
-                if (m.reporteIA.isNotEmpty()) {
-                    abrirDetalleReporteIA()
-                } else {
-                    viewModel.generarReporteIA(m)
-                }
-            }
+            abrirDetalleReporteIA()
         }
     }
 
@@ -248,12 +242,6 @@ class DetalleMantenimientoFragment : Fragment() {
     private fun observarViewModel() {
         viewModel.mensajeError.observe(viewLifecycleOwner) { error ->
             if (error.isNotEmpty()) Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show()
-        }
-
-        viewModel.reporteGenerado.observe(viewLifecycleOwner) { reporte ->
-            if (reporte != null) {
-                abrirDetalleReporteIA()
-            }
         }
 
         viewModel.loadingAI.observe(viewLifecycleOwner) { loading ->

@@ -396,7 +396,8 @@ class MantenimientoRepository(context: Context) {
                 maintenanceDao.eliminarSincronizadosNoPresentes(uidsRemotos)
             }
         } catch (e: Exception) {
-            // Offline
+            android.util.Log.e("MantenimientoRepo", "Error al descargar cambios: ${e.message}", e)
+            throw e
         }
     }
 

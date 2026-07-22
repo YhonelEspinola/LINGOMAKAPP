@@ -3,158 +3,172 @@ package com.lingomak.lingomakapp.utils
 import android.content.Context
 import android.graphics.*
 import android.graphics.pdf.PdfDocument
+import android.text.Layout
+import android.text.StaticLayout
+import android.text.TextPaint
 import com.lingomak.lingomakapp.data.model.MantenimientoModel
 import com.lingomak.lingomakapp.data.model.ReporteIAData
 import java.io.OutputStream
 
 class PdfGenerator(private val context: Context) {
 
+    private var currentPage: PdfDocument.Page? = null
+    private var currentCanvas: Canvas? = null
+
     fun generateMaintenanceReport(
         outputStream: OutputStream,
         mantenimiento: MantenimientoModel,
         reporteIA: ReporteIAData,
-        imagenes: List<Bitmap>
+        fotosReporte: List<Bitmap>,
+        fotosFinalizacion: List<Bitmap>
     ) {
         val pdfDocument = PdfDocument()
-        
-        // Configuración de página A4 (aprox 595 x 842 points)
         val pageInfo = PdfDocument.PageInfo.Builder(595, 842, 1).create()
-        var page = pdfDocument.startPage(pageInfo)
-        var canvas = page.canvas
+        
+        startNewPage(pdfDocument, pageInfo)
         val paint = Paint()
         var y = 40f
         val margin = 40f
-        val contentWidth = 595 - (margin * 2)
+        val contentWidth = 515
 
         // 1. ENCABEZADO
-        paint.color = Color.parseColor("#8B0000") // Primary Dark Red
+        paint.color = Color.parseColor("#8B0000")
         paint.textSize = 18f
         paint.isFakeBoldText = true
-        canvas.drawText("LINGOMAK - REPORTE TÉCNICO", margin, y, paint)
+        currentCanvas?.drawText("LINGOMAK - REPORTE TÉCNICO", margin, y, paint)
         
         paint.textSize = 10f
         paint.isFakeBoldText = false
         paint.color = Color.GRAY
         y += 20f
-        canvas.drawText("Código: ${mantenimiento.codigoMantenimiento}", margin, y, paint)
-        canvas.drawText("Fecha: ${mantenimiento.fechaRealizada}", 400f, y, paint)
+        currentCanvas?.drawText("Código: ${mantenimiento.codigoMantenimiento}", margin, y, paint)
+        currentCanvas?.drawText("Fecha: ${mantenimiento.fechaRealizada}", 400f, y, paint)
 
         y += 30f
         paint.color = Color.BLACK
         paint.strokeWidth = 1f
-        canvas.drawLine(margin, y, 555f, y, paint)
+        currentCanvas?.drawLine(margin, y, 555f, y, paint)
 
         // 2. DATOS GENERALES
         y += 30f
         paint.textSize = 12f
         paint.isFakeBoldText = true
-        canvas.drawText("INFORMACIÓN DE LA MAQUINARIA", margin, y, paint)
+        currentCanvas?.drawText("INFORMACIÓN DE LA MAQUINARIA", margin, y, paint)
         
         y += 20f
         paint.isFakeBoldText = false
         paint.textSize = 10f
-        canvas.drawText("Equipo: ${mantenimiento.nombreMaquinaria}", margin, y, paint)
-        canvas.drawText("Modelo/Código: ${mantenimiento.codigoMaquinaria}", 300f, y, paint)
+        currentCanvas?.drawText("Equipo: ${mantenimiento.nombreMaquinaria}", margin, y, paint)
+        currentCanvas?.drawText("Modelo/Código: ${mantenimiento.codigoMaquinaria}", 300f, y, paint)
         
         y += 15f
-        canvas.drawText("Tipo de Mantenimiento: ${mantenimiento.tipoMantenimiento}", margin, y, paint)
-        canvas.drawText("Horómetro: ${mantenimiento.horometroReal} h", 300f, y, paint)
+        currentCanvas?.drawText("Tipo de Mantenimiento: ${mantenimiento.tipoMantenimiento}", margin, y, paint)
+        currentCanvas?.drawText("Horómetro: ${mantenimiento.horometroReal} h", 300f, y, paint)
         
         y += 15f
-        canvas.drawText("Responsable: ${mantenimiento.responsable}", margin, y, paint)
-        canvas.drawText("Costo Real: S/ ${mantenimiento.costoReal}", 300f, y, paint)
+        currentCanvas?.drawText("Responsable: ${mantenimiento.responsable}", margin, y, paint)
+        currentCanvas?.drawText("Costo Real: S/ ${mantenimiento.costoReal}", 300f, y, paint)
 
-        // 3. NARRATIVA IA (Secciones)
+        // 3. NARRATIVA IA
         y += 40f
-        drawSection(canvas, "1. SÍNTOMA / PROBLEMA REPORTADO", reporteIA.sintoma, margin, y, paint)
-        y += calculateTextHeight(reporteIA.sintoma, 10f, contentWidth) + 30f
+        y = drawSection(pdfDocument, pageInfo, "1. SÍNTOMA / PROBLEMA REPORTADO", reporteIA.sintoma, margin, y, paint, contentWidth)
+        y = drawSection(pdfDocument, pageInfo, "2. CAUSA PROBABLE", reporteIA.causa, margin, y, paint, contentWidth)
+        y = drawSection(pdfDocument, pageInfo, "3. ACCIONES REALIZADAS", reporteIA.acciones, margin, y, paint, contentWidth)
+        y = drawSection(pdfDocument, pageInfo, "4. RESULTADO FINAL", reporteIA.resultado, margin, y, paint, contentWidth)
 
-        drawSection(canvas, "2. CAUSA PROBABLE", reporteIA.causa, margin, y, paint)
-        y += calculateTextHeight(reporteIA.causa, 10f, contentWidth) + 30f
-
-        drawSection(canvas, "3. ACCIONES REALIZADAS", reporteIA.acciones, margin, y, paint)
-        y += calculateTextHeight(reporteIA.acciones, 10f, contentWidth) + 30f
-
-        // Si llegamos cerca del final, abrimos nueva página
-        if (y > 700f) {
-            pdfDocument.finishPage(page)
-            page = pdfDocument.startPage(pageInfo)
-            canvas = page.canvas
-            y = 40f
-        }
-
-        drawSection(canvas, "4. RESULTADO FINAL", reporteIA.resultado, margin, y, paint)
-        y += calculateTextHeight(reporteIA.resultado, 10f, contentWidth) + 40f
-
-        // 4. EVIDENCIAS FOTOGRÁFICAS
-        if (imagenes.isNotEmpty()) {
-            paint.textSize = 12f
-            paint.isFakeBoldText = true
-            canvas.drawText("EVIDENCIAS FOTOGRÁFICAS", margin, y, paint)
+        // 4. EVIDENCIAS
+        y += 20f
+        if (fotosReporte.isNotEmpty()) {
+            y = drawImageGrid(pdfDocument, pageInfo, "EVIDENCIAS DE REPORTE (INICIAL)", fotosReporte, margin, y, paint)
             y += 20f
-            
-            var xPos = margin
-            val imgSize = 150f
-            
-            for (bitmap in imagenes) {
-                if (xPos + imgSize > 555f) {
-                    xPos = margin
-                    y += imgSize + 10f
-                }
-                
-                // Si la imagen se sale de la página, crear nueva
-                if (y + imgSize > 800f) {
-                    pdfDocument.finishPage(page)
-                    page = pdfDocument.startPage(pageInfo)
-                    canvas = page.canvas
-                    y = 40f
-                    xPos = margin
-                }
-
-                val rect = RectF(xPos, y, xPos + imgSize, y + imgSize)
-                canvas.drawBitmap(bitmap, null, rect, null)
-                xPos += imgSize + 10f
-            }
         }
 
-        pdfDocument.finishPage(page)
+        if (fotosFinalizacion.isNotEmpty()) {
+            y = drawImageGrid(pdfDocument, pageInfo, "EVIDENCIAS DE FINALIZACIÓN", fotosFinalizacion, margin, y, paint)
+        }
+
+        pdfDocument.finishPage(currentPage)
         pdfDocument.writeTo(outputStream)
         pdfDocument.close()
     }
 
-    private fun drawSection(canvas: Canvas, title: String, content: String, x: Float, y: Float, paint: Paint) {
+    private fun startNewPage(pdfDocument: PdfDocument, pageInfo: PdfDocument.PageInfo) {
+        if (currentPage != null) pdfDocument.finishPage(currentPage)
+        currentPage = pdfDocument.startPage(pageInfo)
+        currentCanvas = currentPage?.canvas
+    }
+
+    private fun drawSection(
+        pdfDocument: PdfDocument,
+        pageInfo: PdfDocument.PageInfo,
+        title: String,
+        content: String,
+        x: Float,
+        y: Float,
+        paint: Paint,
+        width: Int
+    ): Float {
+        var currentY = y
+        val textPaint = TextPaint()
+        textPaint.textSize = 10f
+        val staticLayout = StaticLayout.Builder.obtain(content, 0, content.length, textPaint, width).build()
+        
+        if (currentY + staticLayout.height + 40f > 800f) {
+            startNewPage(pdfDocument, pageInfo)
+            currentY = 40f
+        }
+
         paint.textSize = 11f
         paint.isFakeBoldText = true
         paint.color = Color.parseColor("#8B0000")
-        canvas.drawText(title, x, y, paint)
+        currentCanvas?.drawText(title, x, currentY, paint)
         
-        paint.textSize = 10f
-        paint.isFakeBoldText = false
-        paint.color = Color.BLACK
+        currentCanvas?.save()
+        currentCanvas?.translate(x, currentY + 10f)
+        staticLayout.draw(currentCanvas)
+        currentCanvas?.restore()
         
-        val textPaint = TextPaint()
-        textPaint.textSize = 10f
-        textPaint.color = Color.BLACK
-        
-        val staticLayout = android.text.StaticLayout.Builder.obtain(
-            content, 0, content.length, textPaint, (595 - 80).toInt()
-        ).build()
-        
-        canvas.save()
-        canvas.translate(x, y + 10f)
-        staticLayout.draw(canvas)
-        canvas.restore()
+        return currentY + staticLayout.height + 30f
     }
 
-    private fun calculateTextHeight(text: String, textSize: Float, width: Float): Float {
-        val textPaint = TextPaint()
-        textPaint.textSize = textSize
-        val staticLayout = android.text.StaticLayout.Builder.obtain(
-            text, 0, text.length, textPaint, width.toInt()
-        ).build()
-        return staticLayout.height.toFloat()
+    private fun drawImageGrid(
+        pdfDocument: PdfDocument,
+        pageInfo: PdfDocument.PageInfo,
+        title: String,
+        bitmaps: List<Bitmap>,
+        margin: Float,
+        y: Float,
+        paint: Paint
+    ): Float {
+        var currentY = y
+        if (currentY + 180f > 800f) {
+            startNewPage(pdfDocument, pageInfo)
+            currentY = 40f
+        }
+
+        paint.textSize = 11f
+        paint.isFakeBoldText = true
+        paint.color = Color.parseColor("#8B0000")
+        currentCanvas?.drawText(title, margin, currentY, paint)
+        currentY += 20f
+
+        var xPos = margin
+        val imgSize = 150f
+        
+        for (bitmap in bitmaps) {
+            if (xPos + imgSize > 555f) {
+                xPos = margin
+                currentY += imgSize + 10f
+            }
+            if (currentY + imgSize > 800f) {
+                startNewPage(pdfDocument, pageInfo)
+                currentY = 40f
+                xPos = margin
+            }
+            val rect = RectF(xPos, currentY, xPos + imgSize, currentY + imgSize)
+            currentCanvas?.drawBitmap(bitmap, null, rect, null)
+            xPos += imgSize + 10f
+        }
+        return currentY + imgSize + 10f
     }
 }
-
-// Helper class for text layout
-private class TextPaint : Paint()

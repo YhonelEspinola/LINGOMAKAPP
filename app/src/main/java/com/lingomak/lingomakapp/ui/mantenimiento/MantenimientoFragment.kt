@@ -77,12 +77,14 @@ class MantenimientoFragment : Fragment() {
 
     private fun observarViewModel() {
         viewModel.listaMantenimientos.observe(viewLifecycleOwner) { lista ->
+            binding.swipeRefreshMantenimiento.isRefreshing = false
             listaCompleta = lista
             aplicarFiltros()
         }
 
         viewModel.mensajeError.observe(viewLifecycleOwner) { error ->
             if (error.isNotEmpty()) {
+                binding.swipeRefreshMantenimiento.isRefreshing = false
                 Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show()
             }
         }
@@ -104,6 +106,10 @@ class MantenimientoFragment : Fragment() {
     }
 
     private fun configurarEventos() {
+        binding.swipeRefreshMantenimiento.setOnRefreshListener {
+            viewModel.listarMantenimientos()
+        }
+
         binding.fabAgregarMantenimiento.setOnClickListener {
             val fragment = ProgramarMantenimientoFragment()
             parentFragmentManager.beginTransaction()
