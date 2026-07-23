@@ -14,10 +14,10 @@ import com.lingomak.lingomakapp.data.local.entity.MovimientoEntity
 import com.lingomak.lingomakapp.data.model.AlertaModel
 import com.lingomak.lingomakapp.data.model.MantenimientoModel
 import com.lingomak.lingomakapp.utils.DateUtils
-import com.lingomak.lingomakapp.worker.SincronizacionMaquinariaWorker
-import com.lingomak.lingomakapp.worker.SincronizacionMantenimientoWorker
-import com.lingomak.lingomakapp.worker.SincronizacionMovimientosWorker
-import com.lingomak.lingomakapp.worker.SincronizacionRepuestosWorker
+import com.lingomak.lingomakapp.data.worker.SincronizacionMaquinariaWorker
+import com.lingomak.lingomakapp.data.worker.SincronizacionMantenimientoWorker
+import com.lingomak.lingomakapp.data.worker.SincronizacionMovimientosWorker
+import com.lingomak.lingomakapp.data.worker.SincronizacionRepuestosWorker
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

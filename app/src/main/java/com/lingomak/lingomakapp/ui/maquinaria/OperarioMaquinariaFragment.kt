@@ -1,4 +1,4 @@
-package com.lingomak.lingomakapp.ui.operario
+package com.lingomak.lingomakapp.ui.maquinaria
 
 import android.os.Bundle
 import android.text.Editable
@@ -13,7 +13,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.lingomak.lingomakapp.R
 import com.lingomak.lingomakapp.data.model.MaquinariaModel
 import com.lingomak.lingomakapp.databinding.FragmentOperarioMaquinariaBinding
-import com.lingomak.lingomakapp.ui.maquinaria.MaquinariaViewModel
 
 class OperarioMaquinariaFragment : Fragment() {
 

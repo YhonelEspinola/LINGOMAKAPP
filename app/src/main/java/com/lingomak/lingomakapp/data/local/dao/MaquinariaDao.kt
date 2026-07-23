@@ -39,4 +39,7 @@ interface MaquinariaDao {
 
     @Query("UPDATE maquinarias SET estadoSync = 'SINCRONIZADO' WHERE uid = :uid")
     suspend fun marcarComoSincronizado(uid: String)
+
+    @Query("SELECT COUNT(*) FROM maquinarias WHERE estadoSync != 'SINCRONIZADO'")
+    fun obtenerPendientesDeSincronizarCount(): LiveData<Int>
 }

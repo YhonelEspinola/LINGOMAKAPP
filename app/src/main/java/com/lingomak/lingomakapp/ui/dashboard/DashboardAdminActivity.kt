@@ -22,7 +22,7 @@ import com.lingomak.lingomakapp.ui.maquinaria.MaquinariaFragment
 import com.lingomak.lingomakapp.ui.movimientos.MovimientosGlobalFragment
 import com.lingomak.lingomakapp.ui.repuestos.InventarioFragment
 import com.lingomak.lingomakapp.ui.usuarios.UsuariosFragment
-import com.lingomak.lingomakapp.workers.AlertasWorkerManager
+import com.lingomak.lingomakapp.data.worker.AlertasWorkerManager
 
 class DashboardAdminActivity : AppCompatActivity() {
 
@@ -313,10 +313,8 @@ class DashboardAdminActivity : AppCompatActivity() {
         }
         remoteConfig.setConfigSettingsAsync(configSettings)
         
-        // Valores por defecto: Usaremos Gemini 2.5 Flash Lite para lógica de la app
-        val defaultValues = mapOf(
-            "ia_model_name" to "gemini-2.5-flash-lite"
-        )
+        // Valores por defecto
+        val defaultValues = mapOf<String, Any>()
         remoteConfig.setDefaultsAsync(defaultValues)
         
         // Descargar y activar valores

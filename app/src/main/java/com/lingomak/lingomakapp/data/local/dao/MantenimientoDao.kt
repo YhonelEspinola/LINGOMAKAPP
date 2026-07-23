@@ -52,4 +52,7 @@ interface MantenimientoDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertarMaquinaria(maquinaria: MaquinariaEntity)
+
+    @Query("SELECT COUNT(*) FROM mantenimientos WHERE estadoSync != 'SINCRONIZADO'")
+    fun obtenerPendientesDeSincronizarCount(): LiveData<Int>
 }

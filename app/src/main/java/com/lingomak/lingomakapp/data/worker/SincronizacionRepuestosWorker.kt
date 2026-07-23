@@ -1,4 +1,4 @@
-package com.lingomak.lingomakapp.worker
+package com.lingomak.lingomakapp.data.worker
 
 import android.content.Context
 import androidx.work.Constraints

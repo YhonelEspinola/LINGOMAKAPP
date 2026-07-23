@@ -1,5 +1,6 @@
 package com.lingomak.lingomakapp.data.local.dao
 
+import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
@@ -39,4 +40,10 @@ interface RegistroUsoMaquinariaDao {
 
     @Query("UPDATE registros_uso_maquinaria SET estadoSync = 'SINCRONIZADO' WHERE uid = :uid")
     suspend fun marcarComoSincronizado(uid: String)
+
+    @Query("SELECT COUNT(*) FROM registros_uso_maquinaria WHERE estadoSync != 'SINCRONIZADO'")
+    fun obtenerPendientesDeSincronizarCount(): LiveData<Int>
+
+    @Query("SELECT * FROM registros_uso_maquinaria WHERE uidOperario = :uid ORDER BY timestampLocal DESC LIMIT 1")
+    fun obtenerUltimoUsoObservable(uid: String): LiveData<RegistroUsoMaquinariaEntity?>
 }

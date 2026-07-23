@@ -1,4 +1,4 @@
-package com.lingomak.lingomakapp.ui.operario
+package com.lingomak.lingomakapp.ui.maquinaria
 
 import android.graphics.Color
 import android.os.Bundle

@@ -13,8 +13,8 @@ import kotlinx.coroutines.tasks.await
 import com.lingomak.lingomakapp.data.local.AppDatabase
 import com.lingomak.lingomakapp.data.local.entity.MovimientoEntity
 import com.lingomak.lingomakapp.data.model.MovimientoModel
-import com.lingomak.lingomakapp.worker.SincronizacionRepuestosWorker
-import com.lingomak.lingomakapp.worker.SincronizacionMovimientosWorker
+import com.lingomak.lingomakapp.data.worker.SincronizacionRepuestosWorker
+import com.lingomak.lingomakapp.data.worker.SincronizacionMovimientosWorker
 import java.util.*
 
 /**

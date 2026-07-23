@@ -10,8 +10,8 @@ import com.lingomak.lingomakapp.data.model.MaquinariaModel
 import com.lingomak.lingomakapp.data.model.RegistroUsoMaquinariaModel
 import com.lingomak.lingomakapp.data.model.SolicitudMantenimientoModel
 import com.lingomak.lingomakapp.utils.DateUtils
-import com.lingomak.lingomakapp.worker.SincronizacionMaquinariaWorker
-import com.lingomak.lingomakapp.worker.SincronizacionRegistroUsoMaquinariaWorker
+import com.lingomak.lingomakapp.data.worker.SincronizacionMaquinariaWorker
+import com.lingomak.lingomakapp.data.worker.SincronizacionRegistroUsoMaquinariaWorker
 import kotlinx.coroutines.tasks.await
 import java.util.UUID
 

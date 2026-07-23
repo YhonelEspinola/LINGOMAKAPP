@@ -8,6 +8,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:animateLayoutChanges="true"
         android:orientation="vertical"
         android:padding="24dp">
 
@@ -47,15 +48,9 @@
 
         </com.google.android.material.textfield.TextInputLayout>
 
-        <TextView
-            android:id="@+id/tvStockActual"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:layout_marginBottom="16dp"
-            android:text="Stock actual: --"
-            android:textColor="@color/text_secondary"
-            android:textSize="14sp" />
+        <include
+            android:id="@+id/includeRepuestoCard"
+            layout="@layout/include_repuesto_detalle_card" />
 
         <TextView
             android:layout_width="match_parent"

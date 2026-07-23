@@ -78,4 +78,6 @@ interface MovimientoDao {
     @Query("SELECT * FROM movimientos WHERE ordenMantenimientoUid = :ordenUid")
     suspend fun obtenerPorMantenimiento(ordenUid: String): List<MovimientoEntity>
 
+    @Query("SELECT COUNT(*) FROM movimientos WHERE estadoSync != 'SINCRONIZADO'")
+    fun obtenerPendientesDeSincronizarCount(): LiveData<Int>
 }

@@ -8,7 +8,10 @@ import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.core.content.ContextCompat
+import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
+import com.lingomak.lingomakapp.R
 import com.lingomak.lingomakapp.data.model.MovimientoModel
 import com.lingomak.lingomakapp.data.model.RepuestoModel
 import com.lingomak.lingomakapp.data.model.MaquinariaModel
@@ -47,7 +50,7 @@ class RegistrarSalidaOpFragment : Fragment() {
         binding.autoCompleteRepuesto.setOnItemClickListener { parent, _, position, _ ->
             val seleccionado = parent.getItemAtPosition(position) as String
             repuestoSeleccionado = listaRepuestos.find { "${it.codigoInterno} - ${it.nombre}" == seleccionado }
-            actualizarUIStock()
+            actualizarUICardRepuesto()
         }
 
         binding.autoCompleteMaquinaria.setOnItemClickListener { parent, _, position, _ ->
@@ -71,8 +74,35 @@ class RegistrarSalidaOpFragment : Fragment() {
         }
     }
 
-    private fun actualizarUIStock() {
-        binding.tvStockActual.text = "Stock actual: ${repuestoSeleccionado?.stockActual ?: "--"}"
+    private fun actualizarUICardRepuesto() {
+        val repuesto = repuestoSeleccionado
+        if (repuesto != null) {
+            binding.includeRepuestoCard.cardRepuestoDetalle.visibility = View.VISIBLE
+            
+            binding.includeRepuestoCard.tvNombreCard.text = repuesto.nombre
+            binding.includeRepuestoCard.tvCodigoMarcaCard.text = "${repuesto.codigoInterno} | ${repuesto.marca}"
+            binding.includeRepuestoCard.tvCategoriaCard.text = repuesto.categoria
+            binding.includeRepuestoCard.tvEstadoCard.text = repuesto.estado
+            
+            val colorEstado = if (repuesto.estado == "ACTIVO") R.color.success else R.color.danger
+            binding.includeRepuestoCard.tvEstadoCard.setTextColor(ContextCompat.getColor(requireContext(), colorEstado))
+            
+            binding.includeRepuestoCard.tvStockActualCard.text = repuesto.stockActual.toString()
+            binding.includeRepuestoCard.tvStockMinimoCard.text = repuesto.stockMinimo.toString()
+            binding.includeRepuestoCard.tvStockMaximoCard.text = repuesto.stockMaximo.toString()
+            binding.includeRepuestoCard.tvUbicacionCard.text = repuesto.ubicacionAlmacen.ifEmpty { "No especificada" }
+
+            if (repuesto.imagenUrl.isNotEmpty()) {
+                Glide.with(this)
+                    .load(repuesto.imagenUrl)
+                    .placeholder(android.R.drawable.ic_menu_gallery)
+                    .into(binding.includeRepuestoCard.ivImagenRepuesto)
+            } else {
+                binding.includeRepuestoCard.ivImagenRepuesto.setImageResource(android.R.drawable.ic_menu_gallery)
+            }
+        } else {
+            binding.includeRepuestoCard.cardRepuestoDetalle.visibility = View.GONE
+        }
     }
 
     private fun observarViewModel() {
@@ -87,7 +117,7 @@ class RegistrarSalidaOpFragment : Fragment() {
                 if (encontrado != null) {
                     repuestoSeleccionado = encontrado
                     binding.autoCompleteRepuesto.setText("${encontrado.codigoInterno} - ${encontrado.nombre}", false)
-                    actualizarUIStock()
+                    actualizarUICardRepuesto()
                     uidEscaneado = null
                 }
             }

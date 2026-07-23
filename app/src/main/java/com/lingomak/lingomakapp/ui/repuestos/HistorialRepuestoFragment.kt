@@ -13,13 +13,13 @@ import com.lingomak.lingomakapp.databinding.FragmentMovimientosBinding
 import java.text.SimpleDateFormat
 import java.util.*
 
-class MovimientosFragment : Fragment() {
+class HistorialRepuestoFragment : Fragment() {
 
     private var _binding: FragmentMovimientosBinding? = null
     private val binding get() = _binding!!
 
-    private val viewModel: MovimientosViewModel by viewModels()
-    private lateinit var adapter: MovimientosAdapter
+    private val viewModel: HistorialRepuestoViewModel by viewModels()
+    private lateinit var adapter: HistorialRepuestoAdapter
 
     private var repuestoUid: String = ""
     private var nombreRepuesto: String = ""
@@ -54,7 +54,7 @@ class MovimientosFragment : Fragment() {
     private fun setupUI() {
         binding.tvTituloRepuesto.text = "Historial - $nombreRepuesto"
         
-        adapter = MovimientosAdapter(emptyList())
+        adapter = HistorialRepuestoAdapter(emptyList())
         binding.rvMovimientos.layoutManager = LinearLayoutManager(requireContext())
         binding.rvMovimientos.adapter = adapter
 

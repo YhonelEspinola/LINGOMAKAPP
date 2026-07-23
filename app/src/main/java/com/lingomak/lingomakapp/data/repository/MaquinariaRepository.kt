@@ -9,7 +9,7 @@ import com.google.firebase.storage.FirebaseStorage
 import com.lingomak.lingomakapp.data.local.AppDatabase
 import com.lingomak.lingomakapp.data.local.entity.MaquinariaEntity
 import com.lingomak.lingomakapp.data.model.MaquinariaModel
-import com.lingomak.lingomakapp.worker.SincronizacionMaquinariaWorker
+import com.lingomak.lingomakapp.data.worker.SincronizacionMaquinariaWorker
 import kotlinx.coroutines.tasks.await
 
 class MaquinariaRepository(context: Context) {

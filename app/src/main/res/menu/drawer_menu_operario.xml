@@ -34,10 +34,6 @@
                 android:id="@+id/menu_perfil_operario"
                 android:icon="@drawable/per"
                 android:title="Mi Perfil" />
-            <item
-                android:id="@+id/menu_cerrar_sesion_operario"
-                android:icon="@drawable/logout"
-                android:title="Cerrar Sesión" />
         </menu>
     </item>
 

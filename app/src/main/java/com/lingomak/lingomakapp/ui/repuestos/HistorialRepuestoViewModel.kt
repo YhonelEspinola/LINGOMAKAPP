@@ -15,7 +15,7 @@ import kotlinx.coroutines.launch
 import java.util.Calendar
 import java.util.Date
 
-class MovimientosViewModel(application: Application) : AndroidViewModel(application) {
+class HistorialRepuestoViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository = MovimientoRepository(application)
     private val repuestoDao = AppDatabase.getInstance(application).repuestoDao()

@@ -1,19 +1,15 @@
 package com.lingomak.lingomakapp.ui.dashboard
 
-import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.messaging.FirebaseMessaging
 import com.lingomak.lingomakapp.R
 import com.lingomak.lingomakapp.databinding.DashboardOperarioBinding
 import com.lingomak.lingomakapp.ui.alertas.AlertasFragment
-import com.lingomak.lingomakapp.ui.auth.LoginActivity
-import com.lingomak.lingomakapp.ui.dashboard.operario.HomeOperarioFragment
+import com.lingomak.lingomakapp.ui.dashboard.home.HomeOperarioFragment
 import com.lingomak.lingomakapp.ui.dashboard.perfil.PerfilOperarioFragment
 import com.lingomak.lingomakapp.ui.mantenimiento.MantenimientoFragment
 import com.lingomak.lingomakapp.ui.movimientos.EscaneoQRFragment
-import com.lingomak.lingomakapp.ui.operario.OperarioMaquinariaFragment
+import com.lingomak.lingomakapp.ui.maquinaria.OperarioMaquinariaFragment
 import com.lingomak.lingomakapp.ui.repuestos.InventarioOpFragment
 
 class DashboardOperarioActivity : AppCompatActivity() {
@@ -97,29 +93,6 @@ class DashboardOperarioActivity : AppCompatActivity() {
                         .replace(R.id.containerOperario, PerfilOperarioFragment())
                         .commit()
                     binding.drawerLayoutOperario.close()
-                    true
-                }
-
-                R.id.menu_cerrar_sesion_operario -> {
-
-                    FirebaseMessaging.getInstance()
-                        .unsubscribeFromTopic("administradores")
-                        .addOnCompleteListener {
-
-                            FirebaseAuth.getInstance().signOut()
-
-                            val intent = Intent(
-                                this,
-                                LoginActivity::class.java
-                            ).apply {
-                                flags = Intent.FLAG_ACTIVITY_NEW_TASK or
-                                        Intent.FLAG_ACTIVITY_CLEAR_TASK
-                            }
-
-                            startActivity(intent)
-                            finish()
-                        }
-
                     true
                 }
 

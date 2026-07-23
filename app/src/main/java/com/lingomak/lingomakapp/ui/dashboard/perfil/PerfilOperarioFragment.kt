@@ -9,7 +9,6 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.messaging.FirebaseMessaging
 import com.lingomak.lingomakapp.databinding.FragmentPerfilOperarioBinding
 import com.lingomak.lingomakapp.ui.auth.LoginActivity
 
@@ -49,14 +48,15 @@ class PerfilOperarioFragment : Fragment() {
 
     private fun configurarEventos(){
         binding.btnCerrarSesionOperario.setOnClickListener {
-            // Por seguridad, al cerrar sesión como operario también intentamos des-suscribir
-            FirebaseMessaging.getInstance().unsubscribeFromTopic("administradores")
-                .addOnCompleteListener {
-                    FirebaseAuth.getInstance().signOut()
+            // Cerramos sesión de Firebase
+            FirebaseAuth.getInstance().signOut()
 
-                    startActivity(Intent(requireContext(), LoginActivity::class.java))
-                    requireActivity().finish()
-                }
+            // Limpiamos el stack y volvemos al login
+            val intent = Intent(requireContext(), LoginActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            }
+            startActivity(intent)
+            requireActivity().finish()
         }
 
         binding.btnCambiarPassword.setOnClickListener {

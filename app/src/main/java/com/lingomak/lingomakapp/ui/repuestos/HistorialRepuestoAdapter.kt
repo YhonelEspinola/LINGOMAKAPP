@@ -11,9 +11,9 @@ import com.lingomak.lingomakapp.databinding.ItemMovimientoBinding
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-class MovimientosAdapter(
+class HistorialRepuestoAdapter(
     private var listaMovimientos: List<MovimientoModel>
-) : RecyclerView.Adapter<MovimientosAdapter.ViewHolder>() {
+) : RecyclerView.Adapter<HistorialRepuestoAdapter.ViewHolder>() {
 
     private val dateFormat = SimpleDateFormat("dd/MM/yy", Locale.getDefault())
 

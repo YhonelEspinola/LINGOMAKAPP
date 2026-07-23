@@ -19,7 +19,7 @@ import com.lingomak.lingomakapp.ui.mantenimiento.DetalleMantenimientoFragment
 import com.lingomak.lingomakapp.ui.mantenimiento.MantenimientoViewModel
 import com.lingomak.lingomakapp.ui.mantenimiento.SolicitudesMantenimientoFragment
 import com.lingomak.lingomakapp.ui.repuestos.DetalleRepuestoFragment
-import com.lingomak.lingomakapp.ui.repuestos.MovimientosFragment
+import com.lingomak.lingomakapp.ui.repuestos.HistorialRepuestoFragment
 
 class AlertasFragment : Fragment() {
 
@@ -210,7 +210,7 @@ class AlertasFragment : Fragment() {
     }
 
     private fun abrirMovimientosDesdeAlerta(alerta: AlertaModel) {
-        val fragment = MovimientosFragment()
+        val fragment = HistorialRepuestoFragment()
         val bundle = Bundle()
         bundle.putString("repuestoUid", alerta.uidRepuesto)
         bundle.putString("origen", "ALERTA")

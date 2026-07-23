@@ -1,5 +1,6 @@
 package com.lingomak.lingomakapp.data.local.dao
 
+import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
@@ -23,4 +24,7 @@ interface SolicitudMantenimientoDao {
 
     @Query("UPDATE solicitudes_mantenimiento SET estadoSync = 'SINCRONIZADO' WHERE uid = :uid")
     suspend fun marcarComoSincronizado(uid: String)
+
+    @Query("SELECT COUNT(*) FROM solicitudes_mantenimiento WHERE estadoSync != 'SINCRONIZADO'")
+    fun obtenerPendientesDeSincronizarCount(): LiveData<Int>
 }

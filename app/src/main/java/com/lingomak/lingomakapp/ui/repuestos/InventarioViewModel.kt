@@ -12,7 +12,7 @@ import com.lingomak.lingomakapp.data.local.AppDatabase
 import com.lingomak.lingomakapp.data.model.RepuestoModel
 import com.lingomak.lingomakapp.data.repository.RepuestoRepository
 import com.lingomak.lingomakapp.utils.CodigoInternoGenerator
-import com.lingomak.lingomakapp.worker.SincronizacionRepuestosWorker
+import com.lingomak.lingomakapp.data.worker.SincronizacionRepuestosWorker
 import kotlinx.coroutines.launch
 import java.util.Date
 

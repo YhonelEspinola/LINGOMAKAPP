@@ -81,4 +81,7 @@ interface RepuestoDao {
 
     @Query("SELECT * FROM repuestos WHERE estado = 'ACTIVO'")
     suspend fun obtenerRepuestosActivos(): List<RepuestoEntity>
+
+    @Query("SELECT COUNT(*) FROM repuestos WHERE estadoSync != 'SINCRONIZADO'")
+    fun obtenerPendientesDeSincronizarCount(): LiveData<Int>
 }

@@ -146,7 +146,7 @@ class DetalleRepuestoFragment : Fragment() {
         }
 
         binding.btnVerMovimientos.setOnClickListener {
-            val fragment = MovimientosFragment()
+            val fragment = HistorialRepuestoFragment()
             val bundle = Bundle().apply {
                 putString("repuestoUid", uidRepuesto)
                 putString("nombreRepuesto", repuestoActual?.nombre)

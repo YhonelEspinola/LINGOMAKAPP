@@ -1,4 +1,4 @@
-package com.lingomak.lingomakapp.ui.operario
+package com.lingomak.lingomakapp.ui.maquinaria
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel

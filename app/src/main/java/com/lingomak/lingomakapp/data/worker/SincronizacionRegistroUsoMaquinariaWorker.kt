@@ -1,4 +1,4 @@
-package com.lingomak.lingomakapp.worker
+package com.lingomak.lingomakapp.data.worker
 
 import android.content.Context
 import androidx.work.Constraints
@@ -8,19 +8,19 @@ import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
-import com.lingomak.lingomakapp.data.repository.MaquinariaRepository
+import com.lingomak.lingomakapp.data.repository.RegistroUsoMaquinariaRepository
 
-class SincronizacionMaquinariaWorker(
+class SincronizacionRegistroUsoMaquinariaWorker(
     context: Context,
     params: WorkerParameters
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
         return try {
-            val repository = MaquinariaRepository(applicationContext)
+            val repository = RegistroUsoMaquinariaRepository(applicationContext)
 
             repository.sincronizarPendientesConFirestore()
-            repository.descargarMaquinariasDeFirestore()
+            repository.descargarCambiosDeFirestore()
 
             Result.success()
         } catch (exception: Exception) {
@@ -29,14 +29,14 @@ class SincronizacionMaquinariaWorker(
     }
 
     companion object {
-        private const val NOMBRE_TRABAJO = "sincronizacion_maquinaria"
+        private const val NOMBRE_TRABAJO = "sincronizacion_uso_maquinaria"
 
         fun encolar(context: Context) {
             val restricciones = Constraints.Builder()
                 .setRequiredNetworkType(NetworkType.CONNECTED)
                 .build()
 
-            val solicitud = OneTimeWorkRequestBuilder<SincronizacionMaquinariaWorker>()
+            val solicitud = OneTimeWorkRequestBuilder<SincronizacionRegistroUsoMaquinariaWorker>()
                 .setConstraints(restricciones)
                 .setBackoffCriteria(
                     androidx.work.BackoffPolicy.EXPONENTIAL,
@@ -47,19 +47,6 @@ class SincronizacionMaquinariaWorker(
 
             WorkManager.getInstance(context)
                 .enqueueUniqueWork(NOMBRE_TRABAJO, ExistingWorkPolicy.KEEP, solicitud)
-        }
-
-        fun sincronizarAhora(context: Context) {
-            val restricciones = Constraints.Builder()
-                .setRequiredNetworkType(NetworkType.CONNECTED)
-                .build()
-
-            val solicitud = OneTimeWorkRequestBuilder<SincronizacionMaquinariaWorker>()
-                .setConstraints(restricciones)
-                .build()
-
-            WorkManager.getInstance(context)
-                .enqueueUniqueWork(NOMBRE_TRABAJO, ExistingWorkPolicy.REPLACE, solicitud)
         }
     }
 }

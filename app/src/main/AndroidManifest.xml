@@ -43,9 +43,6 @@
             android:launchMode="singleTop"/>
 
         <activity
-            android:name=".ui.dashboard.MainActivity"
-            android:exported="false" />
-        <activity
             android:name=".ui.dashboard.DashboardOperarioActivity"
             android:exported="false" />
 

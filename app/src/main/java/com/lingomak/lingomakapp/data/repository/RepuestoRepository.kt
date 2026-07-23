@@ -11,7 +11,7 @@ import kotlinx.coroutines.tasks.await
 import com.lingomak.lingomakapp.data.local.AppDatabase
 import com.lingomak.lingomakapp.data.local.entity.RepuestoEntity
 import com.lingomak.lingomakapp.data.model.RepuestoModel
-import com.lingomak.lingomakapp.worker.SincronizacionRepuestosWorker
+import com.lingomak.lingomakapp.data.worker.SincronizacionRepuestosWorker
 import java.io.ByteArrayOutputStream
 import java.util.Date
 

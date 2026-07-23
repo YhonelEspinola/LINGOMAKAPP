@@ -9,6 +9,8 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.google.firebase.auth.FirebaseAuth
+import androidx.core.content.ContextCompat
+import com.bumptech.glide.Glide
 import com.lingomak.lingomakapp.R
 import com.lingomak.lingomakapp.data.model.MovimientoModel
 import com.lingomak.lingomakapp.data.model.RepuestoModel
@@ -57,7 +59,7 @@ class RegistrarMovimientoGlobalFragment : Fragment() {
                 val display = "${it.codigoInterno} - ${it.nombre}"
                 display == nombreSeleccionado
             }
-            actualizarUIStock()
+            actualizarUICardRepuesto()
         }
 
         binding.btnGuardar.setOnClickListener {
@@ -109,11 +111,34 @@ class RegistrarMovimientoGlobalFragment : Fragment() {
         }
     }
 
-    private fun actualizarUIStock() {
-        if (repuestoSeleccionado != null) {
-            binding.tvStockActual.text = "Stock actual: ${repuestoSeleccionado?.stockActual}"
+    private fun actualizarUICardRepuesto() {
+        val repuesto = repuestoSeleccionado
+        if (repuesto != null) {
+            binding.includeRepuestoCard.cardRepuestoDetalle.visibility = View.VISIBLE
+            
+            binding.includeRepuestoCard.tvNombreCard.text = repuesto.nombre
+            binding.includeRepuestoCard.tvCodigoMarcaCard.text = "${repuesto.codigoInterno} | ${repuesto.marca}"
+            binding.includeRepuestoCard.tvCategoriaCard.text = repuesto.categoria
+            binding.includeRepuestoCard.tvEstadoCard.text = repuesto.estado
+            
+            val colorEstado = if (repuesto.estado == "ACTIVO") R.color.success else R.color.danger
+            binding.includeRepuestoCard.tvEstadoCard.setTextColor(ContextCompat.getColor(requireContext(), colorEstado))
+            
+            binding.includeRepuestoCard.tvStockActualCard.text = repuesto.stockActual.toString()
+            binding.includeRepuestoCard.tvStockMinimoCard.text = repuesto.stockMinimo.toString()
+            binding.includeRepuestoCard.tvStockMaximoCard.text = repuesto.stockMaximo.toString()
+            binding.includeRepuestoCard.tvUbicacionCard.text = repuesto.ubicacionAlmacen.ifEmpty { "No especificada" }
+
+            if (repuesto.imagenUrl.isNotEmpty()) {
+                Glide.with(this)
+                    .load(repuesto.imagenUrl)
+                    .placeholder(android.R.drawable.ic_menu_gallery)
+                    .into(binding.includeRepuestoCard.ivImagenRepuesto)
+            } else {
+                binding.includeRepuestoCard.ivImagenRepuesto.setImageResource(android.R.drawable.ic_menu_gallery)
+            }
         } else {
-            binding.tvStockActual.text = "Stock actual: --"
+            binding.includeRepuestoCard.cardRepuestoDetalle.visibility = View.GONE
         }
     }
 
@@ -132,7 +157,7 @@ class RegistrarMovimientoGlobalFragment : Fragment() {
                 if (encontrado != null) {
                     repuestoSeleccionado = encontrado
                     binding.autoCompleteRepuesto.setText("${encontrado.codigoInterno} - ${encontrado.nombre}", false)
-                    actualizarUIStock()
+                    actualizarUICardRepuesto()
                     uidEscaneado = null // Limpiar para que no lo haga de nuevo si el fragment se recrea
                 } else {
                     Toast.makeText(requireContext(), "QR no reconocido o producto inactivo", Toast.LENGTH_SHORT).show()
