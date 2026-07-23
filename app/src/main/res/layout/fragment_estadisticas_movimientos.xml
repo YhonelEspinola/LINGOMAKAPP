@@ -19,7 +19,7 @@
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@android:drawable/ic_menu_revert"
+            android:src="@drawable/ic_chevron_left"
             app:tint="@color/text_primary" />
 
         <TextView
@@ -52,17 +52,45 @@
         android:visibility="gone"
         app:layout_constraintTop_toBottomOf="@id/layoutHeader" />
 
-    <TextView
-        android:id="@+id/tvRangoActual"
+    <LinearLayout
+        android:id="@+id/layoutRangoConExport"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
-        android:text="Periodo seleccionado"
-        android:textAlignment="center"
-        android:textColor="@color/primary"
-        android:textStyle="bold"
-        android:textSize="14sp"
-        app:layout_constraintTop_toBottomOf="@id/selectorFechasEstadisticas" />
+        android:paddingHorizontal="16dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        app:layout_constraintTop_toBottomOf="@id/selectorFechasEstadisticas">
+
+        <TextView
+            android:id="@+id/tvRangoActual"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Periodo seleccionado"
+            android:textColor="@color/primary"
+            android:textStyle="bold"
+            android:textSize="14sp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnExportarCsv"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:padding="0dp"
+            android:insetLeft="0dp"
+            android:insetTop="0dp"
+            android:insetRight="0dp"
+            android:insetBottom="0dp"
+            app:icon="@android:drawable/stat_sys_download"
+            app:iconGravity="textStart"
+            app:iconPadding="0dp"
+            app:iconSize="20dp"
+            app:iconTint="@color/primary"
+            app:backgroundTint="@color/white"
+            app:strokeColor="#DDDDDD"
+            app:strokeWidth="1dp"
+            app:cornerRadius="18dp" />
+    </LinearLayout>
 
     <!-- ViewPager2 para el Carrusel -->
     <androidx.viewpager2.widget.ViewPager2
@@ -71,7 +99,7 @@
         android:layout_height="0dp"
         android:layout_marginTop="4dp"
         app:layout_constraintBottom_toTopOf="@id/tabLayoutIndicator"
-        app:layout_constraintTop_toBottomOf="@id/tvRangoActual" />
+        app:layout_constraintTop_toBottomOf="@id/layoutRangoConExport" />
 
     <!-- Indicador de Puntos (Corregido: tamaño fijo y espaciado real) -->
     <com.google.android.material.tabs.TabLayout

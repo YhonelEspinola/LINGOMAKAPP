@@ -12,6 +12,8 @@ import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.lingomak.lingomakapp.R
 import com.lingomak.lingomakapp.databinding.FragmentMovimientosGlobalBinding
+import com.lingomak.lingomakapp.ui.dashboard.DashboardAdminActivity
+import com.lingomak.lingomakapp.utils.CsvExporter
 import java.util.*
 
 class MovimientosGlobalFragment : Fragment() {
@@ -106,6 +108,13 @@ class MovimientosGlobalFragment : Fragment() {
                 .commit()
         }
 
+        binding.btnExportarCsv.setOnClickListener {
+            val data = viewModel.movimientosFiltrados.value ?: emptyList()
+            CsvExporter.exportMovimientos(requireContext(), data)
+        }
+        
+        validarAccesoAdmin()
+
         /*binding.btnEstadisticas.setOnClickListener {
             val fragment = MovimientosEstadisticasFragment()
             val containerId = if (requireActivity() is com.lingomak.lingomakapp.ui.dashboard.DashboardAdminActivity) 
@@ -119,6 +128,11 @@ class MovimientosGlobalFragment : Fragment() {
         filtroInicialTexto = arguments?.getString("filtroTexto") ?: ""
     }
 
+
+    private fun validarAccesoAdmin() {
+        val isAdmin = requireActivity() is DashboardAdminActivity
+        binding.btnExportarCsv.visibility = if (isAdmin) View.VISIBLE else View.GONE
+    }
 
     private fun observarViewModel() {
         viewModel.movimientosFiltrados.observe(viewLifecycleOwner) { lista ->

@@ -15,6 +15,7 @@ import com.lingomak.lingomakapp.R
 import com.lingomak.lingomakapp.data.model.MantenimientoModel
 import com.lingomak.lingomakapp.databinding.FragmentMantenimientoBinding
 import com.lingomak.lingomakapp.ui.dashboard.DashboardAdminActivity
+import com.lingomak.lingomakapp.utils.CsvExporter
 
 class MantenimientoFragment : Fragment() {
 
@@ -28,6 +29,9 @@ class MantenimientoFragment : Fragment() {
     private var filtroTipo: String = "TODOS"
     private var filtroEstado: String = "TODOS"
 
+    private var fechaInicio: Long = 0L
+    private var fechaFin: Long = Long.MAX_VALUE
+
     private lateinit var adapter: MantenimientoAdapter
 
     override fun onCreateView(
@@ -40,6 +44,7 @@ class MantenimientoFragment : Fragment() {
         configurarRecyclerView()
         configurarEventos()
         configurarFiltros()
+        configurarFiltroFecha()
         configurarBusqueda()
         observarViewModel()
 
@@ -105,6 +110,14 @@ class MantenimientoFragment : Fragment() {
             .commit()
     }
 
+    private fun configurarFiltroFecha() {
+        binding.selectorFechasMantenimiento.onRangoSeleccionado = { inicio, fin, _ ->
+            fechaInicio = inicio
+            fechaFin = fin
+            aplicarFiltros()
+        }
+    }
+
     private fun configurarEventos() {
         binding.swipeRefreshMantenimiento.setOnRefreshListener {
             viewModel.listarMantenimientos()
@@ -120,6 +133,47 @@ class MantenimientoFragment : Fragment() {
         
         if (requireActivity() !is DashboardAdminActivity) {
             binding.fabAgregarMantenimiento.visibility = View.GONE
+            binding.btnExportarCsv.visibility = View.GONE
+        } else {
+            binding.btnExportarCsv.visibility = View.VISIBLE
+        }
+
+        binding.btnExportarCsv.setOnClickListener {
+            val query = binding.etBuscarMantenimiento.text.toString().trim()
+            var listaFiltrada = listaCompleta
+
+            if (filtroTipo != "TODOS") {
+                listaFiltrada = listaFiltrada.filter { it.tipoMantenimiento == filtroTipo }
+            }
+            if (filtroEstado != "TODOS") {
+                listaFiltrada = listaFiltrada.filter { it.estado == filtroEstado }
+            }
+            if (query.isNotEmpty()) {
+                listaFiltrada = listaFiltrada.filter {
+                    it.codigoMantenimiento.contains(query, ignoreCase = true) ||
+                            it.nombreMaquinaria.contains(query, ignoreCase = true) ||
+                            it.descripcion.contains(query, ignoreCase = true)
+                }
+            }
+            
+            // Filtro por fecha para la exportación
+            listaFiltrada = filtrarPorFecha(listaFiltrada)
+            
+            CsvExporter.exportMantenimiento(requireContext(), listaFiltrada)
+        }
+    }
+
+    private fun filtrarPorFecha(lista: List<MantenimientoModel>): List<MantenimientoModel> {
+        if (fechaInicio == 0L && fechaFin == Long.MAX_VALUE) return lista
+        
+        return lista.filter { m ->
+            val fechaM = com.lingomak.lingomakapp.utils.DateUtils.convertirFecha(m.fechaProgramada)
+            if (fechaM != null) {
+                val time = fechaM.time
+                time in fechaInicio..fechaFin
+            } else {
+                false
+            }
         }
     }
 
@@ -165,9 +219,11 @@ class MantenimientoFragment : Fragment() {
                         it.descripcion.contains(query, ignoreCase = true)
             }
         }
+        
+        listaFiltrada = filtrarPorFecha(listaFiltrada)
 
         adapter.actualizarLista(listaFiltrada)
-        actualizarResumen(listaCompleta)
+        actualizarResumen(listaFiltrada)
     }
 
     private fun configurarBusqueda() {

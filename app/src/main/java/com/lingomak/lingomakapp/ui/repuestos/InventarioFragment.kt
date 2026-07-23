@@ -13,6 +13,8 @@ import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.lingomak.lingomakapp.data.model.RepuestoModel
 import com.lingomak.lingomakapp.databinding.FragmentInventarioBinding
+import com.lingomak.lingomakapp.ui.dashboard.DashboardAdminActivity
+import com.lingomak.lingomakapp.utils.CsvExporter
 
 /**
  * Fragment del Listado de Repuestos (módulo Inventario).
@@ -70,7 +72,14 @@ class InventarioFragment : Fragment() {
 
         configurarEventos()
 
+        validarAccesoAdmin()
+
         return binding.root
+    }
+
+    private fun validarAccesoAdmin() {
+        val isAdmin = requireActivity() is DashboardAdminActivity
+        binding.btnExportarCsv.visibility = if (isAdmin) View.VISIBLE else View.GONE
     }
 
     private fun configurarRecyclerView() {
@@ -220,6 +229,11 @@ class InventarioFragment : Fragment() {
                 )
                 .addToBackStack(null)
                 .commit()
+        }
+
+        binding.btnExportarCsv.setOnClickListener {
+            val data = viewModel.repuestos.value ?: emptyList()
+            CsvExporter.exportInventario(requireContext(), data)
         }
     }
 

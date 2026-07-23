@@ -16,7 +16,7 @@
             android:layout_width="28dp"
             android:layout_height="28dp"
             android:layout_marginBottom="16dp"
-            android:src="@android:drawable/ic_menu_revert"
+            android:src="@drawable/ic_chevron_left"
             android:contentDescription="Regresar"
             app:tint="@color/text_primary" />
 

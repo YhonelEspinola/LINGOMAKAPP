@@ -14,7 +14,7 @@
             android:id="@+id/toolbarReporteIA"
             android:layout_width="match_parent"
             android:layout_height="56dp"
-            app:navigationIcon="@android:drawable/ic_menu_revert"
+            app:navigationIcon="@drawable/ic_chevron_left"
             app:navigationIconTint="@color/white"
             app:title="Narrativa del Mantenimiento"
             app:titleTextColor="@color/white" />
@@ -178,7 +178,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:layout_marginTop="12dp"
-                android:text="GUARDAR REPORTE EN EL TELÉFONO"
+                android:text="GUARDAR"
                 android:textColor="@color/white"
                 android:textStyle="bold"
                 android:visibility="gone"

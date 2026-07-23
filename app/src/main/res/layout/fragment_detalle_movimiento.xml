@@ -20,7 +20,7 @@
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@android:drawable/ic_menu_revert"
+                android:src="@drawable/ic_chevron_left"
                 app:tint="@color/text_primary" />
 
             <TextView

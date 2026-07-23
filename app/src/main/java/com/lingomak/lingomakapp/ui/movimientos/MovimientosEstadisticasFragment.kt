@@ -10,6 +10,8 @@ import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.tabs.TabLayoutMediator
 import com.lingomak.lingomakapp.R
 import com.lingomak.lingomakapp.databinding.FragmentEstadisticasMovimientosBinding
+import com.lingomak.lingomakapp.ui.dashboard.DashboardAdminActivity
+import com.lingomak.lingomakapp.utils.CsvExporter
 
 class MovimientosEstadisticasFragment : Fragment() {
 
@@ -28,11 +30,26 @@ class MovimientosEstadisticasFragment : Fragment() {
         setupUI()
         observarViewModel()
         
+        validarAccesoAdmin()
+
         return binding.root
+    }
+
+    private fun validarAccesoAdmin() {
+        val isAdmin = requireActivity() is DashboardAdminActivity
+        binding.btnExportarCsv.visibility = if (isAdmin) View.VISIBLE else View.GONE
     }
 
     private fun setupUI() {
         binding.btnVolver.setOnClickListener { parentFragmentManager.popBackStack() }
+
+        binding.btnExportarCsv.setOnClickListener {
+            val data = viewModel.estadisticas.value
+            val label = viewModel.etiquetaRango.value ?: "Export"
+            if (data != null) {
+                CsvExporter.exportEstadisticas(requireContext(), data, label)
+            }
+        }
 
         binding.selectorFechasEstadisticas.onRangoSeleccionado = { inicio, fin, etiqueta ->
             viewModel.setRango(inicio, fin, etiqueta)

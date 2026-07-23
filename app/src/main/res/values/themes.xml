@@ -17,6 +17,7 @@
 
         <!-- Definición de tema para el selector de fecha -->
         <item name="materialCalendarTheme">@style/CustomDatePickerTheme</item>
+        <item name="bottomSheetDialogTheme">@style/BottomSheetDialogTheme</item>
     </style>
 
     <!-- Tema específico para el MaterialDatePicker -->
@@ -31,6 +32,14 @@
 
     <style name="ShapeAppearance.LargeComponent.Rounded" parent="ShapeAppearance.MaterialComponents.LargeComponent">
         <item name="cornerSize">28dp</item>
+    </style>
+
+    <style name="BottomSheetDialogTheme" parent="Theme.Design.Light.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/BottomSheetStyle</item>
+    </style>
+
+    <style name="BottomSheetStyle" parent="Widget.Design.BottomSheet.Modal">
+        <item name="android:background">@android:color/transparent</item>
     </style>
 
 </resources>

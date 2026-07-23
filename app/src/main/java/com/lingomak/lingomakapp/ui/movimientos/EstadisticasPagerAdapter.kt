@@ -40,7 +40,7 @@ class EstadisticasPagerAdapter(
         }
     }
 
-    override fun getItemCount(): Int = 8
+    override fun getItemCount(): Int = 7
 
     inner class ViewHolder(val binding: ItemEstadisticaPageBinding) : RecyclerView.ViewHolder(binding.root) {
         
@@ -54,8 +54,7 @@ class EstadisticasPagerAdapter(
                 3 -> setupP4(data, isExpanded, onExpand)
                 4 -> setupP5(data, isExpanded, onExpand)
                 5 -> setupP6(data)
-                6 -> setupP7(data)
-                7 -> setupP8(data)
+                6 -> setupP8(data)
             }
         }
 

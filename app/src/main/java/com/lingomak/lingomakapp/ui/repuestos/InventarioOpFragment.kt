@@ -49,6 +49,7 @@ class InventarioOpFragment : Fragment() {
     private fun setupUI() {
         // Ocultar el FAB ya que el operador no agrega repuestos
         binding.fabAgregarRepuesto.visibility = View.GONE
+        binding.btnExportarCsv.visibility = View.GONE
 
         adapter = RepuestosOpAdapter(emptyList()) { repuesto ->
             // El operario solo consulta el detalle (puedes reutilizar el de admin o crear DetalleRepuestoOpFragment)
