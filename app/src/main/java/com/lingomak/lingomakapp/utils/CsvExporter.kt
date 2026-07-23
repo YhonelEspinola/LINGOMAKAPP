@@ -3,6 +3,8 @@ package com.lingomak.lingomakapp.utils
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.FileProvider
 import android.content.ContentValues
 import android.os.Build
@@ -27,17 +29,17 @@ object CsvExporter {
 
     private const val BOM = "\uFEFF"
 
-    fun exportInventario(context: Context, data: List<RepuestoModel>) {
+    fun exportInventario(context: Context, data: List<RepuestoModel>, launcher: ActivityResultLauncher<String>? = null) {
         val header = "Código Interno,Nombre,Categoría,Marca,Stock Actual,Stock Mínimo,Stock Máximo,Ubicación,Estado,Proveedor Nombre,Proveedor Contacto,Fecha de Registro"
         val rows = data.map {
             val fecha = it.fechaRegistro?.let { d -> SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(d) } ?: ""
             "${escapeCsv(it.codigoInterno)},${escapeCsv(it.nombre)},${escapeCsv(it.categoria)},${escapeCsv(it.marca)},${it.stockActual},${it.stockMinimo},${it.stockMaximo},${escapeCsv(it.ubicacionAlmacen)},${escapeCsv(it.estado)},${escapeCsv(it.proveedorNombre)},${escapeCsv(it.proveedorContacto)},$fecha"
         }
         val csvContent = header + "\n" + rows.joinToString("\n")
-        showExportDialog(context, "Inventario_Export.csv", csvContent)
+        showExportDialog(context, "Inventario_Export.csv", csvContent, launcher)
     }
 
-    fun exportMovimientos(context: Context, data: List<Pair<MovimientoModel, String>>) {
+    fun exportMovimientos(context: Context, data: List<Pair<MovimientoModel, String>>, launcher: ActivityResultLauncher<String>? = null) {
         val header = "Fecha,Tipo,Nombre del Repuesto,Cantidad,Destino,Registrado por,Orden Mantenimiento,Máquina,Observación"
         val rows = data.map { (mov, nombre) ->
             val fecha = mov.fecha?.let { d -> SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(d) } ?: ""
@@ -49,19 +51,19 @@ object CsvExporter {
             "${fecha},${escapeCsv(mov.tipo)},${escapeCsv(nombre)},${mov.cantidad},${escapeCsv(destino)},${escapeCsv(mov.registradoPor)},${escapeCsv(mov.ordenMantenimientoUid ?: "")},${escapeCsv(mov.maquinariaUid ?: "")},${escapeCsv(mov.observacion)}"
         }
         val csvContent = header + "\n" + rows.joinToString("\n")
-        showExportDialog(context, "Movimientos_Export.csv", csvContent)
+        showExportDialog(context, "Movimientos_Export.csv", csvContent, launcher)
     }
 
-    fun exportMantenimiento(context: Context, data: List<MantenimientoModel>) {
+    fun exportMantenimiento(context: Context, data: List<MantenimientoModel>, launcher: ActivityResultLauncher<String>? = null) {
         val header = "Código,Tipo,Máquina,Descripción,Fecha Programada,Fecha Realizada,Estado,Responsable,Prioridad,Costo Estimado,Costo Real,Horómetro Programado,Horómetro Real"
         val rows = data.map {
             "${escapeCsv(it.codigoMantenimiento)},${escapeCsv(it.tipoMantenimiento)},${escapeCsv(it.nombreMaquinaria)},${escapeCsv(it.descripcion)},${escapeCsv(it.fechaProgramada)},${escapeCsv(it.fechaRealizada)},${escapeCsv(it.estado)},${escapeCsv(it.responsable)},${escapeCsv(it.prioridad)},${it.costoEstimado},${it.costoReal},${it.horometroProgramado},${it.horometroReal}"
         }
         val csvContent = header + "\n" + rows.joinToString("\n")
-        showExportDialog(context, "Mantenimiento_Export.csv", csvContent)
+        showExportDialog(context, "Mantenimiento_Export.csv", csvContent, launcher)
     }
 
-    fun exportEstadisticas(context: Context, data: MovimientosEstadisticasViewModel.EstadisticasData, etiquetaRango: String) {
+    fun exportEstadisticas(context: Context, data: MovimientosEstadisticasViewModel.EstadisticasData, etiquetaRango: String, launcher: ActivityResultLauncher<String>? = null) {
         val sb = StringBuilder()
         
         // 1. Resumen General
@@ -129,10 +131,15 @@ object CsvExporter {
         sb.append("Estimado,${data.costosComparativa.first},-\n")
         sb.append("Real,${data.costosComparativa.second},${data.costosComparativa.third}\n")
 
-        showExportDialog(context, "Estadisticas_Export.csv", sb.toString())
+        showExportDialog(context, "Estadisticas_Export.csv", sb.toString(), launcher)
     }
 
-    fun showExportDialog(context: Context, fileName: String, content: String) {
+    fun showExportDialog(
+        context: Context,
+        fileName: String,
+        content: String,
+        launcher: ActivityResultLauncher<String>? = null
+    ) {
         val dialog = BottomSheetDialog(context, R.style.BottomSheetDialogTheme)
         val view = LayoutInflater.from(context).inflate(R.layout.bottom_sheet_share_report, null)
         
@@ -145,11 +152,28 @@ object CsvExporter {
         
         view.findViewById<View>(R.id.layoutDescargar).setOnClickListener {
             dialog.dismiss()
-            downloadCsv(context, fileName, content)
+            if (launcher != null) {
+                launcher.launch(fileName)
+            } else {
+                downloadCsv(context, fileName, content)
+            }
         }
         
         dialog.setContentView(view)
         dialog.show()
+    }
+
+    fun saveCsvToUri(context: Context, uri: Uri, content: String) {
+        try {
+            context.contentResolver.openOutputStream(uri)?.use { outputStream ->
+                outputStream.write(BOM.toByteArray(Charsets.UTF_8))
+                outputStream.write(content.toByteArray(Charsets.UTF_8))
+            }
+            Toast.makeText(context, "Archivo guardado correctamente", Toast.LENGTH_SHORT).show()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Toast.makeText(context, "Error al guardar: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun downloadCsv(context: Context, fileName: String, content: String) {
@@ -177,7 +201,7 @@ object CsvExporter {
         }
     }
 
-    private fun escapeCsv(value: String): String {
+    fun escapeCsv(value: String): String {
         if (value.contains(",") || value.contains("\"") || value.contains("\n")) {
             return "\"" + value.replace("\"", "\"\"") + "\""
         }

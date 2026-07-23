@@ -41,6 +41,10 @@ class DetalleReporteIAFragment : Fragment() {
     private var mantenimientoActual: MantenimientoModel? = null
     private var reporteActual: ReporteIAData? = null
 
+    private val createDocumentLauncher = registerForActivityResult(ActivityResultContracts.CreateDocument("application/pdf")) { uri ->
+        uri?.let { savePdfToUri(it) }
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -152,10 +156,16 @@ class DetalleReporteIAFragment : Fragment() {
 
     private fun descargarReportePdf() {
         val m = mantenimientoActual ?: return
+        val cod = m.codigoMantenimiento.ifBlank { "DOC" }
+        createDocumentLauncher.launch("Reporte_$cod.pdf")
+    }
+
+    private fun savePdfToUri(uri: Uri) {
+        val m = mantenimientoActual ?: return
         val r = reporteActual ?: return
 
         binding.progressCargandoReporte.visibility = View.VISIBLE
-        Toast.makeText(requireContext(), "Generando PDF para descargar...", Toast.LENGTH_SHORT).show()
+        Toast.makeText(requireContext(), "Guardando PDF...", Toast.LENGTH_SHORT).show()
 
         lifecycleScope.launch(Dispatchers.IO) {
             try {
@@ -172,23 +182,16 @@ class DetalleReporteIAFragment : Fragment() {
                     cargarBitmap(source)?.let { bitmapsFinal.add(it) }
                 }
 
-                // 2. Generar en un archivo temporal primero
-                val cod = m.codigoMantenimiento.ifBlank { "DOC" }
-                val fileName = "Reporte_$cod.pdf"
-                val tempFile = File(requireContext().cacheDir, fileName)
-                
-                FileOutputStream(tempFile).use { outputStream ->
+                // 2. Escribir directamente al URI seleccionado
+                requireContext().contentResolver.openOutputStream(uri)?.use { outputStream ->
                     PdfGenerator(requireContext()).generateMaintenanceReport(
                         outputStream, m, r, bitmapsReporte, bitmapsFinal
                     )
                 }
 
-                // 3. Guardar en carpeta de descargas usando MediaStore
-                guardarPdfEnDescargas(tempFile, fileName)
-
                 withContext(Dispatchers.Main) {
                     binding.progressCargandoReporte.visibility = View.GONE
-                    Toast.makeText(requireContext(), "PDF guardado en Descargas", Toast.LENGTH_LONG).show()
+                    Toast.makeText(requireContext(), "PDF guardado correctamente", Toast.LENGTH_LONG).show()
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
@@ -196,31 +199,6 @@ class DetalleReporteIAFragment : Fragment() {
                     Toast.makeText(requireContext(), "Error al guardar PDF: ${e.message}", Toast.LENGTH_LONG).show()
                 }
             }
-        }
-    }
-
-    private fun guardarPdfEnDescargas(file: File, fileName: String) {
-        val resolver = requireContext().contentResolver
-        val contentValues = ContentValues().apply {
-            put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
-            put(MediaStore.MediaColumns.MIME_TYPE, "application/pdf")
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
-            }
-        }
-
-        val uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
-        if (uri != null) {
-            resolver.openOutputStream(uri)?.use { outputStream ->
-                file.inputStream().use { inputStream ->
-                    inputStream.copyTo(outputStream)
-                }
-            }
-        } else {
-            // Fallback para versiones antiguas o errores
-            val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-            val destinationFile = File(downloadsDir, fileName)
-            file.copyTo(destinationFile, overwrite = true)
         }
     }
 

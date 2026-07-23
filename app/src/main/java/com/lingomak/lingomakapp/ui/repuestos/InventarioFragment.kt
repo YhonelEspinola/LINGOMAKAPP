@@ -11,6 +11,7 @@ import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.activity.result.contract.ActivityResultContracts
 import com.lingomak.lingomakapp.data.model.RepuestoModel
 import com.lingomak.lingomakapp.databinding.FragmentInventarioBinding
 import com.lingomak.lingomakapp.ui.dashboard.DashboardAdminActivity
@@ -39,6 +40,19 @@ class InventarioFragment : Fragment() {
     private val viewModel: InventarioViewModel by activityViewModels()
 
     private lateinit var adapter: RepuestosAdapter
+
+    private val createDocumentLauncher = registerForActivityResult(ActivityResultContracts.CreateDocument("text/csv")) { uri ->
+        uri?.let {
+            val data = viewModel.repuestos.value ?: emptyList()
+            val header = "Código Interno,Nombre,Categoría,Marca,Stock Actual,Stock Mínimo,Stock Máximo,Ubicación,Estado,Proveedor Nombre,Proveedor Contacto,Fecha de Registro"
+            val rows = data.map {
+                val fecha = it.fechaRegistro?.let { d -> java.text.SimpleDateFormat("yyyy-MM-dd HH:mm", java.util.Locale.getDefault()).format(d) } ?: ""
+                "${CsvExporter.escapeCsv(it.codigoInterno)},${CsvExporter.escapeCsv(it.nombre)},${CsvExporter.escapeCsv(it.categoria)},${CsvExporter.escapeCsv(it.marca)},${it.stockActual},${it.stockMinimo},${it.stockMaximo},${CsvExporter.escapeCsv(it.ubicacionAlmacen)},${CsvExporter.escapeCsv(it.estado)},${CsvExporter.escapeCsv(it.proveedorNombre)},${CsvExporter.escapeCsv(it.proveedorContacto)},$fecha"
+            }
+            val csvContent = header + "\n" + rows.joinToString("\n")
+            CsvExporter.saveCsvToUri(requireContext(), it, csvContent)
+        }
+    }
 
     // Categorías disponibles para el Spinner de filtro.
     // Ajusta esta lista a las categorías reales de tu negocio.
@@ -233,7 +247,7 @@ class InventarioFragment : Fragment() {
 
         binding.btnExportarCsv.setOnClickListener {
             val data = viewModel.repuestos.value ?: emptyList()
-            CsvExporter.exportInventario(requireContext(), data)
+            CsvExporter.exportInventario(requireContext(), data, createDocumentLauncher)
         }
     }
 

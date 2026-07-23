@@ -11,6 +11,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.activity.result.contract.ActivityResultContracts
 import com.lingomak.lingomakapp.R
 import com.lingomak.lingomakapp.data.model.MantenimientoModel
 import com.lingomak.lingomakapp.databinding.FragmentMantenimientoBinding
@@ -33,6 +34,37 @@ class MantenimientoFragment : Fragment() {
     private var fechaFin: Long = Long.MAX_VALUE
 
     private lateinit var adapter: MantenimientoAdapter
+
+    private val createDocumentLauncher = registerForActivityResult(ActivityResultContracts.CreateDocument("text/csv")) { uri ->
+        uri?.let {
+            val query = binding.etBuscarMantenimiento.text.toString().trim()
+            var listaFiltrada = listaCompleta
+
+            if (filtroTipo != "TODOS") {
+                listaFiltrada = listaFiltrada.filter { it.tipoMantenimiento == filtroTipo }
+            }
+            if (filtroEstado != "TODOS") {
+                listaFiltrada = listaFiltrada.filter { it.estado == filtroEstado }
+            }
+            if (query.isNotEmpty()) {
+                listaFiltrada = listaFiltrada.filter {
+                    it.codigoMantenimiento.contains(query, ignoreCase = true) ||
+                            it.nombreMaquinaria.contains(query, ignoreCase = true) ||
+                            it.descripcion.contains(query, ignoreCase = true)
+                }
+            }
+            
+            listaFiltrada = filtrarPorFecha(listaFiltrada)
+            
+            val header = "Código,Tipo,Máquina,Descripción,Fecha Programada,Fecha Realizada,Estado,Responsable,Prioridad,Costo Estimado,Costo Real,Horómetro Programado,Horómetro Real"
+            val rows = listaFiltrada.map {
+                "${CsvExporter.escapeCsv(it.codigoMantenimiento)},${CsvExporter.escapeCsv(it.tipoMantenimiento)},${CsvExporter.escapeCsv(it.nombreMaquinaria)},${CsvExporter.escapeCsv(it.descripcion)},${CsvExporter.escapeCsv(it.fechaProgramada)},${CsvExporter.escapeCsv(it.fechaRealizada)},${CsvExporter.escapeCsv(it.estado)},${CsvExporter.escapeCsv(it.responsable)},${CsvExporter.escapeCsv(it.prioridad)},${it.costoEstimado},${it.costoReal},${it.horometroProgramado},${it.horometroReal}"
+            }
+            val csvContent = header + "\n" + rows.joinToString("\n")
+            
+            CsvExporter.saveCsvToUri(requireContext(), it, csvContent)
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -159,7 +191,7 @@ class MantenimientoFragment : Fragment() {
             // Filtro por fecha para la exportación
             listaFiltrada = filtrarPorFecha(listaFiltrada)
             
-            CsvExporter.exportMantenimiento(requireContext(), listaFiltrada)
+            CsvExporter.exportMantenimiento(requireContext(), listaFiltrada, createDocumentLauncher)
         }
     }
 

@@ -10,6 +10,7 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.activity.result.contract.ActivityResultContracts
 import com.lingomak.lingomakapp.R
 import com.lingomak.lingomakapp.databinding.FragmentMovimientosGlobalBinding
 import com.lingomak.lingomakapp.ui.dashboard.DashboardAdminActivity
@@ -23,6 +24,24 @@ class MovimientosGlobalFragment : Fragment() {
 
     private val viewModel: MovimientosGlobalViewModel by viewModels()
     private lateinit var adapter: MovimientosGlobalAdapter
+
+    private val createDocumentLauncher = registerForActivityResult(ActivityResultContracts.CreateDocument("text/csv")) { uri ->
+        uri?.let {
+            val data = viewModel.movimientosFiltrados.value ?: emptyList()
+            val header = "Fecha,Tipo,Nombre del Repuesto,Cantidad,Destino,Registrado por,Orden Mantenimiento,Máquina,Observación"
+            val rows = data.map { (mov, nombre) ->
+                val fecha = mov.fecha?.let { d -> java.text.SimpleDateFormat("yyyy-MM-dd HH:mm", java.util.Locale.getDefault()).format(d) } ?: ""
+                val destino = when(mov.destinoSalida) {
+                    "CONSUMO_INTERNO" -> "Consumo Interno"
+                    "DISTRIBUCION_EXTERNA" -> "Distribución Externa"
+                    else -> mov.destinoSalida
+                }
+                "${fecha},${CsvExporter.escapeCsv(mov.tipo)},${CsvExporter.escapeCsv(nombre)},${mov.cantidad},${CsvExporter.escapeCsv(destino)},${CsvExporter.escapeCsv(mov.registradoPor)},${CsvExporter.escapeCsv(mov.ordenMantenimientoUid ?: "")},${CsvExporter.escapeCsv(mov.maquinariaUid ?: "")},${CsvExporter.escapeCsv(mov.observacion)}"
+            }
+            val csvContent = header + "\n" + rows.joinToString("\n")
+            CsvExporter.saveCsvToUri(requireContext(), it, csvContent)
+        }
+    }
 
     private var filtroInicialTexto: String = ""
 
@@ -110,7 +129,7 @@ class MovimientosGlobalFragment : Fragment() {
 
         binding.btnExportarCsv.setOnClickListener {
             val data = viewModel.movimientosFiltrados.value ?: emptyList()
-            CsvExporter.exportMovimientos(requireContext(), data)
+            CsvExporter.exportMovimientos(requireContext(), data, createDocumentLauncher)
         }
         
         validarAccesoAdmin()
