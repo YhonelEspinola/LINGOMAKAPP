@@ -21,6 +21,8 @@ class CambiarPasswordFragment : Fragment() {
     private val auth = FirebaseAuth.getInstance()
     private val database = FirebaseFirestore.getInstance()
 
+    private var modoForzado = true
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -28,6 +30,8 @@ class CambiarPasswordFragment : Fragment() {
     ): View {
 
         _binding = FragmentCambiarPasswordBinding.inflate(inflater, container, false)
+
+        modoForzado = arguments?.getBoolean("modoForzado", true) ?: true
 
         configurarEventos()
 
@@ -103,14 +107,17 @@ class CambiarPasswordFragment : Fragment() {
                             Toast.LENGTH_SHORT
                         ).show()
 
-                        startActivity(
-                            Intent(
-                                requireContext(),
-                                DashboardOperarioActivity::class.java
+                        if (modoForzado) {
+                            startActivity(
+                                Intent(
+                                    requireContext(),
+                                    DashboardOperarioActivity::class.java
+                                )
                             )
-                        )
-
-                        requireActivity().finish()
+                            requireActivity().finish()
+                        } else {
+                            parentFragmentManager.popBackStack()
+                        }
                     }
                     .addOnFailureListener { exception ->
                         mostrarCargando(false)

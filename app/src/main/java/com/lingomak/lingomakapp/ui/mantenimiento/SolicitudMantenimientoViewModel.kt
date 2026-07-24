@@ -94,6 +94,7 @@ class SolicitudMantenimientoViewModel : ViewModel() {
 
                 _cargando.postValue(false)
                 _solicitudRechazada.postValue(true)
+                listarSolicitudesPendientes()
             },
 
             onError = { error ->

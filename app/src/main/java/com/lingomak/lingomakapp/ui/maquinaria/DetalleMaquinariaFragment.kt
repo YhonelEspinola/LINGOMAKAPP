@@ -4,15 +4,23 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import com.bumptech.glide.Glide
 import com.lingomak.lingomakapp.R
+import com.lingomak.lingomakapp.data.model.MaquinariaModel
 import com.lingomak.lingomakapp.databinding.FragmentDetalleMaquinariaBinding
+import com.lingomak.lingomakapp.ui.dashboard.DashboardAdminActivity
 
 class DetalleMaquinariaFragment : Fragment() {
 
     private var _binding: FragmentDetalleMaquinariaBinding? = null
     private val binding get() = _binding!!
+
+    private val viewModel: MaquinariaViewModel by viewModels()
+    private var uid: String = ""
+    private var maquinariaActual: MaquinariaModel? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -20,30 +28,29 @@ class DetalleMaquinariaFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentDetalleMaquinariaBinding.inflate(inflater, container, false)
+        uid = arguments?.getString("uid") ?: ""
 
-        cargarDatos()
+        configurarBotones()
+        observarViewModel()
 
         return binding.root
     }
 
-    private fun cargarDatos() {
-        val nombre = arguments?.getString("nombre") ?: ""
-        val codigo = arguments?.getString("codigoMaquinaria") ?: ""
-        val tipo = arguments?.getString("tipo") ?: ""
-        val marca = arguments?.getString("marca") ?: ""
-        val modelo = arguments?.getString("modelo") ?: ""
-        val placaSerie = arguments?.getString("placaSerie") ?: ""
-        val anio = arguments?.getInt("anio") ?: 0
-        val estado = arguments?.getString("estado") ?: ""
-        val horometroActual = arguments?.getInt("horometroActual") ?: 0
-        val horometroUltimo = arguments?.getInt("horometroUltimoMantenimiento") ?: 0
-        val ubicacion = arguments?.getString("ubicacionActual") ?: ""
-        val observaciones = arguments?.getString("observaciones") ?: ""
-        val imagenUrl = arguments?.getString("imagenUrl") ?: ""
+    private fun observarViewModel() {
+        if (uid.isNotEmpty()) {
+            viewModel.obtenerMaquinariaPorUid(uid).observe(viewLifecycleOwner) { maquinaria ->
+                maquinaria?.let {
+                    maquinariaActual = it
+                    pintarDatos(it)
+                }
+            }
+        }
+    }
 
-        if (imagenUrl.isNotEmpty()) {
+    private fun pintarDatos(maquinaria: MaquinariaModel) {
+        if (maquinaria.imagenUrl.isNotEmpty()) {
             Glide.with(this)
-                .load(imagenUrl)
+                .load(maquinaria.imagenUrl)
                 .centerCrop()
                 .placeholder(R.drawable.ic_maquinaria_placeholder)
                 .error(R.drawable.ic_maquinaria_placeholder)
@@ -52,42 +59,97 @@ class DetalleMaquinariaFragment : Fragment() {
             binding.imgDetalleMaquinaria.setImageResource(R.drawable.ic_maquinaria_placeholder)
         }
 
-        binding.tvNombreDetalleMaquinaria.text = nombre
-        binding.tvCodigoDetalleMaquinaria.text = "CÓDIGO: $codigo"
-        binding.tvEstadoDetalleMaquinaria.text = estado
+        binding.tvNombreDetalleMaquinaria.text = maquinaria.nombre
+        binding.tvCodigoDetalleMaquinaria.text = "CÓDIGO: ${maquinaria.codigoMaquinaria}"
+        binding.tvEstadoDetalleMaquinaria.text = maquinaria.estado
         
         // Aplicar color según estado
-        val colorEstado = when(estado) {
+        val colorEstado = when(maquinaria.estado) {
             "OPERATIVA" -> requireContext().getColor(R.color.success)
             "INACTIVA" -> requireContext().getColor(R.color.danger)
             else -> requireContext().getColor(R.color.warning)
         }
         binding.tvEstadoDetalleMaquinaria.setTextColor(colorEstado)
 
-        binding.tvTipoDetalleMaquinaria.text = tipo
-        binding.tvMarcaDetalleMaquinaria.text = marca
-        binding.tvModeloDetalleMaquinaria.text = modelo
-        binding.tvAnioDetalleMaquinaria.text = anio.toString()
-        binding.tvPlacaDetalleMaquinaria.text = placaSerie
-        binding.tvHorometroDetalleMaquinaria.text = "$horometroActual h"
-        binding.tvHorometroUltimoDetalleMaquinaria.text = "$horometroUltimo h"
-        binding.tvUbicacionDetalleMaquinaria.text = ubicacion
-        binding.tvObservacionesDetalleMaquinaria.text = observaciones.ifEmpty { "Sin observaciones registradas." }
+        binding.tvTipoDetalleMaquinaria.text = maquinaria.tipo
+        binding.tvMarcaDetalleMaquinaria.text = maquinaria.marca
+        binding.tvModeloDetalleMaquinaria.text = maquinaria.modelo
+        binding.tvAnioDetalleMaquinaria.text = maquinaria.anio.toString()
+        binding.tvPlacaDetalleMaquinaria.text = maquinaria.placaSerie
+        binding.tvHorometroDetalleMaquinaria.text = "${maquinaria.horometroActual} h"
+        binding.tvHorometroUltimoDetalleMaquinaria.text = "${maquinaria.horometroUltimoMantenimiento} h"
+        binding.tvUbicacionDetalleMaquinaria.text = maquinaria.ubicacionActual
+        binding.tvObservacionesDetalleMaquinaria.text = maquinaria.observaciones.ifEmpty { "Sin observaciones registradas." }
 
-        // Configurar botones
+        // Actualizar label del botón Activar/Inactivar
+        val esInactiva = maquinaria.estado == "INACTIVA"
+        binding.btnCambiarEstado.text = if (esInactiva) "ACTIVAR MAQUINARIA" else "INACTIVAR MAQUINARIA"
+    }
+
+    private fun configurarBotones() {
+        val isAdmin = requireActivity() is DashboardAdminActivity
+        
+        binding.btnEditarMaquinaria.visibility = if (isAdmin) View.VISIBLE else View.GONE
+        binding.btnCambiarEstado.visibility = if (isAdmin) View.VISIBLE else View.GONE
+
         binding.btnVolverMaquinaria.setOnClickListener { parentFragmentManager.popBackStack() }
         
         binding.btnEditarMaquinaria.setOnClickListener {
-            // Lógica para ir a editar (si existe el fragmento)
             val fragment = EditarMaquinariaFragment()
             val bundle = Bundle()
-            bundle.putString("uid", arguments?.getString("uid"))
+            bundle.putString("uid", uid)
             fragment.arguments = bundle
+            
+            val containerId = if (isAdmin) R.id.fragmentContainerAdmin else R.id.containerOperario
+            
             parentFragmentManager.beginTransaction()
-                .replace((requireView().parent as ViewGroup).id, fragment)
+                .replace(containerId, fragment)
                 .addToBackStack(null)
                 .commit()
         }
+
+        binding.btnCambiarEstado.setOnClickListener {
+            maquinariaActual?.let { mostrarDialogoCambiarEstado(it) }
+        }
+    }
+
+    private fun mostrarDialogoCambiarEstado(maquinaria: MaquinariaModel) {
+        if (maquinaria.estado == "EN_MANTENIMIENTO") {
+            androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                .setTitle("Acción no permitida")
+                .setMessage("La maquinaria se encuentra actualmente EN MANTENIMIENTO. Debe finalizar el mantenimiento correspondiente para cambiar su estado.")
+                .setPositiveButton("Entendido", null)
+                .show()
+            return
+        }
+
+        val esInactiva = maquinaria.estado == "INACTIVA"
+        val titulo = if (esInactiva) "Activar maquinaria" else "Inactivar maquinaria"
+        val mensaje = if (esInactiva) "¿Desea activar la maquinaria ${maquinaria.nombre}? Volverá al estado OPERATIVA." 
+                      else "¿Desea inactivar la maquinaria ${maquinaria.nombre}?"
+        val nuevoEstado = if (esInactiva) "OPERATIVA" else "INACTIVA"
+
+        androidx.appcompat.app.AlertDialog.Builder(requireContext())
+            .setTitle(titulo)
+            .setMessage(mensaje)
+            .setPositiveButton("Confirmar") { dialog, _ ->
+                viewModel.cambiarEstadoMaquinaria(
+                    uid = maquinaria.uid,
+                    nuevoEstado = nuevoEstado,
+                    onSuccess = {
+                        Toast.makeText(
+                            requireContext(),
+                            "Estado actualizado correctamente",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                )
+                dialog.dismiss()
+            }
+            .setNegativeButton("Cancelar") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .show()
     }
 
     override fun onDestroyView() {

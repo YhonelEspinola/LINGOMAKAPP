@@ -41,9 +41,8 @@ class SolicitudMantenimientoRepository {
                         document.toObject(
                             SolicitudMantenimientoModel::class.java
                         )
-                    }.sortedBy { solicitud ->
-
-                        solicitud.horasRestantes
+                    }.sortedByDescending { solicitud ->
+                        solicitud.fechaRegistro
                     }
 
                 onSuccess(solicitudes)

@@ -12,6 +12,8 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.chip.Chip
+import com.lingomak.lingomakapp.R
 import com.lingomak.lingomakapp.data.model.AlertaModel
 import com.lingomak.lingomakapp.data.model.MantenimientoModel
 import com.lingomak.lingomakapp.databinding.FragmentAlertasBinding
@@ -30,6 +32,10 @@ class AlertasFragment : Fragment() {
     private val viewModel: AlertasViewModel by viewModels()
 
     private lateinit var adapter: AlertasAdapter
+    
+    private var listaOriginal: List<AlertaModel> = emptyList()
+    private var categoriaFiltro: String = "Todas"
+    private var subtipoFiltro: String? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -39,6 +45,7 @@ class AlertasFragment : Fragment() {
         _binding = FragmentAlertasBinding.inflate(inflater, container, false)
 
         configurarRecyclerView()
+        configurarFiltros()
         observarViewModel()
         solicitarPermisoNotificaciones()
         
@@ -56,16 +63,93 @@ class AlertasFragment : Fragment() {
         binding.rvAlertas.adapter = adapter
     }
 
+    private fun configurarFiltros() {
+        binding.cgCategorias.setOnCheckedStateChangeListener { _, checkedIds ->
+            val chipId = checkedIds.firstOrNull()
+            categoriaFiltro = when (chipId) {
+                R.id.chipMantenimiento -> "MANTENIMIENTO"
+                R.id.chipStock -> "INVENTARIO"
+                R.id.chipMovimientos -> "MOVIMIENTOS"
+                else -> "Todas"
+            }
+            subtipoFiltro = null
+            actualizarSubtipos()
+            aplicarFiltros()
+        }
+    }
+
+    private fun actualizarSubtipos() {
+        binding.cgSubtipos.removeAllViews()
+        val subtipos = when (categoriaFiltro) {
+            "MANTENIMIENTO" -> listOf("VENCIDO", "EN_PROCESO", "PROXIMO", "MANTENIMIENTO_PENDIENTE", "SOLICITUD_MANTENIMIENTO")
+            "INVENTARIO" -> listOf("STOCK_AGOTADO", "STOCK_CRITICO", "STOCK_BAJO")
+            "MOVIMIENTOS" -> listOf("ALTO_CONSUMO", "SIN_ROTACION")
+            else -> emptyList()
+        }
+
+        if (subtipos.isEmpty()) {
+            binding.scrollSubtipos.visibility = View.GONE
+        } else {
+            binding.scrollSubtipos.visibility = View.VISIBLE
+            
+            // Agregar opción "Todos los de esta categoría"
+            val chipTodos = crearChipSubtipo("Todos los de $categoriaFiltro", null)
+            chipTodos.isChecked = true
+            binding.cgSubtipos.addView(chipTodos)
+
+            subtipos.forEach { tipo ->
+                binding.cgSubtipos.addView(crearChipSubtipo(tipo.replace("_", " "), tipo))
+            }
+        }
+    }
+
+    private fun crearChipSubtipo(texto: String, tipoValor: String?): Chip {
+        return Chip(requireContext()).apply {
+            text = texto
+            isCheckable = true
+            setChipBackgroundColorResource(R.color.selector_chip_choice)
+            setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.selector_chip_text))
+            setOnCheckedChangeListener { _, isChecked ->
+                if (isChecked) {
+                    subtipoFiltro = tipoValor
+                    aplicarFiltros()
+                }
+            }
+        }
+    }
+
+    private fun aplicarFiltros() {
+        var listaFiltrada = if (categoriaFiltro == "Todas") {
+            listaOriginal
+        } else {
+            listaOriginal.filter { it.categoria == categoriaFiltro }
+        }
+
+        subtipoFiltro?.let { tipo ->
+            listaFiltrada = listaFiltrada.filter { it.tipo == tipo }
+        }
+
+        adapter.actualizarLista(listaFiltrada)
+        
+        if (listaFiltrada.isEmpty()) {
+            binding.rvAlertas.visibility = View.GONE
+            binding.tvSinAlertas.visibility = View.VISIBLE
+        } else {
+            binding.rvAlertas.visibility = View.VISIBLE
+            binding.tvSinAlertas.visibility = View.GONE
+        }
+    }
+
     private fun observarViewModel() {
         viewModel.listaAlertas.observe(viewLifecycleOwner) { lista ->
+            listaOriginal = lista
             if (lista.isEmpty()) {
                 binding.rvAlertas.visibility = View.GONE
                 binding.tvSinAlertas.visibility = View.VISIBLE
                 actualizarContadores(0, 0, 0)
+                adapter.actualizarLista(emptyList())
             } else {
-                binding.rvAlertas.visibility = View.VISIBLE
-                binding.tvSinAlertas.visibility = View.GONE
-                adapter.actualizarLista(lista)
+                aplicarFiltros()
                 
                 val criticas = lista.count { 
                     it.tipo == "STOCK_CRITICO" || 

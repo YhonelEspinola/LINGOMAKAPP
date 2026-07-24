@@ -46,7 +46,7 @@ class MantenimientoAdapter(
                 }
 
                 when (mantenimiento.estado) {
-                    "PENDIENTE" -> {
+                    "PENDIENTE", "VENCIDO", "CANCELADO" -> {
                         popupMenu.menu.findItem(R.id.opcion_finalizar).isVisible = false
                     }
                     "EN_PROCESO" -> {
@@ -54,7 +54,7 @@ class MantenimientoAdapter(
                         popupMenu.menu.findItem(R.id.opcion_cambiar_estado).isVisible = false
                         popupMenu.menu.findItem(R.id.opcion_cancelar).isVisible = false
                     }
-                    "FINALIZADO", "VENCIDO", "CANCELADO" -> {
+                    "FINALIZADO" -> {
                         popupMenu.menu.findItem(R.id.opcion_editar).isVisible = false
                         popupMenu.menu.findItem(R.id.opcion_cambiar_estado).isVisible = false
                         popupMenu.menu.findItem(R.id.opcion_cancelar).isVisible = false
@@ -84,7 +84,6 @@ class MantenimientoAdapter(
             when (tipo) {
                 "PREVENTIVO" -> binding.tvTipoMantenimiento.setTextColor(Color.rgb(37, 99, 235))
                 "CORRECTIVO" -> binding.tvTipoMantenimiento.setTextColor(Color.rgb(234, 88, 12))
-                "PREDICTIVO" -> binding.tvTipoMantenimiento.setTextColor(Color.rgb(124, 58, 237))
                 else -> binding.tvTipoMantenimiento.setTextColor(Color.rgb(55, 65, 81))
             }
         }

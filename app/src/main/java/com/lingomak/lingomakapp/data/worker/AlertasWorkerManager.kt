@@ -22,7 +22,7 @@ object AlertasWorkerManager {
 
         WorkManager.getInstance(context).enqueueUniquePeriodicWork(
             NOMBRE_TRABAJO_ALERTAS,
-            ExistingPeriodicWorkPolicy.KEEP,
+            ExistingPeriodicWorkPolicy.REPLACE,
             trabajoAlertas
         )
     }

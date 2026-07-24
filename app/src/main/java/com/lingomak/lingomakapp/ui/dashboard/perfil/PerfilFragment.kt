@@ -9,7 +9,9 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.google.firebase.messaging.FirebaseMessaging
+import com.lingomak.lingomakapp.R
 import com.lingomak.lingomakapp.databinding.FragmentPerfilBinding
+import com.lingomak.lingomakapp.ui.auth.CambiarPasswordFragment
 import com.lingomak.lingomakapp.ui.auth.LoginActivity
 
 class PerfilFragment : Fragment() {
@@ -31,6 +33,18 @@ class PerfilFragment : Fragment() {
         observarViewModel()
 
         viewModel.cargarUsuarioLogado()
+
+        binding.btnCambiarPassword.setOnClickListener {
+            val fragment = CambiarPasswordFragment().apply {
+                arguments = Bundle().apply {
+                    putBoolean("modoForzado", false)
+                }
+            }
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragmentContainerAdmin, fragment)
+                .addToBackStack(null)
+                .commit()
+        }
 
         binding.btnCerrarSesion.setOnClickListener {
 

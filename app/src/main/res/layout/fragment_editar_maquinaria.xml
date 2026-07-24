@@ -172,6 +172,16 @@
                     android:padding="12dp"
                     android:singleLine="true" />
 
+                <EditText
+                    android:id="@+id/etIntervaloMantenimiento"
+                    android:layout_width="match_parent"
+                    android:layout_height="55dp"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/bg_edit_text"
+                    android:hint="Intervalo de mantenimiento (horas)"
+                    android:inputType="number"
+                    android:padding="12dp"
+                    android:singleLine="true" />
 
                 <EditText
                     android:id="@+id/etObservacionesMaquinaria"

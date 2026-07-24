@@ -1,25 +1,35 @@
 package com.lingomak.lingomakapp.ui.dashboard
 
+import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
 import com.lingomak.lingomakapp.R
 import com.lingomak.lingomakapp.databinding.DashboardOperarioBinding
 import com.lingomak.lingomakapp.ui.alertas.AlertasFragment
+import com.lingomak.lingomakapp.ui.auth.LoginActivity
 import com.lingomak.lingomakapp.ui.dashboard.home.HomeOperarioFragment
 import com.lingomak.lingomakapp.ui.dashboard.perfil.PerfilOperarioFragment
 import com.lingomak.lingomakapp.ui.mantenimiento.MantenimientoFragment
 import com.lingomak.lingomakapp.ui.movimientos.EscaneoQRFragment
 import com.lingomak.lingomakapp.ui.maquinaria.OperarioMaquinariaFragment
 import com.lingomak.lingomakapp.ui.repuestos.InventarioOpFragment
+import com.lingomak.lingomakapp.utils.Constants
 
 class DashboardOperarioActivity : AppCompatActivity() {
 
     private lateinit var binding: DashboardOperarioBinding
+    private var userListener: ListenerRegistration? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = DashboardOperarioBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        escucharEstadoUsuario()
 
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
@@ -29,6 +39,38 @@ class DashboardOperarioActivity : AppCompatActivity() {
 
         configurarToolbar()
         configurarNavigationDrawer()
+    }
+
+    private fun escucharEstadoUsuario() {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        
+        userListener = FirebaseFirestore.getInstance()
+            .collection(Constants.USUARIOS)
+            .document(uid)
+            .addSnapshotListener { snapshot, _ ->
+                val estado = snapshot?.getString("estado")
+                if (estado != null && estado.equals("INACTIVO", ignoreCase = true)) {
+                    forzarLogout()
+                }
+            }
+    }
+
+    private fun forzarLogout() {
+        userListener?.remove()
+        FirebaseAuth.getInstance().signOut()
+        
+        Toast.makeText(this, "Tu cuenta ha sido desactivada", Toast.LENGTH_LONG).show()
+        
+        val intent = Intent(this, LoginActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+        startActivity(intent)
+        finish()
+    }
+
+    override fun onDestroy() {
+        userListener?.remove()
+        super.onDestroy()
     }
 
     private fun configurarToolbar() {

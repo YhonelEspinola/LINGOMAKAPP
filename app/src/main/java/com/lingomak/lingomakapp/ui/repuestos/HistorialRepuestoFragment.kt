@@ -4,12 +4,16 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.lingomak.lingomakapp.R
 import com.lingomak.lingomakapp.databinding.FragmentMovimientosBinding
+import com.lingomak.lingomakapp.ui.dashboard.DashboardAdminActivity
+import com.lingomak.lingomakapp.utils.CsvExporter
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -20,6 +24,29 @@ class HistorialRepuestoFragment : Fragment() {
 
     private val viewModel: HistorialRepuestoViewModel by viewModels()
     private lateinit var adapter: HistorialRepuestoAdapter
+
+    private val createDocumentLauncher = registerForActivityResult(ActivityResultContracts.CreateDocument("text/csv")) { uri ->
+        uri?.let {
+            val movements = viewModel.historialFiltrado.value ?: emptyList()
+            val dataToExport = movements.map { it to nombreRepuesto }
+            val csvContent = buildCsvContent(dataToExport)
+            CsvExporter.saveCsvToUri(requireContext(), it, csvContent)
+        }
+    }
+
+    private fun buildCsvContent(data: List<Pair<com.lingomak.lingomakapp.data.model.MovimientoModel, String>>): String {
+        val header = "Fecha,Tipo,Nombre del Repuesto,Cantidad,Destino,Registrado por,Orden Mantenimiento,Máquina,Observación"
+        val rows = data.map { (mov, nombre) ->
+            val fecha = mov.fecha?.let { d -> SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(d) } ?: ""
+            val destino = when(mov.destinoSalida) {
+                "CONSUMO_INTERNO" -> "Consumo Interno"
+                "DISTRIBUCION_EXTERNA" -> "Distribución Externa"
+                else -> mov.destinoSalida
+            }
+            "${fecha},${CsvExporter.escapeCsv(mov.tipo)},${CsvExporter.escapeCsv(nombre)},${mov.cantidad},${CsvExporter.escapeCsv(destino)},${CsvExporter.escapeCsv(mov.registradoPor)},${CsvExporter.escapeCsv(mov.ordenMantenimientoUid ?: "")},${CsvExporter.escapeCsv(mov.maquinariaUid ?: "")},${CsvExporter.escapeCsv(mov.observacion)}"
+        }
+        return header + "\n" + rows.joinToString("\n")
+    }
 
     private var repuestoUid: String = ""
     private var nombreRepuesto: String = ""
@@ -47,8 +74,14 @@ class HistorialRepuestoFragment : Fragment() {
         
         setupUI()
         observarViewModel()
+        validarAccesoAdmin()
         
         return binding.root
+    }
+
+    private fun validarAccesoAdmin() {
+        val isAdmin = requireActivity() is DashboardAdminActivity
+        binding.btnExportarCsv.visibility = if (isAdmin) View.VISIBLE else View.GONE
     }
 
     private fun setupUI() {
@@ -74,6 +107,16 @@ class HistorialRepuestoFragment : Fragment() {
             binding.tvTituloRepuesto.text = etiqueta
         }
         binding.selectorFechas.dispararSeleccionActual()
+
+        binding.btnExportarCsv.setOnClickListener {
+            val movements = viewModel.historialFiltrado.value ?: emptyList()
+            if (movements.isNotEmpty()) {
+                val dataToExport = movements.map { it to nombreRepuesto }
+                CsvExporter.showExportDialog(requireContext(), "Historial_${nombreRepuesto.replace(" ", "_")}.csv", buildCsvContent(dataToExport), createDocumentLauncher)
+            } else {
+                Toast.makeText(requireContext(), "No hay movimientos para exportar", Toast.LENGTH_SHORT).show()
+            }
+        }
 
         mostrarBannerAlerta()
     }

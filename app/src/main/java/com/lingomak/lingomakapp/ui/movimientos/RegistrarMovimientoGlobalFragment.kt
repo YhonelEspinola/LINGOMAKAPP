@@ -42,14 +42,7 @@ class RegistrarMovimientoGlobalFragment : Fragment() {
 
     private fun setupUI() {
         binding.rgTipo.setOnCheckedChangeListener { _, checkedId ->
-            if (checkedId == R.id.rbSalida) {
-                binding.tvLabelDestino.visibility = View.VISIBLE
-                binding.rgDestino.visibility = View.VISIBLE
-            } else {
-                binding.tvLabelDestino.visibility = View.GONE
-                binding.rgDestino.visibility = View.GONE
-                binding.rgDestino.clearCheck()
-            }
+            // Se quitó la selección manual de destino
         }
 
         binding.autoCompleteRepuesto.setOnItemClickListener { parent, _, position, _ ->
@@ -83,16 +76,7 @@ class RegistrarMovimientoGlobalFragment : Fragment() {
             }
 
             val tipo = if (binding.rbEntrada.isChecked) "ENTRADA" else "SALIDA"
-            val destinoSalida = if (tipo == "SALIDA") {
-                when (binding.rgDestino.checkedRadioButtonId) {
-                    R.id.rbConsumoInterno -> "CONSUMO_INTERNO"
-                    R.id.rbDistribucionExterna -> "DISTRIBUCION_EXTERNA"
-                    else -> {
-                        Toast.makeText(requireContext(), "Seleccione el destino de la salida", Toast.LENGTH_SHORT).show()
-                        return@setOnClickListener
-                    }
-                }
-            } else ""
+            val destinoSalida = if (tipo == "SALIDA") "DISTRIBUCION_EXTERNA" else ""
 
             val registradoPor = FirebaseAuth.getInstance().currentUser?.uid ?: ""
 

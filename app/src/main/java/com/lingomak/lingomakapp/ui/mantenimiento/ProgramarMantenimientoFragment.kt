@@ -322,8 +322,7 @@ class ProgramarMantenimientoFragment : Fragment() {
 
         val tipos = listOf(
             "PREVENTIVO",
-            "CORRECTIVO",
-            "PREDICTIVO"
+            "CORRECTIVO"
         )
 
         binding.spTipoMantenimiento.adapter =
@@ -387,10 +386,14 @@ class ProgramarMantenimientoFragment : Fragment() {
                     .getItem(position)
                     .toString()
 
-            operarioSeleccionado =
-                listaOperarios.find {
-                    it.nombre == seleccion
-                }
+            if (seleccion == "Todos los operarios") {
+                operarioSeleccionado = UserModel(uid = "TODOS", nombre = "Todos los operarios")
+            } else {
+                operarioSeleccionado =
+                    listaOperarios.find {
+                        it.nombre == seleccion
+                    }
+            }
         }
     }
 
@@ -441,10 +444,8 @@ class ProgramarMantenimientoFragment : Fragment() {
                         it.estado == "ACTIVO"
                     }
 
-                val nombres =
-                    listaOperarios.map {
-                        it.nombre
-                    }
+                val nombres = mutableListOf("Todos los operarios")
+                nombres.addAll(listaOperarios.map { it.nombre })
 
                 val adapter = ArrayAdapter(
                     requireContext(),

@@ -54,15 +54,73 @@ class EditarMaquinariaFragment : Fragment() {
     ): View {
 
         _binding = FragmentEditarMaquinariaBinding.inflate(inflater, container, false)
+        uid = arguments?.getString("uid") ?: ""
 
         configurarSpinnerEstado()
         configurarSpinnerTipoMaquinaria()
         configurarSpinnerMarca()
-        cargarDatosRecibidos()
         configurarEventos()
         observarViewModel()
 
+        if (uid.isNotEmpty()) {
+            cargarDatosDesdeViewModel()
+        }
+
         return binding.root
+    }
+
+    private fun cargarDatosDesdeViewModel() {
+        viewModel.obtenerMaquinariaPorUid(uid).observe(viewLifecycleOwner) { maquinaria ->
+            maquinaria?.let { 
+                pintarDatos(it)
+            }
+        }
+    }
+
+    private fun pintarDatos(maquinaria: MaquinariaModel) {
+        codigoMaquinaria = maquinaria.codigoMaquinaria
+        imagenUrlActual = maquinaria.imagenUrl
+        fechaRegistro = maquinaria.fechaRegistro
+        registradoPor = maquinaria.registradoPor
+
+        binding.etNombreMaquinaria.setText(maquinaria.nombre)
+        binding.etModeloMaquinaria.setText(maquinaria.modelo)
+        binding.etPlacaSerie.setText(maquinaria.placaSerie)
+        binding.etAnioMaquinaria.setText(maquinaria.anio.toString())
+        binding.etHorometroActual.setText(maquinaria.horometroActual.toString())
+        binding.etHorometroUltimoMantenimiento.setText(maquinaria.horometroUltimoMantenimiento.toString())
+        binding.etUbicacionActual.setText(maquinaria.ubicacionActual)
+        binding.etIntervaloMantenimiento.setText(maquinaria.intervaloMantenimientoHoras.toString())
+        binding.etObservacionesMaquinaria.setText(maquinaria.observaciones)
+
+        val tiposAdapter = binding.spTipoMaquinaria.adapter
+        for (i in 0 until tiposAdapter.count) {
+            if (tiposAdapter.getItem(i).toString() == maquinaria.tipo) {
+                binding.spTipoMaquinaria.setSelection(i)
+                break
+            }
+        }
+
+        val estadosAdapter = binding.spEstadoMaquinaria.adapter
+        for (i in 0 until estadosAdapter.count) {
+            if (estadosAdapter.getItem(i).toString() == maquinaria.estado) {
+                binding.spEstadoMaquinaria.setSelection(i)
+                break
+            }
+        }
+
+        actualizarSpinnerMarcaParaTipo(maquinaria.tipo, maquinaria.marca)
+
+        if (imagenUrlActual.isNotEmpty()) {
+            Glide.with(this)
+                .load(imagenUrlActual)
+                .centerCrop()
+                .placeholder(R.drawable.ic_maquinaria_placeholder)
+                .error(R.drawable.ic_maquinaria_placeholder)
+                .into(binding.imgVistaPreviaMaquinaria)
+        } else {
+            binding.imgVistaPreviaMaquinaria.setImageResource(R.drawable.ic_maquinaria_placeholder)
+        }
     }
 
     private fun configurarSpinnerEstado() {
@@ -108,6 +166,33 @@ class EditarMaquinariaFragment : Fragment() {
         binding.spTipoMaquinaria.adapter = adapter
     }
 
+    private fun actualizarSpinnerMarcaParaTipo(tipo: String, marcaASeleccionar: String) {
+        val marcas = obtenerMarcasPorTipo(tipo)
+        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, marcas)
+        binding.spMarcaMaquinaria.adapter = adapter
+        
+        val pos = marcas.indexOf(marcaASeleccionar)
+        if (pos >= 0) binding.spMarcaMaquinaria.setSelection(pos)
+    }
+
+    private fun obtenerMarcasPorTipo(tipo: String): List<String> {
+        return when (tipo) {
+            "Excavadora" -> listOf("Seleccione una marca", "CAT", "Komatsu", "Hitachi", "Volvo", "Hyundai", "Doosan")
+            "Retroexcavadora" -> listOf("Seleccione una marca", "JCB", "CAT", "Case", "John Deere")
+            "Volquete" -> listOf("Seleccione una marca", "Volvo", "Scania", "Mercedes-Benz", "MAN", "Iveco")
+            "Cargador Frontal" -> listOf("Seleccione una marca", "CAT", "Komatsu", "Volvo", "John Deere")
+            "Motoniveladora" -> listOf("Seleccione una marca", "CAT", "Komatsu", "John Deere")
+            "Rodillo Compactador" -> listOf("Seleccione una marca", "Bomag", "Dynapac", "CAT")
+            "Tractor Oruga" -> listOf("Seleccione una marca", "CAT", "Komatsu", "John Deere")
+            "Camión Cisterna" -> listOf("Seleccione una marca", "Volvo", "Scania", "Mercedes-Benz")
+            "Camión Grúa" -> listOf("Seleccione una marca", "Volvo", "Scania", "Mercedes-Benz")
+            "Minicargador" -> listOf("Seleccione una marca", "Bobcat", "CAT", "JCB")
+            "Compresora" -> listOf("Seleccione una marca", "Atlas Copco", "Sullair", "Kaeser")
+            "Generador Eléctrico" -> listOf("Seleccione una marca", "Caterpillar", "Cummins", "Perkins")
+            else -> listOf("Seleccione una marca")
+        }
+    }
+
     private fun configurarSpinnerMarca() {
         binding.spTipoMaquinaria.onItemSelectedListener =
             object : AdapterView.OnItemSelectedListener {
@@ -119,22 +204,7 @@ class EditarMaquinariaFragment : Fragment() {
                     id: Long
                 ) {
                     val tipoSeleccionado = binding.spTipoMaquinaria.selectedItem.toString()
-
-                    val marcas = when (tipoSeleccionado) {
-                        "Excavadora" -> listOf("Seleccione una marca", "CAT", "Komatsu", "Hitachi", "Volvo", "Hyundai", "Doosan")
-                        "Retroexcavadora" -> listOf("Seleccione una marca", "JCB", "CAT", "Case", "John Deere")
-                        "Volquete" -> listOf("Seleccione una marca", "Volvo", "Scania", "Mercedes-Benz", "MAN", "Iveco")
-                        "Cargador Frontal" -> listOf("Seleccione una marca", "CAT", "Komatsu", "Volvo", "John Deere")
-                        "Motoniveladora" -> listOf("Seleccione una marca", "CAT", "Komatsu", "John Deere")
-                        "Rodillo Compactador" -> listOf("Seleccione una marca", "Bomag", "Dynapac", "CAT")
-                        "Tractor Oruga" -> listOf("Seleccione una marca", "CAT", "Komatsu", "John Deere")
-                        "Camión Cisterna" -> listOf("Seleccione una marca", "Volvo", "Scania", "Mercedes-Benz")
-                        "Camión Grúa" -> listOf("Seleccione una marca", "Volvo", "Scania", "Mercedes-Benz")
-                        "Minicargador" -> listOf("Seleccione una marca", "Bobcat", "CAT", "JCB")
-                        "Compresora" -> listOf("Seleccione una marca", "Atlas Copco", "Sullair", "Kaeser")
-                        "Generador Eléctrico" -> listOf("Seleccione una marca", "Caterpillar", "Cummins", "Perkins")
-                        else -> listOf("Seleccione una marca")
-                    }
+                    val marcas = obtenerMarcasPorTipo(tipoSeleccionado)
 
                     val adapter = ArrayAdapter(
                         requireContext(),
@@ -143,74 +213,10 @@ class EditarMaquinariaFragment : Fragment() {
                     )
 
                     binding.spMarcaMaquinaria.adapter = adapter
-
-                    val marcaActual = arguments?.getString("marca") ?: ""
-                    val posicionMarca = marcas.indexOf(marcaActual)
-
-                    if (posicionMarca >= 0) {
-                        binding.spMarcaMaquinaria.setSelection(posicionMarca)
-                    }
                 }
 
                 override fun onNothingSelected(parent: AdapterView<*>?) {}
             }
-    }
-
-    private fun cargarDatosRecibidos() {
-        uid = arguments?.getString("uid") ?: ""
-        codigoMaquinaria = arguments?.getString("codigoMaquinaria") ?: ""
-        imagenUrlActual = arguments?.getString("imagenUrl") ?: ""
-        fechaRegistro = arguments?.getString("fechaRegistro") ?: obtenerFechaActual()
-        registradoPor = arguments?.getString("registradoPor") ?: "ADMIN"
-
-        val nombre = arguments?.getString("nombre") ?: ""
-        val tipo = arguments?.getString("tipo") ?: ""
-        val modelo = arguments?.getString("modelo") ?: ""
-        val placaSerie = arguments?.getString("placaSerie") ?: ""
-        val anio = arguments?.getInt("anio") ?: 0
-        val estado = arguments?.getString("estado") ?: ""
-        val horometroActual = arguments?.getInt("horometroActual") ?: 0
-        val horometroUltimo = arguments?.getInt("horometroUltimoMantenimiento") ?: 0
-        val ubicacion = arguments?.getString("ubicacionActual") ?: ""
-        val observaciones = arguments?.getString("observaciones") ?: ""
-
-        binding.etNombreMaquinaria.setText(nombre)
-        binding.etModeloMaquinaria.setText(modelo)
-        binding.etPlacaSerie.setText(placaSerie)
-        binding.etAnioMaquinaria.setText(anio.toString())
-        binding.etHorometroActual.setText(horometroActual.toString())
-        binding.etHorometroUltimoMantenimiento.setText(horometroUltimo.toString())
-        binding.etUbicacionActual.setText(ubicacion)
-        binding.etObservacionesMaquinaria.setText(observaciones)
-
-
-        val tiposAdapter = binding.spTipoMaquinaria.adapter
-        for (i in 0 until tiposAdapter.count) {
-            if (tiposAdapter.getItem(i).toString() == tipo) {
-                binding.spTipoMaquinaria.setSelection(i)
-                break
-            }
-        }
-
-
-        val estadosAdapter = binding.spEstadoMaquinaria.adapter
-        for (i in 0 until estadosAdapter.count) {
-            if (estadosAdapter.getItem(i).toString() == estado) {
-                binding.spEstadoMaquinaria.setSelection(i)
-                break
-            }
-        }
-
-        if (imagenUrlActual.isNotEmpty()) {
-            Glide.with(this)
-                .load(imagenUrlActual)
-                .centerCrop()
-                .placeholder(R.drawable.ic_maquinaria_placeholder)
-                .error(R.drawable.ic_maquinaria_placeholder)
-                .into(binding.imgVistaPreviaMaquinaria)
-        } else {
-            binding.imgVistaPreviaMaquinaria.setImageResource(R.drawable.ic_maquinaria_placeholder)
-        }
     }
 
     private fun configurarEventos() {
@@ -241,6 +247,7 @@ class EditarMaquinariaFragment : Fragment() {
         val horometroActualTexto = binding.etHorometroActual.text.toString().trim()
         val horometroUltimoTexto = binding.etHorometroUltimoMantenimiento.text.toString().trim()
         val ubicacion = binding.etUbicacionActual.text.toString().trim()
+        val intervaloTexto = binding.etIntervaloMantenimiento.text.toString().trim()
         val observaciones = binding.etObservacionesMaquinaria.text.toString().trim()
 
         if (
@@ -250,7 +257,8 @@ class EditarMaquinariaFragment : Fragment() {
             placaSerie.isEmpty() ||
             anioTexto.isEmpty() ||
             horometroActualTexto.isEmpty() ||
-            ubicacion.isEmpty()
+            ubicacion.isEmpty() ||
+            intervaloTexto.isEmpty()
         ) {
             Toast.makeText(requireContext(), "Complete los campos obligatorios", Toast.LENGTH_SHORT).show()
             return
@@ -269,6 +277,7 @@ class EditarMaquinariaFragment : Fragment() {
         val anio = anioTexto.toIntOrNull()
         val horometroActual = horometroActualTexto.toIntOrNull()
         val horometroUltimo = horometroUltimoTexto.toIntOrNull() ?: 0
+        val intervalo = intervaloTexto.toIntOrNull()
 
         if (anio == null || anio <= 0) {
             Toast.makeText(requireContext(), "Ingrese un año válido", Toast.LENGTH_SHORT).show()
@@ -277,6 +286,11 @@ class EditarMaquinariaFragment : Fragment() {
 
         if (horometroActual == null || horometroActual < 0) {
             Toast.makeText(requireContext(), "Ingrese un horómetro válido", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        if (intervalo == null || intervalo <= 0) {
+            Toast.makeText(requireContext(), "Ingrese un intervalo de mantenimiento válido", Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -293,6 +307,7 @@ class EditarMaquinariaFragment : Fragment() {
             horometroActual = horometroActual,
             horometroUltimo = horometroUltimo,
             ubicacion = ubicacion,
+            intervalo = intervalo,
             observaciones = observaciones
         )
     }
@@ -308,6 +323,7 @@ class EditarMaquinariaFragment : Fragment() {
         horometroActual: Int,
         horometroUltimo: Int,
         ubicacion: String,
+        intervalo: Int,
         observaciones: String
     ) {
         val nuevaImagen = nuevaImagenUri
@@ -320,7 +336,7 @@ class EditarMaquinariaFragment : Fragment() {
                 onSuccess = { nuevaImagenUrl ->
                     actualizarFirestore(
                         nombre, tipo, marca, modelo, placaSerie, anio, estado,
-                        horometroActual, horometroUltimo, ubicacion, observaciones,
+                        horometroActual, horometroUltimo, ubicacion, intervalo, observaciones,
                         nuevaImagenUrl
                     )
                 }
@@ -329,7 +345,7 @@ class EditarMaquinariaFragment : Fragment() {
 
             actualizarFirestore(
                 nombre, tipo, marca, modelo, placaSerie, anio, estado,
-                horometroActual, horometroUltimo, ubicacion, observaciones,
+                horometroActual, horometroUltimo, ubicacion, intervalo, observaciones,
                 imagenUrlActual
             )
         }
@@ -346,11 +362,10 @@ class EditarMaquinariaFragment : Fragment() {
         horometroActual: Int,
         horometroUltimo: Int,
         ubicacion: String,
+        intervalo: Int,
         observaciones: String,
         imagenUrl: String
     ) {
-        val actualizadoPor = FirebaseAuth.getInstance().currentUser?.email ?: "ADMIN"
-
         val maquinariaActualizada = MaquinariaModel(
             uid = uid,
             codigoMaquinaria = codigoMaquinaria,
@@ -363,6 +378,7 @@ class EditarMaquinariaFragment : Fragment() {
             estado = estado,
             horometroActual = horometroActual,
             horometroUltimoMantenimiento = horometroUltimo,
+            intervaloMantenimientoHoras = intervalo,
             ubicacionActual = ubicacion,
             imagenUrl = imagenUrl,
             observaciones = observaciones,

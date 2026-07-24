@@ -96,17 +96,21 @@ class AlertasService(
             }
 
             if (
-                mantenimiento.estado == "PENDIENTE" &&
-                DateUtils.mantenimientoProximo(mantenimiento.fechaProgramada)
+                mantenimiento.estado == "PENDIENTE"
             ) {
+                val esProximo = DateUtils.mantenimientoProximo(mantenimiento.fechaProgramada)
+                val titulo = if (esProximo) "Mantenimiento próximo" else "Mantenimiento asignado"
+                val icono = if (esProximo) "⏳" else "📋"
+                val tipo = if (esProximo) "PROXIMO" else "MANTENIMIENTO_PENDIENTE"
+
                 listaAlertas.add(
                     AlertaModel(
                         uid = mantenimiento.uid,
                         categoria = "MANTENIMIENTO",
-                        icono = "⏳",
-                        titulo = "Mantenimiento próximo",
-                        mensaje = "La maquinaria ${mantenimiento.nombreMaquinaria} tiene un mantenimiento próximo a vencer.",
-                        tipo = "PROXIMO",
+                        icono = icono,
+                        titulo = titulo,
+                        mensaje = "Tiene asignado el mantenimiento de la maquinaria ${mantenimiento.nombreMaquinaria}.",
+                        tipo = tipo,
                         prioridad = mantenimiento.prioridad,
                         fecha = mantenimiento.fechaProgramada,
                         uidMantenimiento = mantenimiento.uid,
@@ -253,27 +257,15 @@ class AlertasService(
         listaAlertas: List<AlertaModel>
     ): List<AlertaModel> {
         return listaAlertas.sortedWith(
-            compareBy<AlertaModel> { alerta ->
-                when (alerta.categoria) {
-                    "MANTENIMIENTO" -> 1
-                    "INVENTARIO" -> 2
-                    "MOVIMIENTOS" -> 3
-                    else -> 4
+            compareByDescending<AlertaModel> { it.fecha }
+                .thenBy { alerta ->
+                    when (alerta.categoria) {
+                        "MANTENIMIENTO" -> 1
+                        "INVENTARIO" -> 2
+                        "MOVIMIENTOS" -> 3
+                        else -> 4
+                    }
                 }
-            }.thenBy { alerta ->
-                when (alerta.tipo) {
-                    "SOLICITUD_MANTENIMIENTO" -> 1
-                    "VENCIDO" -> 2
-                    "STOCK_AGOTADO" -> 3
-                    "STOCK_CRITICO" -> 4
-                    "PROXIMO" -> 5
-                    "STOCK_BAJO" -> 6
-                    "ALTO_CONSUMO" -> 7
-                    "SIN_ROTACION" -> 8
-                    "EN_PROCESO" -> 9
-                    else -> 10
-                }
-            }
         )
     }
 

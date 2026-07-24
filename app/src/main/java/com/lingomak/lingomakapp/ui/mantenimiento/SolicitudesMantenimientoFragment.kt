@@ -40,8 +40,6 @@ class SolicitudesMantenimientoFragment : Fragment() {
         configurarRecyclerView()
         observarViewModel()
 
-        viewModel.listarSolicitudesPendientes()
-
         return binding.root
     }
 
@@ -265,6 +263,11 @@ class SolicitudesMantenimientoFragment : Fragment() {
         }
 
         dialogo.show()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        viewModel.listarSolicitudesPendientes()
     }
 
     override fun onDestroyView() {

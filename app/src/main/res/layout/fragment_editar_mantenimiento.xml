@@ -193,6 +193,30 @@
                     android:inputType="textMultiLine"
                     android:padding="12dp" />
 
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Evidencias / Reporte Inicial"
+                    android:textColor="@color/text_primary"
+                    android:textStyle="bold"
+                    android:layout_marginTop="16dp" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvEvidenciasEditar"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:orientation="horizontal"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnAgregarEvidenciaEditar"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Agregar Imagen"
+                    app:icon="@drawable/qr" />
+
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnGuardarCambiosMantenimiento"
                     android:layout_width="match_parent"

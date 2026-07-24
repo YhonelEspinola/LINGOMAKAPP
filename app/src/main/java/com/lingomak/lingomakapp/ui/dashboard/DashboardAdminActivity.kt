@@ -2,6 +2,7 @@ package com.lingomak.lingomakapp.ui.dashboard
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.Firebase
 import com.google.firebase.appcheck.appCheck
@@ -21,12 +22,18 @@ import com.lingomak.lingomakapp.ui.mantenimiento.SolicitudesMantenimientoFragmen
 import com.lingomak.lingomakapp.ui.maquinaria.MaquinariaFragment
 import com.lingomak.lingomakapp.ui.movimientos.MovimientosGlobalFragment
 import com.lingomak.lingomakapp.ui.repuestos.InventarioFragment
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
+import com.lingomak.lingomakapp.ui.auth.LoginActivity
 import com.lingomak.lingomakapp.ui.usuarios.UsuariosFragment
+import com.lingomak.lingomakapp.utils.Constants
 import com.lingomak.lingomakapp.data.worker.AlertasWorkerManager
 
 class DashboardAdminActivity : AppCompatActivity() {
 
     private lateinit var binding: DashboardAdminBinding
+    private var userListener: ListenerRegistration? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,6 +42,8 @@ class DashboardAdminActivity : AppCompatActivity() {
             DashboardAdminBinding.inflate(layoutInflater)
 
         setContentView(binding.root)
+
+        escucharEstadoUsuario()
 
         /*
          * Configuramos Remote Config para el nombre del modelo de IA
@@ -83,6 +92,41 @@ class DashboardAdminActivity : AppCompatActivity() {
                 abrirHome()
             }
         }
+    }
+
+    /**
+     * Escucha en tiempo real si el usuario es inactivado por otro administrador.
+     */
+    private fun escucharEstadoUsuario() {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        
+        userListener = FirebaseFirestore.getInstance()
+            .collection(Constants.USUARIOS)
+            .document(uid)
+            .addSnapshotListener { snapshot, _ ->
+                val estado = snapshot?.getString("estado")
+                if (estado != null && estado.equals("INACTIVO", ignoreCase = true)) {
+                    forzarLogout()
+                }
+            }
+    }
+
+    private fun forzarLogout() {
+        userListener?.remove()
+        FirebaseAuth.getInstance().signOut()
+        
+        Toast.makeText(this, "Tu cuenta ha sido desactivada", Toast.LENGTH_LONG).show()
+        
+        val intent = Intent(this, LoginActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+        startActivity(intent)
+        finish()
+    }
+
+    override fun onDestroy() {
+        userListener?.remove()
+        super.onDestroy()
     }
 
     /**

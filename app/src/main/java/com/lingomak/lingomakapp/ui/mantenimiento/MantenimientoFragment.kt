@@ -80,7 +80,8 @@ class MantenimientoFragment : Fragment() {
         configurarBusqueda()
         observarViewModel()
 
-        viewModel.listarMantenimientos()
+        val isAdmin = requireActivity() is DashboardAdminActivity
+        viewModel.listarMantenimientos(soloAsignados = !isAdmin)
 
         return binding.root
     }
@@ -143,16 +144,19 @@ class MantenimientoFragment : Fragment() {
     }
 
     private fun configurarFiltroFecha() {
-        binding.selectorFechasMantenimiento.onRangoSeleccionado = { inicio, fin, _ ->
+        binding.selectorFechasMantenimiento.onRangoSeleccionado = { inicio, fin, etiqueta ->
             fechaInicio = inicio
             fechaFin = fin
+            binding.tvFiltroFechaActual.text = etiqueta
             aplicarFiltros()
         }
+        binding.selectorFechasMantenimiento.dispararSeleccionActual()
     }
 
     private fun configurarEventos() {
         binding.swipeRefreshMantenimiento.setOnRefreshListener {
-            viewModel.listarMantenimientos()
+            val isAdmin = requireActivity() is DashboardAdminActivity
+            viewModel.listarMantenimientos(soloAsignados = !isAdmin)
         }
 
         binding.fabAgregarMantenimiento.setOnClickListener {
@@ -214,7 +218,6 @@ class MantenimientoFragment : Fragment() {
             filtroTipo = when (checkedIds.firstOrNull()) {
                 R.id.chipTipoPreventivo -> "PREVENTIVO"
                 R.id.chipTipoCorrectivo -> "CORRECTIVO"
-                R.id.chipTipoPredictivo -> "PREDICTIVO"
                 else -> "TODOS"
             }
             aplicarFiltros()

@@ -47,38 +47,12 @@ class MaquinariaFragment : Fragment() {
     }
 
     private fun configurarRecyclerView() {
-        val isOperario = requireActivity() is com.lingomak.lingomakapp.ui.dashboard.DashboardOperarioActivity
-
         adapter = MaquinariaAdapter(
             listaMaquinarias = emptyList(),
-            isOperario = isOperario,
             onMaquinariaClick = { maquinaria ->
-
-
                 val detalleFragment = DetalleMaquinariaFragment()
-
-
                 val bundle = Bundle()
-
-
-                bundle.putString("nombre", maquinaria.nombre)
-                bundle.putString("codigoMaquinaria", maquinaria.codigoMaquinaria)
-                bundle.putString("tipo", maquinaria.tipo)
-                bundle.putString("marca", maquinaria.marca)
-                bundle.putString("modelo", maquinaria.modelo)
-                bundle.putString("placaSerie", maquinaria.placaSerie)
-                bundle.putInt("anio", maquinaria.anio)
-                bundle.putString("estado", maquinaria.estado)
-                bundle.putInt("horometroActual", maquinaria.horometroActual)
-                bundle.putInt(
-                    "horometroUltimoMantenimiento",
-                    maquinaria.horometroUltimoMantenimiento
-                )
-                bundle.putString("ubicacionActual", maquinaria.ubicacionActual)
-                bundle.putString("observaciones", maquinaria.observaciones)
-                bundle.putString("imagenUrl", maquinaria.imagenUrl)
-
-
+                bundle.putString("uid", maquinaria.uid)
                 detalleFragment.arguments = bundle
 
                 val containerId = if (requireActivity() is com.lingomak.lingomakapp.ui.dashboard.DashboardAdminActivity) 
@@ -86,56 +60,9 @@ class MaquinariaFragment : Fragment() {
 
                 parentFragmentManager
                     .beginTransaction()
-                    .replace(
-                        containerId,
-                        detalleFragment
-                    )
-
+                    .replace(containerId, detalleFragment)
                     .addToBackStack(null)
                     .commit()
-            },
-
-            onEditarClick = { maquinaria ->
-                val editarFragment = EditarMaquinariaFragment()
-
-
-                val bundle = Bundle().apply {
-                    putString("uid", maquinaria.uid)
-                    putString("codigoMaquinaria", maquinaria.codigoMaquinaria)
-                    putString("nombre", maquinaria.nombre)
-                    putString("tipo", maquinaria.tipo)
-                    putString("marca", maquinaria.marca)
-                    putString("modelo", maquinaria.modelo)
-                    putString("placaSerie", maquinaria.placaSerie)
-                    putInt("anio", maquinaria.anio)
-                    putString("estado", maquinaria.estado)
-                    putInt("horometroActual", maquinaria.horometroActual)
-                    putInt("horometroUltimoMantenimiento", maquinaria.horometroUltimoMantenimiento)
-                    putString("ubicacionActual", maquinaria.ubicacionActual)
-                    putString("observaciones", maquinaria.observaciones)
-                    putString("imagenUrl", maquinaria.imagenUrl)
-                    putString("fechaRegistro", maquinaria.fechaRegistro)
-                    putString("registradoPor", maquinaria.registradoPor)
-                }
-
-
-                editarFragment.arguments = bundle
-
-                val containerId = if (requireActivity() is com.lingomak.lingomakapp.ui.dashboard.DashboardAdminActivity) 
-                    R.id.fragmentContainerAdmin else R.id.containerOperario
-
-                parentFragmentManager
-                    .beginTransaction()
-                    .replace(
-                        containerId,
-                        editarFragment
-                    )
-                    .addToBackStack(null)
-                    .commit()
-            },
-
-            onCambiarEstadoClick = { maquinaria ->
-                mostrarDialogoCambiarEstado(maquinaria)
             }
         )
 
@@ -253,66 +180,6 @@ class MaquinariaFragment : Fragment() {
                 .addToBackStack(null)
                 .commit()
         }
-    }
-
-    private fun mostrarDialogoCambiarEstado(maquinaria: MaquinariaModel) {
-
-
-        val estados = arrayOf(
-            "OPERATIVA",
-            "EN_MANTENIMIENTO",
-            "INACTIVA"
-        )
-
-
-        val estadoActual = maquinaria.estado
-
-
-        val posicionActual = estados.indexOf(estadoActual)
-
-
-        var estadoSeleccionado = estadoActual
-
-        androidx.appcompat.app.AlertDialog.Builder(requireContext())
-            .setTitle("Cambiar estado")
-            .setSingleChoiceItems(
-                estados,
-                posicionActual
-            ) { _, which ->
-                estadoSeleccionado = estados[which]
-            }
-            .setPositiveButton("Guardar") { dialog, _ ->
-
-                if (estadoSeleccionado == estadoActual) {
-                    Toast.makeText(
-                        requireContext(),
-                        "No se realizaron cambios",
-                        Toast.LENGTH_SHORT
-                    ).show()
-
-                    dialog.dismiss()
-                    return@setPositiveButton
-                }
-
-                viewModel.cambiarEstadoMaquinaria(
-                    uid = maquinaria.uid,
-                    nuevoEstado = estadoSeleccionado,
-                    onSuccess = {
-
-                        Toast.makeText(
-                            requireContext(),
-                            "Estado actualizado correctamente",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                )
-
-                dialog.dismiss()
-            }
-            .setNegativeButton("Cancelar") { dialog, _ ->
-                dialog.dismiss()
-            }
-            .show()
     }
 
     override fun onDestroyView() {

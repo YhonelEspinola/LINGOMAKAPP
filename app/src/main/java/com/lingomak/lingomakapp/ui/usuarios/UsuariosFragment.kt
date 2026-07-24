@@ -64,7 +64,7 @@ class UsuariosFragment : Fragment() {
 
                 parentFragmentManager.beginTransaction()
                     .replace(
-                        (requireView().parent as ViewGroup).id,
+                        com.lingomak.lingomakapp.R.id.fragmentContainerAdmin,
                         fragment
                     )
                     .addToBackStack(null)
@@ -100,7 +100,7 @@ class UsuariosFragment : Fragment() {
         binding.fabAgregarUsuario.setOnClickListener {
             parentFragmentManager.beginTransaction()
                 .replace(
-                    (requireView().parent as ViewGroup).id,
+                    com.lingomak.lingomakapp.R.id.fragmentContainerAdmin,
                     AgregarUsuarioFragment()
                 )
                 .addToBackStack(null)

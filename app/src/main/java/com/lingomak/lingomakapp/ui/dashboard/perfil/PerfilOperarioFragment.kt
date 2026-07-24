@@ -9,7 +9,9 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.google.firebase.auth.FirebaseAuth
+import com.lingomak.lingomakapp.R
 import com.lingomak.lingomakapp.databinding.FragmentPerfilOperarioBinding
+import com.lingomak.lingomakapp.ui.auth.CambiarPasswordFragment
 import com.lingomak.lingomakapp.ui.auth.LoginActivity
 
 class PerfilOperarioFragment : Fragment() {
@@ -60,7 +62,15 @@ class PerfilOperarioFragment : Fragment() {
         }
 
         binding.btnCambiarPassword.setOnClickListener {
-            Toast.makeText(requireContext(),"prueba", Toast.LENGTH_SHORT).show()
+            val fragment = CambiarPasswordFragment().apply {
+                arguments = Bundle().apply {
+                    putBoolean("modoForzado", false)
+                }
+            }
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.containerOperario, fragment)
+                .addToBackStack(null)
+                .commit()
         }
     }
 

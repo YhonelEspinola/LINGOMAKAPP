@@ -19,6 +19,10 @@ class MaquinariaViewModel(application: Application) : AndroidViewModel(applicati
 
     val listaMaquinarias: LiveData<List<MaquinariaModel>> = repository.obtenerMaquinariasObservable()
 
+    fun obtenerMaquinariaPorUid(uid: String): LiveData<MaquinariaModel?> {
+        return repository.obtenerMaquinariaPorUidObservable(uid)
+    }
+
     fun listarMaquinarias(){
         viewModelScope.launch {
             repository.descargarMaquinariasDeFirestore()

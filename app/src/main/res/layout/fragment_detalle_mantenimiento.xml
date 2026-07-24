@@ -351,7 +351,7 @@
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="match_parent"
             android:layout_height="56dp"
-            android:text="INICIAR TRABAJO"
+            android:text="INICIAR MANTENIMIENTO"
             android:layout_marginTop="12dp"
             android:textAllCaps="true"
             android:textColor="#7F0000"

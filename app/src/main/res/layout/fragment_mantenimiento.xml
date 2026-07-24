@@ -36,12 +36,23 @@
                     android:inputType="text"
                     android:singleLine="true" />
 
+                <TextView
+                    android:id="@+id/tvFiltroFechaActual"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="Últimos 30 días"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:layout_gravity="center_horizontal" />
+
                 <!-- Filtro de Tiempo Slider -->
                 <com.lingomak.lingomakapp.ui.custom.SelectorFechasView
                     android:id="@+id/selectorFechasMantenimiento"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp" />
+                    android:layout_marginTop="8dp" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -86,13 +97,6 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="CORRECTIVO" />
-
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chipTipoPredictivo"
-                            style="@style/Widget.MaterialComponents.Chip.Choice"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="PREDICTIVO" />
 
                     </com.google.android.material.chip.ChipGroup>
 

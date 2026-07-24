@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.lingomak.lingomakapp.R
@@ -40,13 +39,8 @@ class DetalleMovimientoFragment : Fragment() {
         // Restringir acciones para el Operario
         if (requireActivity() is com.lingomak.lingomakapp.ui.dashboard.DashboardOperarioActivity) {
             binding.btnEditar.visibility = View.GONE
-            binding.btnEliminar.visibility = View.GONE
         }
         
-        binding.btnEliminar.setOnClickListener {
-            mostrarDialogoEliminar()
-        }
-
         binding.btnEditar.setOnClickListener {
             val fragment = EditarMovimientoFragment()
             val bundle = Bundle().apply {
@@ -117,18 +111,6 @@ class DetalleMovimientoFragment : Fragment() {
             binding.labelObservacion.visibility = View.GONE
             binding.tvObservacion.visibility = View.GONE
         }
-    }
-
-    private fun mostrarDialogoEliminar() {
-        AlertDialog.Builder(requireContext())
-            .setTitle("Confirmar eliminación")
-            .setMessage("¿Eliminar este movimiento? Esta acción revertirá el ajuste de stock que generó.")
-            .setPositiveButton("Eliminar") { _, _ ->
-                viewModel.eliminarMovimiento(movimientoUid)
-                parentFragmentManager.popBackStack()
-            }
-            .setNegativeButton("Cancelar", null)
-            .show()
     }
 
     override fun onDestroyView() {

@@ -8,13 +8,13 @@ import com.lingomak.lingomakapp.data.local.entity.MantenimientoEntity
 @Dao
 interface MantenimientoDao {
 
-    @Query("SELECT * FROM mantenimientos ORDER BY fechaProgramada DESC")
+    @Query("SELECT * FROM mantenimientos ORDER BY fechaRegistro DESC")
     fun obtenerTodosObservable(): LiveData<List<MantenimientoEntity>>
 
     @Query("SELECT * FROM mantenimientos")
     suspend fun obtenerTodos(): List<MantenimientoEntity>
 
-    @Query("SELECT * FROM mantenimientos WHERE responsableUid = :userUid OR responsableUid = 'TODOS' ORDER BY fechaProgramada DESC")
+    @Query("SELECT * FROM mantenimientos WHERE responsableUid = :userUid OR responsableUid = 'TODOS' ORDER BY fechaRegistro DESC")
     fun obtenerAsignadosObservable(userUid: String): LiveData<List<MantenimientoEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

@@ -103,6 +103,7 @@ class AgregarMaquinariaFragment : Fragment() {
         val horometroActualTexto = binding.etHorometroActual.text.toString().trim()
         val horometroUltimoTexto = binding.etHorometroUltimoMantenimiento.text.toString().trim()
         val ubicacion = binding.etUbicacionActual.text.toString().trim()
+        val intervaloTexto = binding.etIntervaloMantenimiento.text.toString().trim()
         val observaciones = binding.etObservacionesMaquinaria.text.toString().trim()
 
 
@@ -145,6 +146,7 @@ class AgregarMaquinariaFragment : Fragment() {
         val anio = anioTexto.toIntOrNull()
         val horometroActual = horometroActualTexto.toIntOrNull()
         val horometroUltimo = horometroUltimoTexto.toIntOrNull() ?: 0
+        val intervaloMantenimiento = intervaloTexto.toIntOrNull() ?: 250
 
         if (anio == null || anio <= 0) {
             Toast.makeText(requireContext(), "Ingrese un año válido", Toast.LENGTH_SHORT).show()
@@ -153,6 +155,11 @@ class AgregarMaquinariaFragment : Fragment() {
 
         if (horometroActual == null || horometroActual < 0) {
             Toast.makeText(requireContext(), "Ingrese un horómetro válido", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        if (intervaloMantenimiento <= 0) {
+            Toast.makeText(requireContext(), "El intervalo de mantenimiento debe ser un número positivo", Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -170,6 +177,7 @@ class AgregarMaquinariaFragment : Fragment() {
             horometroActual = horometroActual,
             horometroUltimo = horometroUltimo,
             ubicacion = ubicacion,
+            intervalo = intervaloMantenimiento,
             observaciones = observaciones
         )
     }
@@ -186,6 +194,7 @@ class AgregarMaquinariaFragment : Fragment() {
         horometroActual: Int,
         horometroUltimo: Int,
         ubicacion: String,
+        intervalo: Int,
         observaciones: String
     ){
         val uid = UUID.randomUUID().toString()
@@ -212,6 +221,7 @@ class AgregarMaquinariaFragment : Fragment() {
                         horometroActual = horometroActual,
                         horometroUltimo = horometroUltimo,
                         ubicacion = ubicacion,
+                        intervalo = intervalo,
                         observaciones = observaciones,
                         imagenUrl = imagenUrl,
                         fechaActual = fechaActual,
@@ -233,6 +243,7 @@ class AgregarMaquinariaFragment : Fragment() {
                 horometroActual = horometroActual,
                 horometroUltimo = horometroUltimo,
                 ubicacion = ubicacion,
+                intervalo = intervalo,
                 observaciones = observaciones,
                 imagenUrl = "",
                 fechaActual = fechaActual,
@@ -254,6 +265,7 @@ class AgregarMaquinariaFragment : Fragment() {
         horometroActual: Int,
         horometroUltimo: Int,
         ubicacion: String,
+        intervalo: Int,
         observaciones: String,
         imagenUrl: String,
         fechaActual: String,
@@ -271,6 +283,7 @@ class AgregarMaquinariaFragment : Fragment() {
             estado = estado,
             horometroActual = horometroActual,
             horometroUltimoMantenimiento = horometroUltimo,
+            intervaloMantenimientoHoras = intervalo,
             ubicacionActual = ubicacion,
             imagenUrl = imagenUrl,
             observaciones = observaciones,

@@ -53,22 +53,6 @@ class RegistrarSalidaOpFragment : Fragment() {
             actualizarUICardRepuesto()
         }
 
-        binding.autoCompleteMaquinaria.setOnItemClickListener { parent, _, position, _ ->
-            val seleccionado = parent.getItemAtPosition(position) as String
-            maquinaSeleccionada = listaMaquinas.find { "${it.codigoMaquinaria} - ${it.nombre}" == seleccionado }
-        }
-
-        // Logica de visibilidad según tipo de destino
-        binding.rgDestino.setOnCheckedChangeListener { _, checkedId ->
-            if (checkedId == binding.rbConsumoInterno.id) {
-                binding.layoutMaquinariaDestino.visibility = View.VISIBLE
-            } else {
-                binding.layoutMaquinariaDestino.visibility = View.GONE
-                maquinaSeleccionada = null
-                binding.autoCompleteMaquinaria.setText("")
-            }
-        }
-
         binding.btnGuardar.setOnClickListener {
             validarYRegistrar()
         }
@@ -125,9 +109,6 @@ class RegistrarSalidaOpFragment : Fragment() {
 
         viewModel.todasLasMaquinas.observe(viewLifecycleOwner) { maquinas ->
             listaMaquinas = maquinas.filter { it.estado == "OPERATIVA" || it.estado == "EN_MANTENIMIENTO" }
-            val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, 
-                listaMaquinas.map { "${it.codigoMaquinaria} - ${it.nombre}" })
-            binding.autoCompleteMaquinaria.setAdapter(adapter)
         }
 
         viewModel.registroExitoso.observe(viewLifecycleOwner) { exitoso ->
@@ -151,19 +132,14 @@ class RegistrarSalidaOpFragment : Fragment() {
             return
         }
 
-        val destinoSalida = when (binding.rgDestino.checkedRadioButtonId) {
-            binding.rbConsumoInterno.id -> "CONSUMO_INTERNO"
-            binding.rbDistribucionExterna.id -> "DISTRIBUCION_EXTERNA"
-            else -> {
-                Toast.makeText(requireContext(), "Seleccione el tipo de salida", Toast.LENGTH_SHORT).show()
-                return
-            }
-        }
+        val destinoSalida = "DISTRIBUCION_EXTERNA"
 
+        /*
         if (destinoSalida == "CONSUMO_INTERNO" && maquinaSeleccionada == null) {
             Toast.makeText(requireContext(), "Seleccione una maquinaria", Toast.LENGTH_SHORT).show()
             return
         }
+        */
 
         val cantidad = cantidadStr.toIntOrNull() ?: 0
         if (cantidad <= 0) {
