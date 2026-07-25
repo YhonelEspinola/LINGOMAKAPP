@@ -36,8 +36,12 @@
                 android:padding="16dp">
 
                 <RelativeLayout
+                    android:id="@+id/btnToggleRepuestos"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
+                    android:layout_height="wrap_content"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground">
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -45,7 +49,19 @@
                         android:textColor="@color/primary"
                         android:textSize="12sp"
                         android:textStyle="bold"
-                        android:letterSpacing="0.1" />
+                        android:letterSpacing="0.1"
+                        android:layout_centerVertical="true"/>
+
+                    <ImageView
+                        android:id="@+id/ivChevronRepuestos"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_toStartOf="@id/btnAgregarCatRepuesto"
+                        android:layout_marginEnd="8dp"
+                        android:layout_centerVertical="true"
+                        android:src="@drawable/ic_chevron_down"
+                        app:tint="@color/text_secondary" />
+
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnAgregarCatRepuesto"
                         style="@style/Widget.MaterialComponents.Button.TextButton"
@@ -59,12 +75,32 @@
                         android:insetBottom="0dp" />
                 </RelativeLayout>
 
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/rvCategoriasRepuesto"
+                <LinearLayout
+                    android:id="@+id/layoutExpandibleRepuestos"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:nestedScrollingEnabled="false" />
+                    android:orientation="vertical"
+                    android:visibility="visible">
+
+                    <EditText
+                        android:id="@+id/etBuscarRepuestos"
+                        android:layout_width="match_parent"
+                        android:layout_height="44dp"
+                        android:layout_marginTop="8dp"
+                        android:background="@drawable/bg_edit_text"
+                        android:hint="Buscar categorías..."
+                        android:paddingHorizontal="12dp"
+                        android:textSize="13sp"
+                        android:inputType="text"
+                        android:singleLine="true" />
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rvCategoriasRepuesto"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:nestedScrollingEnabled="false" />
+                </LinearLayout>
 
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
@@ -86,8 +122,12 @@
                 android:padding="16dp">
 
                 <RelativeLayout
+                    android:id="@+id/btnToggleMaquinaria"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
+                    android:layout_height="wrap_content"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground">
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -95,7 +135,19 @@
                         android:textColor="@color/primary"
                         android:textSize="12sp"
                         android:textStyle="bold"
-                        android:letterSpacing="0.1" />
+                        android:letterSpacing="0.1"
+                        android:layout_centerVertical="true"/>
+
+                    <ImageView
+                        android:id="@+id/ivChevronMaquinaria"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_toStartOf="@id/btnAgregarCatMaquinaria"
+                        android:layout_marginEnd="8dp"
+                        android:layout_centerVertical="true"
+                        android:src="@drawable/ic_chevron_down"
+                        app:tint="@color/text_secondary" />
+
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnAgregarCatMaquinaria"
                         style="@style/Widget.MaterialComponents.Button.TextButton"
@@ -109,12 +161,32 @@
                         android:insetBottom="0dp" />
                 </RelativeLayout>
 
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/rvCategoriasMaquinaria"
+                <LinearLayout
+                    android:id="@+id/layoutExpandibleMaquinaria"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:nestedScrollingEnabled="false" />
+                    android:orientation="vertical"
+                    android:visibility="visible">
+
+                    <EditText
+                        android:id="@+id/etBuscarMaquinaria"
+                        android:layout_width="match_parent"
+                        android:layout_height="44dp"
+                        android:layout_marginTop="8dp"
+                        android:background="@drawable/bg_edit_text"
+                        android:hint="Buscar categorías..."
+                        android:paddingHorizontal="12dp"
+                        android:textSize="13sp"
+                        android:inputType="text"
+                        android:singleLine="true" />
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rvCategoriasMaquinaria"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:nestedScrollingEnabled="false" />
+                </LinearLayout>
 
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>

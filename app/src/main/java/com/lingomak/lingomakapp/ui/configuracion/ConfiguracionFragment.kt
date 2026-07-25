@@ -7,9 +7,11 @@ import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.lingomak.lingomakapp.R
 import com.lingomak.lingomakapp.databinding.FragmentConfiguracionBinding
 
 class ConfiguracionFragment : Fragment() {
@@ -21,6 +23,9 @@ class ConfiguracionFragment : Fragment() {
 
     private lateinit var adapterRepuesto: CategoriaAdapter
     private lateinit var adapterMaquinaria: CategoriaAdapter
+
+    private var repuestosExpanded = true
+    private var maquinariaExpanded = true
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -60,6 +65,29 @@ class ConfiguracionFragment : Fragment() {
         binding.btnAgregarCatMaquinaria.setOnClickListener {
             mostrarDialogoAgregar("MAQUINARIA")
         }
+
+        binding.btnToggleRepuestos.setOnClickListener {
+            repuestosExpanded = !repuestosExpanded
+            toggleSection(binding.layoutExpandibleRepuestos, binding.ivChevronRepuestos, repuestosExpanded)
+        }
+
+        binding.btnToggleMaquinaria.setOnClickListener {
+            maquinariaExpanded = !maquinariaExpanded
+            toggleSection(binding.layoutExpandibleMaquinaria, binding.ivChevronMaquinaria, maquinariaExpanded)
+        }
+
+        binding.etBuscarRepuestos.addTextChangedListener {
+            viewModel.buscarRepuesto(it?.toString() ?: "")
+        }
+
+        binding.etBuscarMaquinaria.addTextChangedListener {
+            viewModel.buscarMaquinaria(it?.toString() ?: "")
+        }
+    }
+
+    private fun toggleSection(layout: View, chevron: android.widget.ImageView, expanded: Boolean) {
+        layout.visibility = if (expanded) View.VISIBLE else View.GONE
+        chevron.animate().rotation(if (expanded) 0f else -180f).setDuration(200).start()
     }
 
     private fun observarViewModel() {
