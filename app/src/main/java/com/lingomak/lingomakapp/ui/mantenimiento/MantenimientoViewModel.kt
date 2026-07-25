@@ -131,6 +131,10 @@ class MantenimientoViewModel(application: Application) : AndroidViewModel(applic
         }
     }
 
+    fun obtenerMantenimientoPorUidObservable(uid: String): LiveData<MantenimientoModel?> {
+        return repository.obtenerMantenimientoPorUidObservable(uid)
+    }
+
     fun obtenerMantenimientoPorUid(uid: String, onExito: (MantenimientoModel) -> Unit) {
         repository.obtenerMantenimientoPorUid(uid, { model ->
             viewModelScope.launch(Dispatchers.Main) { onExito(model) }

@@ -7,6 +7,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
@@ -22,6 +23,8 @@ import com.lingomak.lingomakapp.ui.movimientos.EscaneoQRFragment
 import com.lingomak.lingomakapp.ui.maquinaria.OperarioMaquinariaFragment
 import com.lingomak.lingomakapp.ui.repuestos.InventarioOpFragment
 import com.lingomak.lingomakapp.utils.Constants
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class DashboardOperarioActivity : AppCompatActivity() {
 
@@ -45,6 +48,21 @@ class DashboardOperarioActivity : AppCompatActivity() {
 
         configurarToolbar()
         configurarNavigationDrawer()
+        
+        dispararSincronizacionInicial()
+    }
+
+    private fun dispararSincronizacionInicial() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                com.lingomak.lingomakapp.data.repository.RepuestoRepository(this@DashboardOperarioActivity).descargarCambiosDeFirestore()
+                com.lingomak.lingomakapp.data.repository.MaquinariaRepository(this@DashboardOperarioActivity).descargarMaquinariasDeFirestore()
+                com.lingomak.lingomakapp.data.repository.MantenimientoRepository(this@DashboardOperarioActivity).descargarCambiosDeFirestore()
+                com.lingomak.lingomakapp.data.repository.UserRepository(this@DashboardOperarioActivity).descargarUsuariosDeFirestore()
+            } catch (e: Exception) {
+                // Silencioso
+            }
+        }
     }
 
     private fun configurarBadgeAlertas() {

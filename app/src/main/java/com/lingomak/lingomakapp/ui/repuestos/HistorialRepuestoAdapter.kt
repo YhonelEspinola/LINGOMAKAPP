@@ -24,13 +24,8 @@ class HistorialRepuestoAdapter(
             binding.tvTipo.text = movimiento.tipo
             binding.tvFecha.text = movimiento.fecha?.let { dateFormat.format(it) } ?: "--/--/--"
             
-            val idProvisional = if (movimiento.registradoPor.length >= 6) {
-                movimiento.registradoPor.substring(0, 6)
-            } else {
-                movimiento.registradoPor
-            }
-            // TODO: Cruzar con colección "usuarios" para mostrar nombre real
-            binding.tvUsuario.text = "Responsable: $idProvisional"
+            val nombreResponsable = movimiento.nombreRegistradoPor.ifBlank { "Sin registrar" }
+            binding.tvUsuario.text = "Responsable: $nombreResponsable"
 
             if (movimiento.tipo == "ENTRADA") {
                 binding.tvCantidad.text = "+${movimiento.cantidad}"

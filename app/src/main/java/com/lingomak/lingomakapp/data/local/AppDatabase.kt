@@ -22,9 +22,11 @@ import com.lingomak.lingomakapp.data.local.entity.*
           MaquinariaEntity::class,
           MantenimientoEntity::class,
           RegistroUsoMaquinariaEntity::class,
-          SolicitudMantenimientoEntity::class
+          SolicitudMantenimientoEntity::class,
+          UserEntity::class,
+          AlertaEntity::class
       ],
-      version = 14,
+      version = 18,
       exportSchema = false
   )
   @TypeConverters(Converters::class)
@@ -37,6 +39,8 @@ import com.lingomak.lingomakapp.data.local.entity.*
       abstract fun contadorDao(): ContadorDao
       abstract fun registroUsoMaquinariaDao(): RegistroUsoMaquinariaDao
       abstract fun solicitudMantenimientoDao(): SolicitudMantenimientoDao
+      abstract fun userDao(): UserDao
+      abstract fun alertaDao(): AlertaDao
 
     companion object {
         @Volatile

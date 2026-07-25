@@ -34,6 +34,9 @@ data class MovimientoEntity(
     val destinoSalida: String = "",
     val ordenMantenimientoUid: String? = null,
     val maquinariaUid: String? = null,
+    val nombreRegistradoPor: String = "",
+    val codigoMantenimientoAsociado: String? = null,
+    val nombreMaquinariaAsociada: String? = null,
 
     // ----- Control de sincronización -----
     val estadoSync: String = "SINCRONIZADO", // "SINCRONIZADO" o "PENDIENTE_CREAR"

@@ -2,6 +2,7 @@
 <androidx.core.widget.NestedScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background">
@@ -47,40 +48,14 @@
                 android:orientation="vertical"
                 android:padding="18dp">
 
-
                 <TextView
                     android:id="@+id/tvCodigoMantenimientoEditar"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Código: MAN-0001"
                     android:textColor="@color/text_primary"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/tvMaquinariaEditar"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Maquinaria: Excavadora CAT 320"
-                    android:textColor="@color/text_secondary"
-                    android:layout_marginTop="8dp" />
-
-                <TextView
-                    android:id="@+id/tvCodigoMaquinariaEditar"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Código maquinaria: EXC-0001"
-                    android:textColor="@color/text_secondary"
-                    android:layout_marginTop="4dp" />
-
-                <TextView
-                    android:id="@+id/tvResponsableEditar"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Responsable: Admin"
-                    android:textColor="@color/text_secondary"
-                    android:layout_marginTop="4dp"
-                    android:layout_marginBottom="18dp" />
-
+                    android:textStyle="bold"
+                    android:layout_marginBottom="16dp" />
 
                 <TextView
                     android:layout_width="match_parent"
@@ -97,6 +72,68 @@
                     android:layout_marginBottom="16dp"
                     android:background="@drawable/bg_edit_text"
                     android:padding="12dp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Maquinaria"
+                    android:textColor="@color/text_primary"
+                    android:textStyle="bold" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilMaquinariaEditar"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="16dp"
+                    app:hintEnabled="false"
+                    app:boxStrokeColor="@color/primary"
+                    app:boxStrokeWidthFocused="2dp">
+
+                    <AutoCompleteTextView
+                        android:id="@+id/actvMaquinariaEditar"
+                        android:layout_width="match_parent"
+                        android:layout_height="55dp"
+                        android:hint="Seleccione maquinaria"
+                        android:inputType="text"
+                        android:padding="12dp"
+                        android:textSize="14sp"
+                        android:background="@android:color/transparent"
+                        android:completionThreshold="1" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Asignado a:"
+                    android:textColor="@color/text_primary"
+                    android:textStyle="bold" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilResponsableEditar"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="16dp"
+                    app:hintEnabled="false"
+                    app:boxStrokeColor="@color/primary"
+                    app:boxStrokeWidthFocused="2dp">
+
+                    <AutoCompleteTextView
+                        android:id="@+id/actvResponsableEditar"
+                        android:layout_width="match_parent"
+                        android:layout_height="55dp"
+                        android:hint="Seleccione responsable"
+                        android:inputType="text"
+                        android:padding="12dp"
+                        android:textSize="14sp"
+                        android:background="@android:color/transparent"
+                        android:completionThreshold="1" />
+
+                </com.google.android.material.textfield.TextInputLayout>
 
                 <TextView
                     android:layout_width="match_parent"
@@ -136,57 +173,93 @@
 
                 </RadioGroup>
 
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Descripción"
+                    android:textColor="@color/text_primary"
+                    android:textStyle="bold" />
 
                 <EditText
                     android:id="@+id/etDescripcionEditar"
                     android:layout_width="match_parent"
                     android:layout_height="95dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="16dp"
                     android:background="@drawable/bg_edit_text"
                     android:gravity="top"
                     android:hint="Descripción"
                     android:inputType="textMultiLine"
                     android:padding="12dp" />
 
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Fecha programada"
+                    android:textColor="@color/text_primary"
+                    android:textStyle="bold" />
 
                 <EditText
                     android:id="@+id/etFechaProgramadaEditar"
                     android:layout_width="match_parent"
                     android:layout_height="55dp"
-                    android:layout_marginTop="12dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="16dp"
                     android:background="@drawable/bg_edit_text"
                     android:focusable="false"
                     android:hint="Fecha programada"
                     android:inputType="none"
                     android:padding="12dp" />
 
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Horómetro programado"
+                    android:textColor="@color/text_primary"
+                    android:textStyle="bold" />
 
                 <EditText
                     android:id="@+id/etHorometroProgramadoEditar"
                     android:layout_width="match_parent"
                     android:layout_height="55dp"
-                    android:layout_marginTop="12dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="16dp"
                     android:background="@drawable/bg_edit_text"
                     android:hint="Horómetro programado"
                     android:inputType="number"
                     android:padding="12dp" />
 
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Costo estimado"
+                    android:textColor="@color/text_primary"
+                    android:textStyle="bold" />
 
                 <EditText
                     android:id="@+id/etCostoEstimadoEditar"
                     android:layout_width="match_parent"
                     android:layout_height="55dp"
-                    android:layout_marginTop="12dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="16dp"
                     android:background="@drawable/bg_edit_text"
                     android:hint="Costo estimado"
                     android:inputType="numberDecimal"
                     android:padding="12dp" />
 
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Observaciones"
+                    android:textColor="@color/text_primary"
+                    android:textStyle="bold" />
 
                 <EditText
                     android:id="@+id/etObservacionesEditar"
                     android:layout_width="match_parent"
                     android:layout_height="95dp"
-                    android:layout_marginTop="12dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="16dp"
                     android:background="@drawable/bg_edit_text"
                     android:gravity="top"
                     android:hint="Observaciones"
@@ -215,7 +288,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Agregar Imagen"
-                    app:icon="@drawable/qr" />
+                    app:icon="@android:drawable/ic_menu_camera" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnGuardarCambiosMantenimiento"
@@ -235,10 +308,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
-                    android:visibility="gone"
-                    app:layout_constraintTop_toBottomOf="@id/btnGuardarMaquinaria"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"/>
+                    android:layout_gravity="center"
+                    android:visibility="gone" />
 
             </LinearLayout>
 

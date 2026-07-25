@@ -183,7 +183,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
-                    android:text="Responsable / Operario"
+                    android:text="Asignado a:"
                     android:textColor="@color/text_primary"
                     android:textStyle="bold"
                     android:textSize="13sp" />

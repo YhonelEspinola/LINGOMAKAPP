@@ -24,6 +24,9 @@ interface MantenimientoDao {
     suspend fun insertarLista(lista: List<MantenimientoEntity>)
 
     @Query("SELECT * FROM mantenimientos WHERE uid = :uid LIMIT 1")
+    fun obtenerPorUidObservable(uid: String): LiveData<MantenimientoEntity?>
+
+    @Query("SELECT * FROM mantenimientos WHERE uid = :uid LIMIT 1")
     suspend fun obtenerPorUid(uid: String): MantenimientoEntity?
 
     @Query("SELECT * FROM mantenimientos WHERE estadoSync != 'SINCRONIZADO'")

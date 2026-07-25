@@ -27,81 +27,10 @@ class MovimientosEstadisticasFragment : Fragment() {
             val data = viewModel.estadisticas.value
             val label = viewModel.etiquetaRango.value ?: "Export"
             if (data != null) {
-                val csvContent = buildEstadisticasCsvContent(data, label)
+                val csvContent = CsvExporter.buildEstadisticasCsvContent(data, label)
                 CsvExporter.saveCsvToUri(requireContext(), it, csvContent)
             }
         }
-    }
-
-    private fun buildEstadisticasCsvContent(data: MovimientosEstadisticasViewModel.EstadisticasData, etiquetaRango: String): String {
-        val sb = StringBuilder()
-        
-        // 1. Resumen General
-        sb.append("1. RESUMEN GENERAL\n")
-        sb.append("Rango de fechas,Total Entradas,Total Salidas,Total Movimientos\n")
-        sb.append("${CsvExporter.escapeCsv(etiquetaRango)},${data.totalEntradas},${data.totalSalidas},${data.totalMovimientos}\n\n")
-
-        // 2. Tendencia Mensual
-        sb.append("2. TENDENCIA MENSUAL\n")
-        sb.append("Mes,Entradas,Salidas\n")
-        data.tendenciaMensual.forEach { (mes, vals) ->
-            sb.append("${CsvExporter.escapeCsv(mes)},${vals.first},${vals.second}\n")
-        }
-        sb.append("\n")
-
-        // 3. Top Repuestos Consumidos
-        sb.append("3. TOP REPUESTOS CONSUMIDOS\n")
-        sb.append("Nombre,Cantidad de Salidas\n")
-        data.topProductos.forEach { (nombre, cant) ->
-            sb.append("${CsvExporter.escapeCsv(nombre)},$cant\n")
-        }
-        sb.append("\n")
-
-        // 4. Baja/Nula Rotación
-        sb.append("4. BAJA/NULA ROTACIÓN\n")
-        sb.append("Nombre,Cantidad de Salidas\n")
-        data.bajaRotacion.forEach { (nombre, cant) ->
-            sb.append("${CsvExporter.escapeCsv(nombre)},$cant\n")
-        }
-        sb.append("\n")
-
-        // 5. Consumo por Máquina
-        sb.append("5. CONSUMO POR MÁQUINA\n")
-        sb.append("Nombre,Cantidad de Repuestos Consumidos\n")
-        data.consumoMaquina.forEach { (nombre, cant) ->
-            sb.append("${CsvExporter.escapeCsv(nombre)},$cant\n")
-        }
-        sb.append("\n")
-
-        // 6. Consumo Interno vs Externo
-        sb.append("6. CONSUMO INTERNO VS EXTERNO\n")
-        sb.append("Categoría,Cantidad,Porcentaje\n")
-        val totalSalidas = data.totalSalidas.toDouble()
-        data.distribucionSalida.forEach { (cat, cant) ->
-            val perc = if (totalSalidas > 0) (cant / totalSalidas) * 100 else 0.0
-            val catLabel = if(cat == "CONSUMO_INTERNO") "Interno" else "Externo"
-            sb.append("${CsvExporter.escapeCsv(catLabel)},$cant,${String.format(java.util.Locale.getDefault(), "%.1f%%", perc)}\n")
-        }
-        sb.append("\n")
-
-        // 7. Salidas con OM vs Sueltas (Omitida en carrusel pero mantenida en CSV si se desea)
-        sb.append("7. SALIDAS CON OM VS SUELTAS\n")
-        sb.append("Categoría,Cantidad,Porcentaje\n")
-        val om = data.omVsSueltas.first
-        val sueltas = data.omVsSueltas.second
-        val totalOM = (om + sueltas).toDouble()
-        val percOM = if (totalOM > 0) (om / totalOM) * 100 else 0.0
-        val percSueltas = if (totalOM > 0) (sueltas / totalOM) * 100 else 0.0
-        sb.append("Con OM,$om,${String.format(java.util.Locale.getDefault(), "%.1f%%", percOM)}\n")
-        sb.append("Sueltas,$sueltas,${String.format(java.util.Locale.getDefault(), "%.1f%%", percSueltas)}\n\n")
-
-        // 8. Costo Real vs Estimado
-        sb.append("8. COSTO REAL VS ESTIMADO\n")
-        sb.append("Categoría,Monto (Soles),Diferencia\n")
-        sb.append("Estimado,${data.costosComparativa.first},-\n")
-        sb.append("Real,${data.costosComparativa.second},${data.costosComparativa.third}\n")
-
-        return sb.toString()
     }
 
     override fun onCreateView(
@@ -129,8 +58,16 @@ class MovimientosEstadisticasFragment : Fragment() {
         binding.btnExportarCsv.setOnClickListener {
             val data = viewModel.estadisticas.value
             val label = viewModel.etiquetaRango.value ?: "Export"
+            val rango = viewModel.rango.value
             if (data != null) {
-                CsvExporter.exportEstadisticas(requireContext(), data, label, createDocumentLauncher)
+                CsvExporter.exportEstadisticas(
+                    context = requireContext(),
+                    data = data,
+                    etiquetaRango = label,
+                    launcher = createDocumentLauncher,
+                    inicio = rango?.first,
+                    fin = rango?.second
+                )
             }
         }
 

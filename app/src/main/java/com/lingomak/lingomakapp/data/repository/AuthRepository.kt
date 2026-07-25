@@ -1,6 +1,7 @@
 package com.lingomak.lingomakapp.data.repository
 
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.userProfileChangeRequest
 import com.google.firebase.firestore.FirebaseFirestore
 import com.lingomak.lingomakapp.data.model.UserModel
 import com.lingomak.lingomakapp.utils.Constants
@@ -49,6 +50,8 @@ class AuthRepository {
                     val usuario = document.toObject(UserModel::class.java)
 
                     if(usuario != null){
+                        // Sincronizar el nombre en el perfil de Firebase Auth para trazabilidad
+                        sincronizarNombreEnAuth(usuario.nombre)
                         onSuccess(usuario)
                     }else{
                         onError("No se pudo convertir la información del usuario")
@@ -64,5 +67,15 @@ class AuthRepository {
 
     fun cerrarSesion(){
         auth.signOut()
+    }
+
+    private fun sincronizarNombreEnAuth(nombre: String) {
+        val user = auth.currentUser
+        if (user != null && user.displayName != nombre) {
+            val profileUpdates = userProfileChangeRequest {
+                displayName = nombre
+            }
+            user.updateProfile(profileUpdates)
+        }
     }
 }

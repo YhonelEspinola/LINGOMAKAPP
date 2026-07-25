@@ -1,63 +1,89 @@
 package com.lingomak.lingomakapp.data.repository
 
+import android.content.Context
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.map
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.functions.FirebaseFunctions
+import com.lingomak.lingomakapp.data.local.AppDatabase
+import com.lingomak.lingomakapp.data.local.entity.aEntity
 import com.lingomak.lingomakapp.data.model.UserModel
 import com.lingomak.lingomakapp.utils.Constants
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
-class UserRepository {
+class UserRepository(context: Context) {
     private val dataBase = FirebaseFirestore.getInstance()
-
     private val functions = FirebaseFunctions.getInstance()
+    
+    private val database = AppDatabase.getInstance(context)
+    private val userDao = database.userDao()
 
-    fun listarUsuarios(onSuccess:(List<UserModel>) -> Unit, onError:(String) -> Unit){
+    // ===================================================================
+    // LECTURA LOCAL (Room)
+    // ===================================================================
+
+    fun obtenerUsuariosObservable(): LiveData<List<UserModel>> {
+        return userDao.obtenerTodosObservable().map { entities ->
+            entities.map { it.aModel() }
+        }
+    }
+
+    fun obtenerOperariosActivosObservable(): LiveData<List<UserModel>> {
+        return userDao.obtenerOperariosActivosObservable().map { entities ->
+            entities.map { it.aModel() }
+        }
+    }
+
+    // ===================================================================
+    // SINCRONIZACIÓN
+    // ===================================================================
+
+    /**
+     * Descarga todos los usuarios de Firestore y actualiza Room.
+     */
+    suspend fun descargarUsuariosDeFirestore() {
+        try {
+            val snapshot = dataBase.collection(Constants.USUARIOS).get().await()
+            val remotos = snapshot.toObjects(UserModel::class.java)
+            val uidsRemotos = remotos.map { it.uid }
+
+            if (uidsRemotos.isEmpty()) {
+                userDao.eliminarSincronizados()
+            } else {
+                val entities = remotos.map { it.aEntity(estadoSync = "SINCRONIZADO") }
+                userDao.insertarLista(entities)
+                userDao.eliminarSincronizadosNoPresentes(uidsRemotos)
+            }
+        } catch (e: Exception) {
+            // Silencioso en offline
+        }
+    }
+
+    /**
+     * Escucha cambios en tiempo real y los vuelca a Room.
+     */
+    fun iniciarEscuchaUsuarios() {
         dataBase.collection(Constants.USUARIOS)
             .addSnapshotListener { snapshots, error ->
-                if(error != null) {
-                    onError(error.message ?: "Error al listar usuarios")
-                    return@addSnapshotListener
+                if (error != null || snapshots == null) return@addSnapshotListener
+                
+                val lista = snapshots.documents.mapNotNull { it.toObject(UserModel::class.java) }
+                val entities = lista.map { it.aEntity(estadoSync = "SINCRONIZADO") }
+                
+                CoroutineScope(Dispatchers.IO).launch {
+                    userDao.insertarLista(entities)
+                    userDao.eliminarSincronizadosNoPresentes(lista.map { it.uid })
                 }
-                if (snapshots == null){
-                    onSuccess(emptyList())
-                    return@addSnapshotListener
-                }
-                val listaUsuarios = snapshots.documents.mapNotNull { document ->
-                    document.toObject(UserModel::class.java)
-                }
-                onSuccess(listaUsuarios)
             }
     }
 
-    fun listarOperarios(onSuccess: (List<UserModel>) -> Unit, onError: (String) -> Unit) {
-        dataBase.collection(Constants.USUARIOS)
-            .whereEqualTo("rol", "OPERARIO")
-            .whereEqualTo("estado", "ACTIVO")
-            .get()
-            .addOnSuccessListener { result ->
-                val lista = result.documents.mapNotNull { it.toObject(UserModel::class.java) }
-                onSuccess(lista)
-            }
-            .addOnFailureListener {
-                onError(it.message ?: "Error al listar operarios")
-            }
-    }
-
-    fun crearUsuario(
-        usuario: UserModel,
-        onSuccess: () -> Unit,
-        onError: (String) -> Unit
-    ){
-        dataBase.collection(Constants.USUARIOS)
-            .document(usuario.uid)
-            .set(usuario)
-            .addOnSuccessListener {
-                onSuccess()
-            }
-            .addOnFailureListener { exception ->
-                onError(exception.message ?: "Error al crear usuario")
-            }
-    }
+    // ===================================================================
+    // ESCRITURA (Remota -> Room se actualiza vía SnapshotListener o manual)
+    // ===================================================================
 
     fun cambiarEstadoUsuario(
         uid: String,
@@ -110,9 +136,7 @@ class UserRepository {
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {
-
         val usuarioActual = FirebaseAuth.getInstance().currentUser
-
         if (usuarioActual == null) {
             onError("No hay usuario autenticado en Firebase Auth")
             return
@@ -120,8 +144,6 @@ class UserRepository {
 
         usuarioActual.getIdToken(true)
             .addOnSuccessListener {
-
-                // Datos que enviaremos a la Cloud Function.
                 val data = hashMapOf(
                     "nombre" to nombre,
                     "correo" to correo,
@@ -131,8 +153,7 @@ class UserRepository {
                     "debeCambiarPassword" to true
                 )
 
-                FirebaseFunctions.getInstance("us-central1")
-                    .getHttpsCallable("createUserAdmin")
+                functions.getHttpsCallable("createUserAdmin")
                     .call(data)
                     .addOnSuccessListener {
                         onSuccess()
@@ -146,4 +167,28 @@ class UserRepository {
             }
     }
 
+    // Legacy (mantener para compatibilidad si es necesario, pero migrar a Room observable)
+    fun listarUsuarios(onSuccess:(List<UserModel>) -> Unit, onError:(String) -> Unit){
+        dataBase.collection(Constants.USUARIOS)
+            .get()
+            .addOnSuccessListener { snapshots ->
+                val listaUsuarios = snapshots.documents.mapNotNull { it.toObject(UserModel::class.java) }
+                onSuccess(listaUsuarios)
+            }
+            .addOnFailureListener { onError(it.message ?: "Error") }
+    }
+
+    fun listarOperarios(onSuccess: (List<UserModel>) -> Unit, onError: (String) -> Unit) {
+        dataBase.collection(Constants.USUARIOS)
+            .whereEqualTo("rol", "OPERARIO")
+            .whereEqualTo("estado", "ACTIVO")
+            .get()
+            .addOnSuccessListener { result ->
+                val lista = result.documents.mapNotNull { it.toObject(UserModel::class.java) }
+                onSuccess(lista)
+            }
+            .addOnFailureListener {
+                onError(it.message ?: "Error al listar operarios")
+            }
+    }
 }

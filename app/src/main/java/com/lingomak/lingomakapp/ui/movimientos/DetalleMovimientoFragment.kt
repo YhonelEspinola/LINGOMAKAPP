@@ -76,14 +76,10 @@ class DetalleMovimientoFragment : Fragment() {
         binding.tvTipo.text = movimiento.tipo
         binding.tvCantidad.text = movimiento.cantidad.toString()
         
-        val idProvisional = if (movimiento.registradoPor.length >= 6) {
-            movimiento.registradoPor.substring(0, 6)
-        } else {
-            movimiento.registradoPor
-        }
-        binding.tvUsuario.text = "Responsable: $idProvisional"
+        val nombreResponsable = movimiento.nombreRegistradoPor.ifBlank { "Sin registrar" }
+        binding.tvUsuario.text = "Responsable: $nombreResponsable"
         
-        val df = SimpleDateFormat("dd MMMM yyyy", Locale.getDefault())
+        val df = SimpleDateFormat("dd MMMM yyyy, HH:mm", Locale.getDefault())
         binding.tvFecha.text = movimiento.fecha?.let { df.format(it) } ?: "---"
 
         if (movimiento.tipo == "SALIDA") {

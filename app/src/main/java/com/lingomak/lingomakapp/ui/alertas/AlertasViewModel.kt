@@ -16,33 +16,36 @@ class AlertasViewModel(
     private val repository = AlertasRepository(application)
     private val mantenimientoRepository = MantenimientoRepository(application)
 
-    private val _listaAlertas = MutableLiveData<List<AlertaModel>>()
-    val listaAlertas: LiveData<List<AlertaModel>> get() = _listaAlertas
-
-    private val _totalAlertas = MutableLiveData<Int>(0)
-    val totalAlertas: LiveData<Int> get() = _totalAlertas
+    // UI observa Room directamente
+    val listaAlertas: LiveData<List<AlertaModel>> = repository.obtenerAlertasObservable()
+    val totalAlertas: LiveData<Int> = repository.obtenerTotalAlertasObservable()
 
     private val _mensajeError = MutableLiveData<String>()
     val mensajeError: LiveData<String> get() = _mensajeError
 
+    private val _loading = MutableLiveData<Boolean>()
+    val loading: LiveData<Boolean> = _loading
+
     fun listarAlertas(esOperario: Boolean = false) {
         val userUid = FirebaseAuth.getInstance().currentUser?.uid
+        _loading.value = true
         
         mantenimientoRepository.actualizarMantenimientosVencidos(
             onSuccess = {
                 repository.listarAlertas(
                     userUid = userUid,
                     esOperario = esOperario,
-                    onSuccess = { lista ->
-                        _listaAlertas.postValue(lista)
-                        _totalAlertas.postValue(lista.size)
+                    onSuccess = {
+                        _loading.postValue(false)
                     },
                     onError = { error ->
+                        _loading.postValue(false)
                         _mensajeError.postValue(error)
                     }
                 )
             },
             onError = { error ->
+                _loading.postValue(false)
                 _mensajeError.postValue(error)
             }
         )

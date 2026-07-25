@@ -3,11 +3,9 @@ package com.lingomak.lingomakapp.ui.mantenimiento
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.card.MaterialCardView
 import com.google.android.material.chip.Chip
 import com.lingomak.lingomakapp.R
 import com.lingomak.lingomakapp.data.model.MantenimientoModel
@@ -34,8 +32,8 @@ class MantenimientoPagerAdapter(
     
     private var filterTipo1: String = "TODOS"
     private var filterEstado1: String = "TODOS"
-    private var historyFechaInicio: Long = 0L
-    private var historyFechaFin: Long = Long.MAX_VALUE
+    var historyFechaInicio: Long = 0L
+    var historyFechaFin: Long = Long.MAX_VALUE
 
     fun updateData(newList: List<MantenimientoModel>) {
         allMantenimientos = newList
@@ -206,37 +204,6 @@ class MantenimientoPagerAdapter(
             }
 
             adapter.actualizarLista(filtered)
-            updateResumen(position, filtered)
-        }
-
-        private fun updateResumen(position: Int, list: List<MantenimientoModel>) {
-            binding.layoutResumen.removeAllViews()
-            
-            if (position == 0) {
-                val pendientes = list.count { it.estado == "PENDIENTE" }
-                val enProceso = list.count { it.estado == "EN_PROCESO" }
-                val vencidos = list.count { it.estado == "VENCIDO" }
-                
-                addCounterCard("Pendientes", pendientes, R.color.brand_yellow)
-                addCounterCard("En Proceso", enProceso, R.color.primary)
-                addCounterCard("Vencidos", vencidos, R.color.danger)
-            } else {
-                val finalizados = list.count { it.estado == "FINALIZADO" }
-                val cancelados = list.count { it.estado == "CANCELADO" }
-                
-                addCounterCard("Finalizados", finalizados, R.color.success)
-                addCounterCard("Cancelados", cancelados, R.color.text_secondary)
-            }
-        }
-
-        private fun addCounterCard(label: String, value: Int, colorRes: Int) {
-            val card = LayoutInflater.from(itemView.context).inflate(R.layout.item_resumen_counter, binding.layoutResumen, false) as MaterialCardView
-            card.findViewById<TextView>(R.id.tvCounterValue).apply {
-                text = value.toString()
-                setTextColor(ContextCompat.getColor(context, colorRes))
-            }
-            card.findViewById<TextView>(R.id.tvCounterLabel).text = label
-            binding.layoutResumen.addView(card)
         }
     }
 }

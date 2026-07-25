@@ -28,6 +28,7 @@ data class MantenimientoEntity(
     val registradoPor: String,
     val actualizadoPor: String,
     val prioridad: String,
+    val resolutorNombre: String = "",
     
     // Imágenes y rutas locales
     val imagenesReporte: List<String> = emptyList(),

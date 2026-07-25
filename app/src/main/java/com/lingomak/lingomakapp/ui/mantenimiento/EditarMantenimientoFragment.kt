@@ -17,9 +17,14 @@ import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.datepicker.MaterialDatePicker
 import com.lingomak.lingomakapp.R
+import com.lingomak.lingomakapp.data.model.MaquinariaModel
 import com.lingomak.lingomakapp.data.model.MantenimientoModel
+import com.lingomak.lingomakapp.data.model.UserModel
+import com.lingomak.lingomakapp.data.repository.UserRepository
 import com.lingomak.lingomakapp.databinding.FragmentEditarMantenimientoBinding
+import com.lingomak.lingomakapp.ui.maquinaria.MaquinariaViewModel
 import com.yalantis.ucrop.UCrop
 import java.io.File
 import java.io.IOException
@@ -33,8 +38,17 @@ class EditarMantenimientoFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val viewModel: MantenimientoViewModel by viewModels()
+    private val maquinariaViewModel: MaquinariaViewModel by viewModels()
+    private lateinit var userRepository: UserRepository
+
     private var uidMantenimiento = ""
     private var mantenimientoActual: MantenimientoModel? = null
+
+    private var listaMaquinarias: List<MaquinariaModel> = emptyList()
+    private var listaOperarios: List<UserModel> = emptyList()
+
+    private var maquinariaSeleccionada: MaquinariaModel? = null
+    private var operarioSeleccionado: UserModel? = null
 
     private val imagenesReporteLocal: MutableList<String> = mutableListOf()
     private val imagenesExistentesRemotas: MutableList<String> = mutableListOf()
@@ -75,6 +89,7 @@ class EditarMantenimientoFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentEditarMantenimientoBinding.inflate(inflater, container, false)
+        userRepository = UserRepository(requireContext())
         uidMantenimiento = arguments?.getString("uid") ?: ""
 
         configurarRecyclerView()
@@ -82,6 +97,9 @@ class EditarMantenimientoFragment : Fragment() {
         configurarEventos()
         observarViewModel()
         
+        cargarOperarios()
+        maquinariaViewModel.listarMaquinarias()
+
         if (uidMantenimiento.isNotEmpty()) {
             cargarDatos()
         }
@@ -118,9 +136,16 @@ class EditarMantenimientoFragment : Fragment() {
 
     private fun pintarDatos(m: MantenimientoModel) {
         binding.tvCodigoMantenimientoEditar.text = "Código: ${m.codigoMantenimiento}"
-        binding.tvMaquinariaEditar.text = "Maquinaria: ${m.nombreMaquinaria}"
-        binding.tvCodigoMaquinariaEditar.text = "Código maquinaria: ${m.codigoMaquinaria}"
-        binding.tvResponsableEditar.text = "Responsable: ${m.responsable}"
+        
+        // Maquinaria
+        val nombreMaqStr = "${m.nombreMaquinaria} (${m.codigoMaquinaria})"
+        binding.actvMaquinariaEditar.setText(nombreMaqStr, false)
+        
+        // Responsable
+        binding.actvResponsableEditar.setText(m.responsable, false)
+        if (m.responsableUid == "TODOS") {
+            operarioSeleccionado = UserModel(uid = "TODOS", nombre = "Todos los operarios")
+        }
 
         binding.etDescripcionEditar.setText(m.descripcion)
         binding.etFechaProgramadaEditar.setText(m.fechaProgramada)
@@ -139,6 +164,11 @@ class EditarMantenimientoFragment : Fragment() {
 
         imagenesExistentesRemotas.clear()
         imagenesExistentesRemotas.addAll(m.imagenesReporte)
+        
+        // No borramos lo que ya estaba pendiente de subir localmente
+        imagenesReporteLocal.clear()
+        imagenesReporteLocal.addAll(m.imagenesReporteLocal)
+
         actualizarListaAdapter()
     }
 
@@ -148,8 +178,28 @@ class EditarMantenimientoFragment : Fragment() {
     }
 
     private fun configurarEventos() {
+        binding.etFechaProgramadaEditar.setOnClickListener { mostrarDatePicker() }
         binding.btnAgregarEvidenciaEditar.setOnClickListener { mostrarSelectorImagen() }
         binding.btnGuardarCambiosMantenimiento.setOnClickListener { validarYGuardar() }
+
+        binding.actvMaquinariaEditar.setOnItemClickListener { _, _, position, _ ->
+            val seleccion = binding.actvMaquinariaEditar.adapter.getItem(position).toString()
+            maquinariaSeleccionada = listaMaquinarias.find { "${it.nombre} (${it.codigoMaquinaria})" == seleccion }
+            maquinariaSeleccionada?.let { 
+                if (binding.etHorometroProgramadoEditar.text.isNullOrBlank()) {
+                    binding.etHorometroProgramadoEditar.setText(it.horometroActual.toString())
+                }
+            }
+        }
+
+        binding.actvResponsableEditar.setOnItemClickListener { _, _, position, _ ->
+            val seleccion = binding.actvResponsableEditar.adapter.getItem(position).toString()
+            if (seleccion == "Todos los operarios") {
+                operarioSeleccionado = UserModel(uid = "TODOS", nombre = "Todos los operarios")
+            } else {
+                operarioSeleccionado = listaOperarios.find { it.nombre == seleccion }
+            }
+        }
     }
 
     private fun observarViewModel() {
@@ -159,6 +209,45 @@ class EditarMantenimientoFragment : Fragment() {
                 Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show()
             }
         }
+
+        maquinariaViewModel.listaMaquinarias.observe(viewLifecycleOwner) { maquinarias ->
+            listaMaquinarias = maquinarias
+            val nombres = maquinarias.map { "${it.nombre} (${it.codigoMaquinaria})" }
+            binding.actvMaquinariaEditar.setAdapter(ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, nombres))
+            
+            // Si ya tenemos el mantenimiento, intentar setear el objeto seleccionado
+            mantenimientoActual?.let { m ->
+                maquinariaSeleccionada = maquinarias.find { it.uid == m.uidMaquinaria }
+            }
+        }
+    }
+
+    private fun cargarOperarios() {
+        userRepository.listarOperarios({ usuarios ->
+            if (!isAdded || _binding == null) return@listarOperarios
+            listaOperarios = usuarios.filter { it.estado == "ACTIVO" }
+            val nombres = mutableListOf("Todos los operarios")
+            nombres.addAll(listaOperarios.map { it.nombre })
+            binding.actvResponsableEditar.setAdapter(ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, nombres))
+            
+            mantenimientoActual?.let { m ->
+                if (m.responsableUid != "TODOS") {
+                    operarioSeleccionado = listaOperarios.find { it.uid == m.responsableUid }
+                }
+            }
+        }, { error ->
+            if (isAdded) Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show()
+        })
+    }
+
+    private fun mostrarDatePicker() {
+        val picker = MaterialDatePicker.Builder.datePicker().setTitleText("Seleccionar fecha").build()
+        picker.addOnPositiveButtonClickListener { selection ->
+            val fecha = Date(selection)
+            val formato = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+            binding.etFechaProgramadaEditar.setText(formato.format(fecha))
+        }
+        picker.show(parentFragmentManager, "DATE_PICKER")
     }
 
     private fun validarYGuardar() {
@@ -166,8 +255,10 @@ class EditarMantenimientoFragment : Fragment() {
         
         val descripcion = binding.etDescripcionEditar.text.toString().trim()
         val horometroStr = binding.etHorometroProgramadoEditar.text.toString().trim()
-        
-        if (descripcion.isEmpty() || horometroStr.isEmpty()) {
+        val maq = maquinariaSeleccionada ?: (if (binding.actvMaquinariaEditar.text.isNotEmpty()) m else null)
+        val resp = operarioSeleccionado ?: (if (binding.actvResponsableEditar.text.isNotEmpty()) m else null)
+
+        if (descripcion.isEmpty() || horometroStr.isEmpty() || maq == null || resp == null) {
             Toast.makeText(requireContext(), "Complete los campos obligatorios", Toast.LENGTH_SHORT).show()
             return
         }
@@ -177,9 +268,18 @@ class EditarMantenimientoFragment : Fragment() {
         val nuevoEstado = if (m.estado == "VENCIDO" || m.estado == "CANCELADO") "PENDIENTE" else m.estado
 
         val mActualizado = m.copy(
+            uidMaquinaria = if (maquinariaSeleccionada != null) maquinariaSeleccionada!!.uid else m.uidMaquinaria,
+            codigoMaquinaria = if (maquinariaSeleccionada != null) maquinariaSeleccionada!!.codigoMaquinaria else m.codigoMaquinaria,
+            nombreMaquinaria = if (maquinariaSeleccionada != null) maquinariaSeleccionada!!.nombre else m.nombreMaquinaria,
+            tipoMaquinaria = if (maquinariaSeleccionada != null) maquinariaSeleccionada!!.tipo else m.tipoMaquinaria,
+            
+            responsable = if (operarioSeleccionado != null) operarioSeleccionado!!.nombre else m.responsable,
+            responsableUid = if (operarioSeleccionado != null) operarioSeleccionado!!.uid else m.responsableUid,
+
             tipoMantenimiento = binding.spTipoMantenimientoEditar.selectedItem.toString(),
             prioridad = if (binding.rbPrioridadAltaEditar.isChecked) "ALTA" else if (binding.rbPrioridadMediaEditar.isChecked) "MEDIA" else "BAJA",
             descripcion = descripcion,
+            fechaProgramada = binding.etFechaProgramadaEditar.text.toString(),
             horometroProgramado = horometroStr.toIntOrNull() ?: m.horometroProgramado,
             costoEstimado = binding.etCostoEstimadoEditar.text.toString().toDoubleOrNull() ?: m.costoEstimado,
             observaciones = binding.etObservacionesEditar.text.toString().trim(),

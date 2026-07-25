@@ -1,6 +1,7 @@
 package com.lingomak.lingomakapp.ui.mantenimiento
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,7 +13,6 @@ import com.lingomak.lingomakapp.R
 import com.lingomak.lingomakapp.data.model.MantenimientoModel
 import com.lingomak.lingomakapp.databinding.FragmentDetalleMantenimientoBinding
 import com.lingomak.lingomakapp.ui.dashboard.DashboardAdminActivity
-import com.lingomak.lingomakapp.utils.ImageOptimizer
 
 class DetalleMantenimientoFragment : Fragment() {
 
@@ -55,49 +55,81 @@ class DetalleMantenimientoFragment : Fragment() {
         tituloAlerta = arguments?.getString("tituloAlerta") ?: ""
         mensajeAlerta = arguments?.getString("mensajeAlerta") ?: ""
 
-        cargarDatos()
+        setupUI()
+        observarMantenimiento()
         configurarEventos()
-        observarViewModel()
 
         return binding.root
     }
 
-    private fun cargarDatos() {
-        viewModel.obtenerMantenimientoPorUid(uidMantenimiento) { m ->
-            mantenimientoActual = m
-            uidMaquinaria = m.uidMaquinaria
-            estadoActual = m.estado
-            codigoMantenimiento = m.codigoMantenimiento
-            tipoMantenimiento = m.tipoMantenimiento
-            nombreMaquinaria = m.nombreMaquinaria
-            codigoMaquinaria = m.codigoMaquinaria
-            tipoMaquinaria = m.tipoMaquinaria
-            descripcion = m.descripcion
-            fechaProgramada = m.fechaProgramada
-            responsable = m.responsable
-            prioridad = m.prioridad
-            observaciones = m.observaciones
-            horometroProgramado = m.horometroProgramado
-            costoEstimado = m.costoEstimado
+    private fun setupUI() {
+        // Inicialmente ocultamos botones que dependen del estado
+        binding.btnEditarMantenimiento.visibility = View.GONE
+        binding.btnCambiarEstado.visibility = View.GONE
+        binding.btnFinalizarMantenimiento.visibility = View.GONE
+        binding.btnGenerarReporteIA.visibility = View.GONE
+    }
 
-            binding.tvCodigoDetalle.text = codigoMantenimiento
-            binding.tvTipoDetalle.text = tipoMantenimiento
-            binding.tvMaquinariaDetalle.text = nombreMaquinaria
-            binding.tvCodigoMaquinariaDetalle.text = codigoMaquinaria
-            binding.tvTipoMaquinariaDetalle.text = tipoMaquinaria
-            binding.tvDescripcionDetalle.text = descripcion
-            binding.tvFechaDetalle.text = fechaProgramada
-            binding.tvHorometroDetalle.text = "$horometroProgramado h"
-            binding.tvResponsableDetalle.text = responsable
-            binding.tvPrioridadDetalle.text = prioridad
-            binding.tvCostoEstimadoDetalle.text = "S/ $costoEstimado"
-            binding.tvObservacionesDetalle.text = observaciones.ifEmpty { "Sin observaciones" }
-
-            aplicarColorEstado(estadoActual)
-            actualizarAccionesPorEstado()
-            configurarImagenes()
-            mostrarBannerAlerta()
+    private fun observarMantenimiento() {
+        if (uidMantenimiento.isNotEmpty()) {
+            viewModel.obtenerMantenimientoPorUidObservable(uidMantenimiento).observe(viewLifecycleOwner) { m ->
+                m?.let {
+                    mantenimientoActual = it
+                    pintarDatos(it)
+                }
+            }
         }
+        
+        viewModel.mensajeError.observe(viewLifecycleOwner) { error ->
+            if (error.isNotEmpty()) Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun pintarDatos(m: MantenimientoModel) {
+        uidMaquinaria = m.uidMaquinaria
+        estadoActual = m.estado
+        codigoMantenimiento = m.codigoMantenimiento
+        tipoMantenimiento = m.tipoMantenimiento
+        nombreMaquinaria = m.nombreMaquinaria
+        codigoMaquinaria = m.codigoMaquinaria
+        tipoMaquinaria = m.tipoMaquinaria
+        descripcion = m.descripcion
+        fechaProgramada = m.fechaProgramada
+        responsable = m.responsable
+        prioridad = m.prioridad
+        observaciones = m.observaciones
+        horometroProgramado = m.horometroProgramado
+        costoEstimado = m.costoEstimado
+
+        binding.tvCodigoDetalle.text = codigoMantenimiento
+        binding.tvTipoDetalle.text = tipoMantenimiento
+        binding.tvMaquinariaDetalle.text = nombreMaquinaria
+        binding.tvCodigoMaquinariaDetalle.text = codigoMaquinaria
+        binding.tvTipoMaquinariaDetalle.text = tipoMaquinaria
+        binding.tvDescripcionDetalle.text = descripcion
+        binding.tvFechaDetalle.text = fechaProgramada
+        binding.tvHorometroDetalle.text = "$horometroProgramado h"
+        binding.tvResponsableDetalle.text = responsable
+        binding.tvPrioridadDetalle.text = prioridad
+        binding.tvCostoEstimadoDetalle.text = "S/ $costoEstimado"
+        binding.tvObservacionesDetalle.text = observaciones.ifEmpty { "Sin observaciones" }
+
+        // Pestaña Resolutor
+        if (m.estado == "FINALIZADO") {
+            binding.separatorResolutor.visibility = View.VISIBLE
+            binding.tvLabelResolutor.visibility = View.VISIBLE
+            binding.tvResolutorDetalle.visibility = View.VISIBLE
+            binding.tvResolutorDetalle.text = if (m.resolutorNombre.isNotBlank()) m.resolutorNombre else "No registrado"
+        } else {
+            binding.separatorResolutor.visibility = View.GONE
+            binding.tvLabelResolutor.visibility = View.GONE
+            binding.tvResolutorDetalle.visibility = View.GONE
+        }
+
+        aplicarColorEstado(estadoActual)
+        actualizarAccionesPorEstado()
+        configurarImagenes()
+        mostrarBannerAlerta()
     }
 
     private fun configurarEventos() {
@@ -123,7 +155,7 @@ class DetalleMantenimientoFragment : Fragment() {
             .setMessage("¿Desea marcar este mantenimiento como EN PROCESO?")
             .setPositiveButton("Sí, iniciar") { _, _ ->
                 viewModel.iniciarMantenimiento(uidMantenimiento, uidMaquinaria) {
-                    cargarDatos()
+                    // Room actualizará el LiveData
                 }
             }
             .setNegativeButton("Cancelar", null)
@@ -138,11 +170,11 @@ class DetalleMantenimientoFragment : Fragment() {
                 val nuevoEstado = estados[which]
                 if (nuevoEstado == "EN_PROCESO") {
                     viewModel.iniciarMantenimiento(uidMantenimiento, uidMaquinaria) {
-                        cargarDatos()
+                        // Room actualizará
                     }
                 } else {
                     viewModel.cambiarEstadoMantenimiento(uidMantenimiento, nuevoEstado) {
-                        cargarDatos()
+                        // Room actualizará
                     }
                 }
             }
@@ -206,21 +238,32 @@ class DetalleMantenimientoFragment : Fragment() {
 
     private fun configurarImagenes() {
         mantenimientoActual?.let { m ->
-            if (m.imagenesReporte.isNotEmpty()) {
+            Log.d("DetalleMantenimiento", "Reporte: ${m.imagenesReporte.size} rem / ${m.imagenesReporteLocal.size} loc. Final: ${m.imagenesFinalizacion.size} rem / ${m.imagenesFinalizacionLocal.size} loc")
+            
+            val todasReporte = m.imagenesReporte + m.imagenesReporteLocal
+            if (todasReporte.isNotEmpty()) {
                 binding.tvLabelImagenesReporte.visibility = View.VISIBLE
                 binding.rvImagenesReporteDetalle.visibility = View.VISIBLE
-                val adapter = EvidenciasReadOnlyAdapter(m.imagenesReporte) { url ->
+                val adapter = EvidenciasReadOnlyAdapter(todasReporte) { url ->
                     mostrarImagenAmpliada(url)
                 }
                 binding.rvImagenesReporteDetalle.adapter = adapter
+            } else {
+                binding.tvLabelImagenesReporte.visibility = View.GONE
+                binding.rvImagenesReporteDetalle.visibility = View.GONE
             }
-            if (m.imagenesFinalizacion.isNotEmpty()) {
+            
+            val todasFinal = m.imagenesFinalizacion + m.imagenesFinalizacionLocal
+            if (todasFinal.isNotEmpty()) {
                 binding.tvLabelImagenesFinal.visibility = View.VISIBLE
                 binding.rvImagenesFinalDetalle.visibility = View.VISIBLE
-                val adapter = EvidenciasReadOnlyAdapter(m.imagenesFinalizacion) { url ->
+                val adapter = EvidenciasReadOnlyAdapter(todasFinal) { url ->
                     mostrarImagenAmpliada(url)
                 }
                 binding.rvImagenesFinalDetalle.adapter = adapter
+            } else {
+                binding.tvLabelImagenesFinal.visibility = View.GONE
+                binding.rvImagenesFinalDetalle.visibility = View.GONE
             }
         }
     }
@@ -230,23 +273,13 @@ class DetalleMantenimientoFragment : Fragment() {
         val imageView = dialogView.findViewById<android.widget.ImageView>(R.id.ivImagenAmpliada)
         
         com.bumptech.glide.Glide.with(this)
-            .load(url)
+            .load(if (url.startsWith("http")) url else java.io.File(url))
             .into(imageView)
 
         AlertDialog.Builder(requireContext())
             .setView(dialogView)
             .setPositiveButton("Cerrar", null)
             .show()
-    }
-
-    private fun observarViewModel() {
-        viewModel.mensajeError.observe(viewLifecycleOwner) { error ->
-            if (error.isNotEmpty()) Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show()
-        }
-
-        viewModel.loadingAI.observe(viewLifecycleOwner) { loading ->
-            // Se puede mostrar un progress si se desea
-        }
     }
 
     private fun abrirDetalleReporteIA() {
@@ -266,7 +299,7 @@ class DetalleMantenimientoFragment : Fragment() {
     private fun abrirFinalizarMantenimiento() {
         val fragment = FinalizarMantenimientoFragment()
         val bundle = Bundle()
-        bundle.putString("uid", uidMantenimiento) // Corregido: FinalizarMantenimientoFragment espera "uid"
+        bundle.putString("uid", uidMantenimiento)
         fragment.arguments = bundle
         
         val containerId = if (requireActivity() is DashboardAdminActivity) R.id.fragmentContainerAdmin else R.id.containerOperario

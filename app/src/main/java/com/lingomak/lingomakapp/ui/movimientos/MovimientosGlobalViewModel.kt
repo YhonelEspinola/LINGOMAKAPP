@@ -2,6 +2,7 @@ package com.lingomak.lingomakapp.ui.movimientos
 
 import android.app.Application
 import androidx.lifecycle.*
+import com.google.firebase.auth.FirebaseAuth
 import com.lingomak.lingomakapp.data.local.AppDatabase
 import com.lingomak.lingomakapp.data.model.MovimientoModel
 import com.lingomak.lingomakapp.data.model.RepuestoModel
@@ -12,7 +13,9 @@ import java.util.*
 class MovimientosGlobalViewModel(application: Application) : AndroidViewModel(application) {
 
     private val movimientoRepository = MovimientoRepository(application)
-    private val repuestoDao = AppDatabase.getInstance(application).repuestoDao()
+    private val database = AppDatabase.getInstance(application)
+    private val repuestoDao = database.repuestoDao()
+    private val userDao = database.userDao()
 
     private val _filtroTipo = MutableLiveData<String?>(null)
     private val _filtroTexto = MutableLiveData<String>("")
@@ -181,7 +184,21 @@ class MovimientosGlobalViewModel(application: Application) : AndroidViewModel(ap
                     return@launch
                 }
 
-                movimientoRepository.registrarMovimiento(movimiento)
+                val user = FirebaseAuth.getInstance().currentUser
+                val uid = user?.uid ?: ""
+                var nombre = user?.displayName ?: ""
+                
+                if (nombre.isBlank() && uid.isNotEmpty()) {
+                    nombre = userDao.obtenerPorUid(uid)?.nombre ?: "Administrador"
+                } else if (nombre.isBlank()) {
+                    nombre = "Usuario"
+                }
+
+                val movConNombre = movimiento.copy(
+                    registradoPor = uid,
+                    nombreRegistradoPor = nombre
+                )
+                movimientoRepository.registrarMovimiento(movConNombre)
                 _registroExitoso.postValue(true)
             } catch (e: Exception) {
                 _error.postValue("Error al registrar: ${e.message}")
@@ -223,7 +240,21 @@ class MovimientosGlobalViewModel(application: Application) : AndroidViewModel(ap
                     return@launch
                 }
 
-                movimientoRepository.actualizarMovimiento(movimiento, deltaFinal)
+                val user = FirebaseAuth.getInstance().currentUser
+                val uid = user?.uid ?: ""
+                var nombre = user?.displayName ?: ""
+
+                if (nombre.isBlank() && uid.isNotEmpty()) {
+                    nombre = userDao.obtenerPorUid(uid)?.nombre ?: "Administrador"
+                } else if (nombre.isBlank()) {
+                    nombre = "Usuario"
+                }
+
+                val movConNombre = movimiento.copy(
+                    registradoPor = uid,
+                    nombreRegistradoPor = nombre
+                )
+                movimientoRepository.actualizarMovimiento(movConNombre, deltaFinal)
                 _registroExitoso.postValue(true)
             } catch (e: Exception) {
                 _error.postValue("Error al actualizar: ${e.message}")

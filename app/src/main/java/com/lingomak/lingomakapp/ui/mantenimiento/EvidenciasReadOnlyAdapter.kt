@@ -28,8 +28,11 @@ class EvidenciasReadOnlyAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val path = images[position]
         
-        // Cargamos de archivo local si la ruta existe, sino la URL directa
-        val imageSource = if (path.startsWith("/")) File(path) else path
+        // Cargamos de forma inteligente: URLs remotas, URIs de contenido/archivo o File local
+        val imageSource = when {
+            path.startsWith("http") || path.startsWith("content") || path.startsWith("file") -> path
+            else -> File(path)
+        }
 
         Glide.with(holder.itemView.context)
             .load(imageSource)

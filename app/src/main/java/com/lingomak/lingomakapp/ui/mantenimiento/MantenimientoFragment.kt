@@ -76,7 +76,7 @@ class MantenimientoFragment : Fragment() {
         }
 
         TabLayoutMediator(binding.tabLayoutMantenimiento, binding.viewPagerMantenimiento) { tab, position ->
-            tab.text = if (position == 0) "ACTIVOS" else "HISTORIAL"
+            tab.text = if (position == 0) "EN COLA" else "HISTORIAL"
         }.attach()
         
         binding.viewPagerMantenimiento.registerOnPageChangeCallback(object : androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback() {
@@ -130,7 +130,13 @@ class MantenimientoFragment : Fragment() {
 
         binding.btnExportarCsv.setOnClickListener {
             if (historyVisibleList.isNotEmpty()) {
-                CsvExporter.exportMantenimiento(requireContext(), historyVisibleList, createDocumentLauncher)
+                CsvExporter.exportMantenimiento(
+                    requireContext(), 
+                    historyVisibleList, 
+                    createDocumentLauncher,
+                    pagerAdapter.historyFechaInicio,
+                    pagerAdapter.historyFechaFin
+                )
             } else {
                 Toast.makeText(requireContext(), "No hay datos para exportar", Toast.LENGTH_SHORT).show()
             }

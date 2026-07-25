@@ -29,11 +29,10 @@ class EvidenciasAdapter(
     override fun onBindViewHolder(holder: EvidenciaViewHolder, position: Int) {
         val path = images[position]
         
-        // Cargamos de forma inteligente: si empieza con content o file cargamos URI, si no cargamos File
-        val loadTarget = if (path.startsWith("content://") || path.startsWith("file://")) {
-            path
-        } else {
-            File(path)
+        // Cargamos de forma inteligente: URLs remotas, URIs de contenido/archivo o File local
+        val loadTarget = when {
+            path.startsWith("http") || path.startsWith("content") || path.startsWith("file") -> path
+            else -> File(path)
         }
 
         Glide.with(holder.itemView.context)

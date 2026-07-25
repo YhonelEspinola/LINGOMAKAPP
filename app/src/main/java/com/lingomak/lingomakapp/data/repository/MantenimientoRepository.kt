@@ -44,6 +44,7 @@ class MantenimientoRepository(context: Context) {
     private val maquinariaDao = database.maquinariaDao()
     private val repuestoDao = database.repuestoDao()
     private val movimientoDao = database.movimientoDao()
+    private val userDao = database.userDao()
     private val appContext = context.applicationContext
 
     // ===================================================================
@@ -60,6 +61,10 @@ class MantenimientoRepository(context: Context) {
         return maintenanceDao.obtenerAsignadosObservable(userUid).map { entities ->
             entities.map { it.aModel() }
         }
+    }
+
+    fun obtenerMantenimientoPorUidObservable(uid: String): LiveData<MantenimientoModel?> {
+        return maintenanceDao.obtenerPorUidObservable(uid).map { it?.aModel() }
     }
 
     fun obtenerMantenimientoPorUid(
@@ -193,7 +198,15 @@ class MantenimientoRepository(context: Context) {
         onError: (String) -> Unit
     ){
         try {
-            val userUid = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+            val user = FirebaseAuth.getInstance().currentUser
+            val userUid = user?.uid ?: ""
+            var userName = user?.displayName ?: ""
+
+            if (userName.isBlank() && userUid.isNotEmpty()) {
+                userName = userDao.obtenerPorUid(userUid)?.nombre ?: "Operario"
+            } else if (userName.isBlank()) {
+                userName = "Usuario"
+            }
 
             database.withTransaction {
                 val mActual = maintenanceDao.obtenerPorUid(uid)
@@ -222,6 +235,7 @@ class MantenimientoRepository(context: Context) {
                     horometroReal = horometroReal,
                     costoReal = costoReal,
                     observaciones = observacionesFinales,
+                    resolutorNombre = userName,
                     fechaActualizacion = obtenerFechaActual(),
                     imagenesFinalizacionLocal = imagenesFinalizacionLocal,
                     estadoSync = if (mActual.estadoSync == "SINCRONIZADO") "PENDIENTE_ACTUALIZAR" else mActual.estadoSync,
@@ -249,10 +263,13 @@ class MantenimientoRepository(context: Context) {
                         cantidad = insumo.cantidad,
                         fecha = System.currentTimeMillis(),
                         registradoPor = userUid,
-                        observacion = "Consumo en mantenimiento $uid",
+                        nombreRegistradoPor = userName,
+                        observacion = "Consumo en mantenimiento ${mActualizado.codigoMantenimiento}",
                         destinoSalida = "CONSUMO_INTERNO",
                         ordenMantenimientoUid = uid,
+                        codigoMantenimientoAsociado = mActualizado.codigoMantenimiento,
                         maquinariaUid = uidMaquinaria,
+                        nombreMaquinariaAsociada = maqActualizada.nombre,
                         estadoSync = "PENDIENTE_CREAR",
                         timestampLocal = System.currentTimeMillis()
                     )
@@ -294,7 +311,7 @@ class MantenimientoRepository(context: Context) {
                         } catch (e: Exception) { /* Reintento */ }
                     }
                     if (urlsReporte.isNotEmpty()) {
-                        modelParaSubir = modelParaSubir.copy(imagenesReporte = urlsReporte)
+                        modelParaSubir = modelParaSubir.copy(imagenesReporte = modelParaSubir.imagenesReporte + urlsReporte)
                         huboCambioLocal = true
                     }
                 }
@@ -309,7 +326,7 @@ class MantenimientoRepository(context: Context) {
                         } catch (e: Exception) { /* Reintento */ }
                     }
                     if (urlsFinal.isNotEmpty()) {
-                        modelParaSubir = modelParaSubir.copy(imagenesFinalizacion = urlsFinal)
+                        modelParaSubir = modelParaSubir.copy(imagenesFinalizacion = modelParaSubir.imagenesFinalizacion + urlsFinal)
                         huboCambioLocal = true
                     }
                 }
@@ -357,7 +374,12 @@ class MantenimientoRepository(context: Context) {
     }
 
     private suspend fun subirImagenDesdeArchivo(uid: String, path: String, tipo: String): String {
-        val file = File(path)
+        val file = if (path.startsWith("content://") || path.startsWith("file://")) {
+            File(Uri.parse(path).path ?: "")
+        } else {
+            File(path)
+        }
+
         if (!file.exists()) return ""
         val fileUri = Uri.fromFile(file)
         val folder = if (tipo == "reporte") storageReportes else storageFinalizacion
@@ -521,6 +543,7 @@ class MantenimientoRepository(context: Context) {
             registradoPor = registradoPor,
             actualizadoPor = actualizadoPor,
             prioridad = prioridad,
+            resolutorNombre = resolutorNombre,
             imagenesReporte = imagenesReporte,
             imagenesFinalizacion = imagenesFinalizacion,
             imagenesReporteLocal = imagenesReporteLocal,
@@ -556,6 +579,7 @@ class MantenimientoRepository(context: Context) {
             registradoPor = registradoPor,
             actualizadoPor = actualizadoPor,
             prioridad = prioridad,
+            resolutorNombre = resolutorNombre,
             imagenesReporte = imagenesReporte,
             imagenesFinalizacion = imagenesFinalizacion,
             imagenesReporteLocal = imagenesReporteLocal,

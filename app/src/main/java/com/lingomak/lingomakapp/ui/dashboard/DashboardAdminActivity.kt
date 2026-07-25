@@ -7,6 +7,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.google.firebase.Firebase
 import com.google.firebase.appcheck.appCheck
 import com.google.firebase.appcheck.debug.DebugAppCheckProviderFactory
@@ -33,6 +34,8 @@ import com.lingomak.lingomakapp.ui.repuestos.InventarioFragment
 import com.lingomak.lingomakapp.ui.usuarios.UsuariosFragment
 import com.lingomak.lingomakapp.utils.Constants
 import com.lingomak.lingomakapp.data.worker.AlertasWorkerManager
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class DashboardAdminActivity : AppCompatActivity() {
 
@@ -68,6 +71,8 @@ class DashboardAdminActivity : AppCompatActivity() {
          */
         AlertasWorkerManager.programarRevisionAlertas(this)
 
+        dispararSincronizacionInicial()
+
         /*
          * Este dispositivo recibirá las notificaciones
          * dirigidas a administradores.
@@ -96,6 +101,19 @@ class DashboardAdminActivity : AppCompatActivity() {
              */
             if (!destinoProcesado) {
                 abrirHome()
+            }
+        }
+    }
+
+    private fun dispararSincronizacionInicial() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                com.lingomak.lingomakapp.data.repository.RepuestoRepository(this@DashboardAdminActivity).descargarCambiosDeFirestore()
+                com.lingomak.lingomakapp.data.repository.MaquinariaRepository(this@DashboardAdminActivity).descargarMaquinariasDeFirestore()
+                com.lingomak.lingomakapp.data.repository.MantenimientoRepository(this@DashboardAdminActivity).descargarCambiosDeFirestore()
+                com.lingomak.lingomakapp.data.repository.UserRepository(this@DashboardAdminActivity).descargarUsuariosDeFirestore()
+            } catch (e: Exception) {
+                // Silencioso
             }
         }
     }

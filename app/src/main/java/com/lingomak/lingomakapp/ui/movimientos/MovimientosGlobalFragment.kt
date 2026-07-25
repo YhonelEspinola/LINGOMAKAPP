@@ -24,21 +24,13 @@ class MovimientosGlobalFragment : Fragment() {
 
     private val viewModel: MovimientosGlobalViewModel by viewModels()
     private lateinit var adapter: MovimientosGlobalAdapter
+    private var fechaInicio: Long = 0L
+    private var fechaFin: Long = Long.MAX_VALUE
 
     private val createDocumentLauncher = registerForActivityResult(ActivityResultContracts.CreateDocument("text/csv")) { uri ->
         uri?.let {
             val data = viewModel.movimientosFiltrados.value ?: emptyList()
-            val header = "Fecha,Tipo,Nombre del Repuesto,Cantidad,Destino,Registrado por,Orden Mantenimiento,Máquina,Observación"
-            val rows = data.map { (mov, nombre) ->
-                val fecha = mov.fecha?.let { d -> java.text.SimpleDateFormat("yyyy-MM-dd HH:mm", java.util.Locale.getDefault()).format(d) } ?: ""
-                val destino = when(mov.destinoSalida) {
-                    "CONSUMO_INTERNO" -> "Consumo Interno"
-                    "DISTRIBUCION_EXTERNA" -> "Distribución Externa"
-                    else -> mov.destinoSalida
-                }
-                "${fecha},${CsvExporter.escapeCsv(mov.tipo)},${CsvExporter.escapeCsv(nombre)},${mov.cantidad},${CsvExporter.escapeCsv(destino)},${CsvExporter.escapeCsv(mov.registradoPor)},${CsvExporter.escapeCsv(mov.ordenMantenimientoUid ?: "")},${CsvExporter.escapeCsv(mov.maquinariaUid ?: "")},${CsvExporter.escapeCsv(mov.observacion)}"
-            }
-            val csvContent = header + "\n" + rows.joinToString("\n")
+            val csvContent = CsvExporter.buildMovimientosCsvContent(data)
             CsvExporter.saveCsvToUri(requireContext(), it, csvContent)
         }
     }
@@ -94,6 +86,8 @@ class MovimientosGlobalFragment : Fragment() {
         })
 
         binding.selectorFechas.onRangoSeleccionado = { inicio, fin, etiqueta ->
+            fechaInicio = inicio
+            fechaFin = fin
             viewModel.setRangoFechas(inicio, fin)
             // Actualizar el texto del filtro actual arriba del buscador
             binding.root.findViewById<TextView>(R.id.tvFiltroActual)?.text = etiqueta
@@ -129,21 +123,17 @@ class MovimientosGlobalFragment : Fragment() {
 
         binding.btnExportarCsv.setOnClickListener {
             val data = viewModel.movimientosFiltrados.value ?: emptyList()
-            CsvExporter.exportMovimientos(requireContext(), data, createDocumentLauncher)
+            CsvExporter.exportMovimientos(
+                context = requireContext(),
+                data = data,
+                launcher = createDocumentLauncher,
+                inicio = fechaInicio,
+                fin = fechaFin
+            )
         }
         
         validarAccesoAdmin()
 
-        /*binding.btnEstadisticas.setOnClickListener {
-            val fragment = MovimientosEstadisticasFragment()
-            val containerId = if (requireActivity() is com.lingomak.lingomakapp.ui.dashboard.DashboardAdminActivity) 
-                R.id.fragmentContainerAdmin else R.id.containerOperario
-                
-            parentFragmentManager.beginTransaction()
-                .replace(containerId, fragment)
-                .addToBackStack(null)
-                .commit()
-        }*/
         filtroInicialTexto = arguments?.getString("filtroTexto") ?: ""
     }
 

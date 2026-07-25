@@ -15,24 +15,14 @@ class InsumoMantenimientoAdapter(
 ) : RecyclerView.Adapter<InsumoMantenimientoAdapter.InsumoViewHolder>() {
 
     class InsumoViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val tvNombre: TextView = view.findViewById(android.R.id.text1)
-        val tvCantidad: TextView = view.findViewById(android.R.id.text2)
-        val btnEliminar: ImageButton = ImageButton(view.context).apply {
-            setImageResource(android.R.drawable.ic_menu_delete)
-            setBackgroundColor(android.graphics.Color.TRANSPARENT)
-        }
-        
-        init {
-            (view as ViewGroup).addView(btnEliminar, ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.MATCH_PARENT
-            ))
-        }
+        val tvNombre: TextView = view.findViewById(R.id.tvInsumoNombre)
+        val tvCantidad: TextView = view.findViewById(R.id.tvInsumoCantidad)
+        val btnEliminar: ImageButton = view.findViewById(R.id.btnEliminarInsumo)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): InsumoViewHolder {
         val view = LayoutInflater.from(parent.context)
-            .inflate(android.R.layout.simple_list_item_2, parent, false)
+            .inflate(R.layout.item_insumo_mantenimiento, parent, false)
         return InsumoViewHolder(view)
     }
 

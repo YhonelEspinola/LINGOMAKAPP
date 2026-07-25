@@ -43,7 +43,7 @@ class ProgramarMantenimientoFragment : Fragment() {
     private val maquinariaViewModel: MaquinariaViewModel by viewModels()
     private val mantenimientoViewModel: MantenimientoViewModel by viewModels()
 
-    private val userRepository = UserRepository()
+    private lateinit var userRepository: UserRepository
     private val solicitudRepository = SolicitudMantenimientoRepository()
 
     private var listaMaquinarias: List<MaquinariaModel> = emptyList()
@@ -153,6 +153,7 @@ class ProgramarMantenimientoFragment : Fragment() {
             container,
             false
         )
+        userRepository = UserRepository(requireContext())
 
         configurarRecyclerView()
         configurarSpinners()

@@ -14,5 +14,8 @@ data class MovimientoModel(
     val observacion: String = "",
     val destinoSalida: String = "", // "CONSUMO_INTERNO" o "DISTRIBUCION_EXTERNA"
     val ordenMantenimientoUid: String? = null,
-    val maquinariaUid: String? = null
+    val maquinariaUid: String? = null,
+    val nombreRegistradoPor: String = "",
+    val codigoMantenimientoAsociado: String? = null,
+    val nombreMaquinariaAsociada: String? = null
 )

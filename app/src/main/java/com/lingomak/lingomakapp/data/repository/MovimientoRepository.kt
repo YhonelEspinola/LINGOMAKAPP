@@ -282,7 +282,10 @@ private fun MovimientoEntity.aModel(): MovimientoModel {
         observacion = observacion,
         destinoSalida = destinoSalida,
         ordenMantenimientoUid = ordenMantenimientoUid,
-        maquinariaUid = maquinariaUid
+        maquinariaUid = maquinariaUid,
+        nombreRegistradoPor = nombreRegistradoPor,
+        codigoMantenimientoAsociado = codigoMantenimientoAsociado,
+        nombreMaquinariaAsociada = nombreMaquinariaAsociada
     )
 }
 
@@ -297,6 +300,9 @@ private fun MovimientoModel.aEntity(): MovimientoEntity {
         observacion = observacion,
         destinoSalida = destinoSalida,
         ordenMantenimientoUid = ordenMantenimientoUid,
-        maquinariaUid = maquinariaUid
+        maquinariaUid = maquinariaUid,
+        nombreRegistradoPor = nombreRegistradoPor,
+        codigoMantenimientoAsociado = codigoMantenimientoAsociado,
+        nombreMaquinariaAsociada = nombreMaquinariaAsociada
     )
 }

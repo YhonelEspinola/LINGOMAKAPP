@@ -206,7 +206,7 @@
 
                 <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
                     <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="RESPONSABLE" android:textSize="11sp" android:textStyle="bold" android:textColor="#757575"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="ASIGNADO A:" android:textSize="11sp" android:textStyle="bold" android:textColor="#757575"/>
                         <TextView android:id="@+id/tvResponsableDetalle" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Juan Perez" android:textColor="#212121" android:textSize="15sp"/>
                     </LinearLayout>
                     <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
@@ -214,6 +214,28 @@
                         <TextView android:id="@+id/tvPrioridadDetalle" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="ALTA" android:textColor="#212121" android:textSize="15sp"/>
                     </LinearLayout>
                 </LinearLayout>
+
+                <View android:id="@+id/separatorResolutor" android:layout_width="match_parent" android:layout_height="1dp" android:background="#F5F5F5" android:layout_marginVertical="12dp" android:visibility="gone"/>
+
+                <TextView
+                    android:id="@+id/tvLabelResolutor"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="RESOLUTOR (QUIÉN FINALIZÓ)"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:textColor="#757575"
+                    android:visibility="gone"/>
+
+                <TextView
+                    android:id="@+id/tvResolutorDetalle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="Nombre del técnico"
+                    android:textColor="#212121"
+                    android:textSize="15sp"
+                    android:visibility="gone"/>
 
                 <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#F5F5F5" android:layout_marginVertical="12dp"/>
 

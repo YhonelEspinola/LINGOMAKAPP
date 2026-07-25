@@ -27,6 +27,7 @@ data class MantenimientoModel(
     var registradoPor: String = "",
     var actualizadoPor: String = "",
     var prioridad: String = "",
+    var resolutorNombre: String = "", // Nombre del usuario que finalizó el mantenimiento
     var imagenesReporte: List<String> = emptyList(),
     var imagenesFinalizacion: List<String> = emptyList(),
     var imagenesReporteLocal: List<String> = emptyList(), // Solo uso local

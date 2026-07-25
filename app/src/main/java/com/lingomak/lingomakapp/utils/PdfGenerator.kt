@@ -66,8 +66,12 @@ class PdfGenerator(private val context: Context) {
         currentCanvas?.drawText("Horómetro: ${mantenimiento.horometroReal} h", 300f, y, paint)
         
         y += 15f
-        currentCanvas?.drawText("Responsable: ${mantenimiento.responsable}", margin, y, paint)
+        currentCanvas?.drawText("Asignado a: ${mantenimiento.responsable}", margin, y, paint)
         currentCanvas?.drawText("Costo Real: S/ ${mantenimiento.costoReal}", 300f, y, paint)
+        
+        y += 15f
+        val resolutor = if (mantenimiento.resolutorNombre.isBlank()) "No registrado" else mantenimiento.resolutorNombre
+        currentCanvas?.drawText("Resolutor: $resolutor", margin, y, paint)
 
         // 3. NARRATIVA IA
         y += 40f
