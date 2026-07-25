@@ -37,8 +37,8 @@ class MantenimientoPagerAdapter(
     
     // Estado de expansión de filtros por página
     private val expandedFilters = mutableMapOf<Int, Boolean>().apply {
-        put(0, true) // Por defecto expandidos en "En Cola"
-        put(1, true) // Por defecto expandidos en "Historial"
+        put(0, false) // Contraídos por defecto en "En Cola"
+        put(1, false) // Contraídos por defecto en "Historial"
     }
 
     fun updateData(newList: List<MantenimientoModel>) {
@@ -87,10 +87,15 @@ class MantenimientoPagerAdapter(
             actualizarUIPorExpansion(position, isExpanded)
 
             binding.btnToggleFiltros.setOnClickListener {
-                val currentlyExpanded = expandedFilters[position] ?: true
+                val currentlyExpanded = expandedFilters[position] ?: false
                 val newValue = !currentlyExpanded
                 expandedFilters[position] = newValue
-                actualizarUIPorExpansion(position, newValue)
+                
+                binding.layoutFiltrosExpandible.visibility = if (newValue) View.VISIBLE else View.GONE
+                binding.ivChevronFiltros.animate().rotation(if (newValue) 0f else -180f).setDuration(200).start()
+                if (position == 1) {
+                    binding.layoutFiltroFecha.visibility = if (newValue) View.VISIBLE else View.GONE
+                }
             }
 
             if (position == 0) {
@@ -106,7 +111,7 @@ class MantenimientoPagerAdapter(
 
         private fun actualizarUIPorExpansion(position: Int, expanded: Boolean) {
             binding.layoutFiltrosExpandible.visibility = if (expanded) View.VISIBLE else View.GONE
-            binding.ivChevronFiltros.animate().rotation(if (expanded) 0f else -180f).setDuration(200).start()
+            binding.ivChevronFiltros.rotation = if (expanded) 0f else -180f
             
             // Ajuste especial para el historial: el layout de fecha es parte de layoutFiltrosExpandible
             if (position == 1) {

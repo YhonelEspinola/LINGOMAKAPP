@@ -24,8 +24,8 @@ class ConfiguracionFragment : Fragment() {
     private lateinit var adapterRepuesto: CategoriaAdapter
     private lateinit var adapterMaquinaria: CategoriaAdapter
 
-    private var repuestosExpanded = true
-    private var maquinariaExpanded = true
+    private var repuestosExpanded = false
+    private var maquinariaExpanded = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -56,6 +56,10 @@ class ConfiguracionFragment : Fragment() {
         // Forzar que el NestedScrollView permita scroll a los RV internos
         binding.rvCategoriasRepuesto.isNestedScrollingEnabled = false
         binding.rvCategoriasMaquinaria.isNestedScrollingEnabled = false
+
+        // Inicializar flechas en estado colapsado (-180 grados o según tu lógica de toggle)
+        binding.ivChevronRepuestos.rotation = -180f
+        binding.ivChevronMaquinaria.rotation = -180f
     }
 
     private fun setupEventos() {
