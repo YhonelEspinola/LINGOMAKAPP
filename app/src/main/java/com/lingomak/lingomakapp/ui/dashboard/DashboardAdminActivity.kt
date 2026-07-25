@@ -2,12 +2,18 @@ package com.lingomak.lingomakapp.ui.dashboard
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
+import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.Firebase
 import com.google.firebase.appcheck.appCheck
 import com.google.firebase.appcheck.debug.DebugAppCheckProviderFactory
 import com.google.firebase.appcheck.playintegrity.PlayIntegrityAppCheckProviderFactory
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.remoteconfig.remoteConfig
 import com.google.firebase.remoteconfig.remoteConfigSettings
@@ -15,6 +21,8 @@ import com.lingomak.lingomakapp.BuildConfig
 import com.lingomak.lingomakapp.R
 import com.lingomak.lingomakapp.databinding.DashboardAdminBinding
 import com.lingomak.lingomakapp.ui.alertas.AlertasFragment
+import com.lingomak.lingomakapp.ui.alertas.AlertasViewModel
+import com.lingomak.lingomakapp.ui.auth.LoginActivity
 import com.lingomak.lingomakapp.ui.dashboard.home.HomeAdminFragment
 import com.lingomak.lingomakapp.ui.dashboard.perfil.PerfilFragment
 import com.lingomak.lingomakapp.ui.mantenimiento.MantenimientoFragment
@@ -22,10 +30,6 @@ import com.lingomak.lingomakapp.ui.mantenimiento.SolicitudesMantenimientoFragmen
 import com.lingomak.lingomakapp.ui.maquinaria.MaquinariaFragment
 import com.lingomak.lingomakapp.ui.movimientos.MovimientosGlobalFragment
 import com.lingomak.lingomakapp.ui.repuestos.InventarioFragment
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.ListenerRegistration
-import com.lingomak.lingomakapp.ui.auth.LoginActivity
 import com.lingomak.lingomakapp.ui.usuarios.UsuariosFragment
 import com.lingomak.lingomakapp.utils.Constants
 import com.lingomak.lingomakapp.data.worker.AlertasWorkerManager
@@ -34,6 +38,7 @@ class DashboardAdminActivity : AppCompatActivity() {
 
     private lateinit var binding: DashboardAdminBinding
     private var userListener: ListenerRegistration? = null
+    private val alertasViewModel: AlertasViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,6 +49,7 @@ class DashboardAdminActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         escucharEstadoUsuario()
+        configurarBadgeAlertas()
 
         /*
          * Configuramos Remote Config para el nombre del modelo de IA
@@ -92,6 +98,28 @@ class DashboardAdminActivity : AppCompatActivity() {
                 abrirHome()
             }
         }
+    }
+
+    private fun configurarBadgeAlertas() {
+        alertasViewModel.totalAlertas.observe(this) { total ->
+            val menuItem = binding.navigationViewAdmin.menu.findItem(R.id.drawer_alertas)
+            val actionView = (menuItem.actionView as? android.widget.FrameLayout) 
+                ?: layoutInflater.inflate(R.layout.menu_badge, null) as android.widget.FrameLayout
+            
+            val badge = actionView.findViewById<TextView>(R.id.tvBadgeCount)
+            if (total > 0) {
+                badge.visibility = View.VISIBLE
+                badge.text = total.toString()
+            } else {
+                badge.visibility = View.GONE
+            }
+            menuItem.actionView = actionView
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        alertasViewModel.listarAlertas(esOperario = false)
     }
 
     /**

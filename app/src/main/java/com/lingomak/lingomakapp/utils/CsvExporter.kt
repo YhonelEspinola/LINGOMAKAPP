@@ -55,12 +55,16 @@ object CsvExporter {
     }
 
     fun exportMantenimiento(context: Context, data: List<MantenimientoModel>, launcher: ActivityResultLauncher<String>? = null) {
+        val csvContent = buildMantenimientoCsvContent(data)
+        showExportDialog(context, "Mantenimiento_Export.csv", csvContent, launcher)
+    }
+
+    fun buildMantenimientoCsvContent(data: List<MantenimientoModel>): String {
         val header = "Código,Tipo,Máquina,Descripción,Fecha Programada,Fecha Realizada,Estado,Responsable,Prioridad,Costo Estimado,Costo Real,Horómetro Programado,Horómetro Real"
         val rows = data.map {
             "${escapeCsv(it.codigoMantenimiento)},${escapeCsv(it.tipoMantenimiento)},${escapeCsv(it.nombreMaquinaria)},${escapeCsv(it.descripcion)},${escapeCsv(it.fechaProgramada)},${escapeCsv(it.fechaRealizada)},${escapeCsv(it.estado)},${escapeCsv(it.responsable)},${escapeCsv(it.prioridad)},${it.costoEstimado},${it.costoReal},${it.horometroProgramado},${it.horometroReal}"
         }
-        val csvContent = header + "\n" + rows.joinToString("\n")
-        showExportDialog(context, "Mantenimiento_Export.csv", csvContent, launcher)
+        return header + "\n" + rows.joinToString("\n")
     }
 
     fun exportEstadisticas(context: Context, data: MovimientosEstadisticasViewModel.EstadisticasData, etiquetaRango: String, launcher: ActivityResultLauncher<String>? = null) {

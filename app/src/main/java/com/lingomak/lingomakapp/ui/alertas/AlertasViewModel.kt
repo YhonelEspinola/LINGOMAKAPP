@@ -19,6 +19,9 @@ class AlertasViewModel(
     private val _listaAlertas = MutableLiveData<List<AlertaModel>>()
     val listaAlertas: LiveData<List<AlertaModel>> get() = _listaAlertas
 
+    private val _totalAlertas = MutableLiveData<Int>(0)
+    val totalAlertas: LiveData<Int> get() = _totalAlertas
+
     private val _mensajeError = MutableLiveData<String>()
     val mensajeError: LiveData<String> get() = _mensajeError
 
@@ -32,6 +35,7 @@ class AlertasViewModel(
                     esOperario = esOperario,
                     onSuccess = { lista ->
                         _listaAlertas.postValue(lista)
+                        _totalAlertas.postValue(lista.size)
                     },
                     onError = { error ->
                         _mensajeError.postValue(error)

@@ -10,8 +10,8 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.activity.result.contract.ActivityResultContracts
+import com.google.android.material.tabs.TabLayoutMediator
 import com.lingomak.lingomakapp.R
 import com.lingomak.lingomakapp.data.model.MantenimientoModel
 import com.lingomak.lingomakapp.databinding.FragmentMantenimientoBinding
@@ -25,43 +25,12 @@ class MantenimientoFragment : Fragment() {
 
     private val viewModel: MantenimientoViewModel by viewModels()
 
-    private var listaCompleta: List<MantenimientoModel> = emptyList()
-
-    private var filtroTipo: String = "TODOS"
-    private var filtroEstado: String = "TODOS"
-
-    private var fechaInicio: Long = 0L
-    private var fechaFin: Long = Long.MAX_VALUE
-
-    private lateinit var adapter: MantenimientoAdapter
+    private lateinit var pagerAdapter: MantenimientoPagerAdapter
+    private var historyVisibleList: List<MantenimientoModel> = emptyList()
 
     private val createDocumentLauncher = registerForActivityResult(ActivityResultContracts.CreateDocument("text/csv")) { uri ->
         uri?.let {
-            val query = binding.etBuscarMantenimiento.text.toString().trim()
-            var listaFiltrada = listaCompleta
-
-            if (filtroTipo != "TODOS") {
-                listaFiltrada = listaFiltrada.filter { it.tipoMantenimiento == filtroTipo }
-            }
-            if (filtroEstado != "TODOS") {
-                listaFiltrada = listaFiltrada.filter { it.estado == filtroEstado }
-            }
-            if (query.isNotEmpty()) {
-                listaFiltrada = listaFiltrada.filter {
-                    it.codigoMantenimiento.contains(query, ignoreCase = true) ||
-                            it.nombreMaquinaria.contains(query, ignoreCase = true) ||
-                            it.descripcion.contains(query, ignoreCase = true)
-                }
-            }
-            
-            listaFiltrada = filtrarPorFecha(listaFiltrada)
-            
-            val header = "Código,Tipo,Máquina,Descripción,Fecha Programada,Fecha Realizada,Estado,Responsable,Prioridad,Costo Estimado,Costo Real,Horómetro Programado,Horómetro Real"
-            val rows = listaFiltrada.map {
-                "${CsvExporter.escapeCsv(it.codigoMantenimiento)},${CsvExporter.escapeCsv(it.tipoMantenimiento)},${CsvExporter.escapeCsv(it.nombreMaquinaria)},${CsvExporter.escapeCsv(it.descripcion)},${CsvExporter.escapeCsv(it.fechaProgramada)},${CsvExporter.escapeCsv(it.fechaRealizada)},${CsvExporter.escapeCsv(it.estado)},${CsvExporter.escapeCsv(it.responsable)},${CsvExporter.escapeCsv(it.prioridad)},${it.costoEstimado},${it.costoReal},${it.horometroProgramado},${it.horometroReal}"
-            }
-            val csvContent = header + "\n" + rows.joinToString("\n")
-            
+            val csvContent = CsvExporter.buildMantenimientoCsvContent(historyVisibleList)
             CsvExporter.saveCsvToUri(requireContext(), it, csvContent)
         }
     }
@@ -73,10 +42,8 @@ class MantenimientoFragment : Fragment() {
     ): View {
         _binding = FragmentMantenimientoBinding.inflate(inflater, container, false)
 
-        configurarRecyclerView()
+        setupViewPager()
         configurarEventos()
-        configurarFiltros()
-        configurarFiltroFecha()
         configurarBusqueda()
         observarViewModel()
 
@@ -86,43 +53,47 @@ class MantenimientoFragment : Fragment() {
         return binding.root
     }
 
-    private fun configurarRecyclerView() {
+    private fun setupViewPager() {
         val isAdmin = requireActivity() is DashboardAdminActivity
-
-        adapter = MantenimientoAdapter(
-            listaMantenimientos = emptyList(),
+        
+        pagerAdapter = MantenimientoPagerAdapter(
             isOperario = !isAdmin,
-            onMantenimientoClick = { mantenimiento ->
-                abrirDetalleMantenimiento(mantenimiento)
-            },
-            onEditarClick = { mantenimiento ->
-                abrirEditarMantenimiento(mantenimiento)
-            },
-            onCambiarEstadoClick = { mantenimiento ->
-                mostrarDialogoCambiarEstado(mantenimiento)
-            },
-            onCancelarClick = { mantenimiento ->
-                mostrarDialogoCancelarMantenimiento(mantenimiento)
-            },
-            onFinalizarClick = { mantenimiento ->
-                abrirFinalizarMantenimiento(mantenimiento)
-            }
+            onMantenimientoClick = { abrirDetalleMantenimiento(it) },
+            onEditarClick = { abrirEditarMantenimiento(it) },
+            onCambiarEstadoClick = { mostrarDialogoCambiarEstado(it) },
+            onCancelarClick = { mostrarDialogoCancelarMantenimiento(it) },
+            onFinalizarClick = { abrirFinalizarMantenimiento(it) },
+            onHistoryFiltersChanged = { list -> historyVisibleList = list }
         )
+        
+        binding.viewPagerMantenimiento.adapter = pagerAdapter
+        
+        if (!isAdmin) {
+            // Si es operario, ocultamos las pestañas y bloqueamos la navegación.
+            // Solo verá la primera página (Mantenimientos Activos).
+            binding.tabLayoutMantenimiento.visibility = View.GONE
+            binding.viewPagerMantenimiento.isUserInputEnabled = false
+        }
 
-        binding.rvMantenimientos.layoutManager = LinearLayoutManager(requireContext())
-        binding.rvMantenimientos.adapter = adapter
+        TabLayoutMediator(binding.tabLayoutMantenimiento, binding.viewPagerMantenimiento) { tab, position ->
+            tab.text = if (position == 0) "ACTIVOS" else "HISTORIAL"
+        }.attach()
+        
+        binding.viewPagerMantenimiento.registerOnPageChangeCallback(object : androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback() {
+            override fun onPageSelected(position: Int) {
+                // El botón exportar solo vive en Historial (Pestaña 1) para el Admin
+                binding.btnExportarCsv.visibility = if (position == 1 && isAdmin) View.VISIBLE else View.GONE
+            }
+        })
     }
 
     private fun observarViewModel() {
         viewModel.listaMantenimientos.observe(viewLifecycleOwner) { lista ->
-            binding.swipeRefreshMantenimiento.isRefreshing = false
-            listaCompleta = lista
-            aplicarFiltros()
+            pagerAdapter.updateData(lista)
         }
 
         viewModel.mensajeError.observe(viewLifecycleOwner) { error ->
             if (error.isNotEmpty()) {
-                binding.swipeRefreshMantenimiento.isRefreshing = false
                 Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show()
             }
         }
@@ -143,22 +114,7 @@ class MantenimientoFragment : Fragment() {
             .commit()
     }
 
-    private fun configurarFiltroFecha() {
-        binding.selectorFechasMantenimiento.onRangoSeleccionado = { inicio, fin, etiqueta ->
-            fechaInicio = inicio
-            fechaFin = fin
-            binding.tvFiltroFechaActual.text = etiqueta
-            aplicarFiltros()
-        }
-        binding.selectorFechasMantenimiento.dispararSeleccionActual()
-    }
-
     private fun configurarEventos() {
-        binding.swipeRefreshMantenimiento.setOnRefreshListener {
-            val isAdmin = requireActivity() is DashboardAdminActivity
-            viewModel.listarMantenimientos(soloAsignados = !isAdmin)
-        }
-
         binding.fabAgregarMantenimiento.setOnClickListener {
             val fragment = ProgramarMantenimientoFragment()
             parentFragmentManager.beginTransaction()
@@ -170,115 +126,25 @@ class MantenimientoFragment : Fragment() {
         if (requireActivity() !is DashboardAdminActivity) {
             binding.fabAgregarMantenimiento.visibility = View.GONE
             binding.btnExportarCsv.visibility = View.GONE
-        } else {
-            binding.btnExportarCsv.visibility = View.VISIBLE
         }
 
         binding.btnExportarCsv.setOnClickListener {
-            val query = binding.etBuscarMantenimiento.text.toString().trim()
-            var listaFiltrada = listaCompleta
-
-            if (filtroTipo != "TODOS") {
-                listaFiltrada = listaFiltrada.filter { it.tipoMantenimiento == filtroTipo }
-            }
-            if (filtroEstado != "TODOS") {
-                listaFiltrada = listaFiltrada.filter { it.estado == filtroEstado }
-            }
-            if (query.isNotEmpty()) {
-                listaFiltrada = listaFiltrada.filter {
-                    it.codigoMantenimiento.contains(query, ignoreCase = true) ||
-                            it.nombreMaquinaria.contains(query, ignoreCase = true) ||
-                            it.descripcion.contains(query, ignoreCase = true)
-                }
-            }
-            
-            // Filtro por fecha para la exportación
-            listaFiltrada = filtrarPorFecha(listaFiltrada)
-            
-            CsvExporter.exportMantenimiento(requireContext(), listaFiltrada, createDocumentLauncher)
-        }
-    }
-
-    private fun filtrarPorFecha(lista: List<MantenimientoModel>): List<MantenimientoModel> {
-        if (fechaInicio == 0L && fechaFin == Long.MAX_VALUE) return lista
-        
-        return lista.filter { m ->
-            val fechaM = com.lingomak.lingomakapp.utils.DateUtils.convertirFecha(m.fechaProgramada)
-            if (fechaM != null) {
-                val time = fechaM.time
-                time in fechaInicio..fechaFin
+            if (historyVisibleList.isNotEmpty()) {
+                CsvExporter.exportMantenimiento(requireContext(), historyVisibleList, createDocumentLauncher)
             } else {
-                false
+                Toast.makeText(requireContext(), "No hay datos para exportar", Toast.LENGTH_SHORT).show()
             }
         }
-    }
-
-    private fun configurarFiltros() {
-        binding.chipGroupTipoMantenimiento.setOnCheckedStateChangeListener { _, checkedIds ->
-            filtroTipo = when (checkedIds.firstOrNull()) {
-                R.id.chipTipoPreventivo -> "PREVENTIVO"
-                R.id.chipTipoCorrectivo -> "CORRECTIVO"
-                else -> "TODOS"
-            }
-            aplicarFiltros()
-        }
-
-        binding.chipGroupEstadoMantenimiento.setOnCheckedStateChangeListener { _, checkedIds ->
-            filtroEstado = when (checkedIds.firstOrNull()) {
-                R.id.chipEstadoPendiente -> "PENDIENTE"
-                R.id.chipEstadoProceso -> "EN_PROCESO"
-                R.id.chipEstadoFinalizado -> "FINALIZADO"
-                R.id.chipEstadoVencido -> "VENCIDO"
-                else -> "TODOS"
-            }
-            aplicarFiltros()
-        }
-    }
-
-    private fun aplicarFiltros() {
-        var listaFiltrada = listaCompleta
-
-        if (filtroTipo != "TODOS") {
-            listaFiltrada = listaFiltrada.filter { it.tipoMantenimiento == filtroTipo }
-        }
-
-        if (filtroEstado != "TODOS") {
-            listaFiltrada = listaFiltrada.filter { it.estado == filtroEstado }
-        }
-
-        val query = binding.etBuscarMantenimiento.text.toString().trim()
-        if (query.isNotEmpty()) {
-            listaFiltrada = listaFiltrada.filter {
-                it.codigoMantenimiento.contains(query, ignoreCase = true) ||
-                        it.nombreMaquinaria.contains(query, ignoreCase = true) ||
-                        it.descripcion.contains(query, ignoreCase = true)
-            }
-        }
-        
-        listaFiltrada = filtrarPorFecha(listaFiltrada)
-
-        adapter.actualizarLista(listaFiltrada)
-        actualizarResumen(listaFiltrada)
     }
 
     private fun configurarBusqueda() {
         binding.etBuscarMantenimiento.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                aplicarFiltros()
+                pagerAdapter.updateSearch(s.toString())
             }
             override fun afterTextChanged(s: Editable?) {}
         })
-    }
-
-    private fun actualizarResumen(lista: List<MantenimientoModel>) {
-        val pendientes = lista.count { it.estado == "PENDIENTE" }
-        val vencidos = lista.count { it.estado == "VENCIDO" }
-        val finalizados = lista.count { it.estado == "FINALIZADO" }
-
-        binding.tvPendientesMantenimiento.text = pendientes.toString()
-        binding.tvVencidosMantenimiento.text = vencidos.toString()
-        binding.tvFinalizadosMantenimiento.text = finalizados.toString()
     }
 
     private fun mostrarDialogoCambiarEstado(mantenimiento: MantenimientoModel) {
