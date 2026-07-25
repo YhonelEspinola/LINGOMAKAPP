@@ -1,0 +1,122 @@
+package com.lingomak.lingomakapp.ui.configuracion
+
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.EditText
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.lingomak.lingomakapp.databinding.FragmentConfiguracionBinding
+
+class ConfiguracionFragment : Fragment() {
+
+    private var _binding: FragmentConfiguracionBinding? = null
+    private val binding get() = _binding!!
+
+    private val viewModel: ConfiguracionViewModel by viewModels()
+
+    private lateinit var adapterRepuesto: CategoriaAdapter
+    private lateinit var adapterMaquinaria: CategoriaAdapter
+
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentConfiguracionBinding.inflate(inflater, container, false)
+
+        setupRecyclerViews()
+        setupEventos()
+        observarViewModel()
+
+        return binding.root
+    }
+
+    private fun setupRecyclerViews() {
+        adapterRepuesto = CategoriaAdapter(emptyList()) { categoria ->
+            mostrarDialogoEliminar(categoria)
+        }
+        binding.rvCategoriasRepuesto.layoutManager = LinearLayoutManager(requireContext())
+        binding.rvCategoriasRepuesto.adapter = adapterRepuesto
+
+        adapterMaquinaria = CategoriaAdapter(emptyList()) { categoria ->
+            mostrarDialogoEliminar(categoria)
+        }
+        binding.rvCategoriasMaquinaria.layoutManager = LinearLayoutManager(requireContext())
+        binding.rvCategoriasMaquinaria.adapter = adapterMaquinaria
+        
+        // Forzar que el NestedScrollView permita scroll a los RV internos
+        binding.rvCategoriasRepuesto.isNestedScrollingEnabled = false
+        binding.rvCategoriasMaquinaria.isNestedScrollingEnabled = false
+    }
+
+    private fun setupEventos() {
+        binding.btnAgregarCatRepuesto.setOnClickListener {
+            mostrarDialogoAgregar("REPUESTO")
+        }
+        binding.btnAgregarCatMaquinaria.setOnClickListener {
+            mostrarDialogoAgregar("MAQUINARIA")
+        }
+    }
+
+    private fun observarViewModel() {
+        viewModel.categoriasRepuesto.observe(viewLifecycleOwner) {
+            adapterRepuesto.actualizarLista(it)
+        }
+        viewModel.categoriasMaquinaria.observe(viewLifecycleOwner) {
+            adapterMaquinaria.actualizarLista(it)
+        }
+
+        viewModel.error.observe(viewLifecycleOwner) { msg ->
+            if (msg.isNotEmpty()) Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show()
+        }
+
+        viewModel.exito.observe(viewLifecycleOwner) { exito ->
+            if (exito) {
+                Toast.makeText(requireContext(), "Guardado correctamente", Toast.LENGTH_SHORT).show()
+                viewModel.resetExito()
+            }
+        }
+    }
+
+    private fun mostrarDialogoAgregar(tipo: String) {
+        val input = EditText(requireContext())
+        input.hint = "Ej: Filtros Hidráulicos"
+        val padding = (16 * resources.displayMetrics.density).toInt()
+        val container = android.widget.FrameLayout(requireContext())
+        val params = android.widget.FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+        params.leftMargin = padding
+        params.rightMargin = padding
+        input.layoutParams = params
+        container.addView(input)
+        
+        AlertDialog.Builder(requireContext())
+            .setTitle("Nueva Categoría - $tipo")
+            .setView(container)
+            .setPositiveButton("Guardar") { _, _ ->
+                val nombre = input.text.toString().trim()
+                viewModel.guardarCategoria(nombre, tipo)
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
+    }
+
+    private fun mostrarDialogoEliminar(categoria: com.lingomak.lingomakapp.data.model.CategoriaModel) {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Eliminar Categoría")
+            .setMessage("¿Estás seguro de eliminar '${categoria.nombre}'? Los elementos existentes que la usen conservarán el nombre, pero la categoría ya no aparecerá en las nuevas listas.")
+            .setPositiveButton("Eliminar") { _, _ ->
+                viewModel.eliminarCategoria(categoria.uid)
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+}

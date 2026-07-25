@@ -11,6 +11,8 @@ import com.google.firebase.auth.FirebaseAuth
 import com.lingomak.lingomakapp.data.local.AppDatabase
 import com.lingomak.lingomakapp.data.model.RepuestoModel
 import com.lingomak.lingomakapp.data.repository.RepuestoRepository
+import com.lingomak.lingomakapp.data.repository.ConfiguracionRepository
+import com.lingomak.lingomakapp.data.model.CategoriaModel
 import com.lingomak.lingomakapp.utils.CodigoInternoGenerator
 import com.lingomak.lingomakapp.data.worker.SincronizacionRepuestosWorker
 import kotlinx.coroutines.launch
@@ -37,6 +39,9 @@ class InventarioViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     private val repository = RepuestoRepository(application)
+    private val configRepository = ConfiguracionRepository(application)
+
+    val categorias: LiveData<List<CategoriaModel>> = configRepository.obtenerCategoriasPorTipoObservable("REPUESTO", true)
 
     // ----- LISTADO -----
 

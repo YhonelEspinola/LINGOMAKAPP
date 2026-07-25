@@ -59,6 +59,7 @@ class DashboardOperarioActivity : AppCompatActivity() {
                 com.lingomak.lingomakapp.data.repository.MaquinariaRepository(this@DashboardOperarioActivity).descargarMaquinariasDeFirestore()
                 com.lingomak.lingomakapp.data.repository.MantenimientoRepository(this@DashboardOperarioActivity).descargarCambiosDeFirestore()
                 com.lingomak.lingomakapp.data.repository.UserRepository(this@DashboardOperarioActivity).descargarUsuariosDeFirestore()
+                com.lingomak.lingomakapp.data.repository.ConfiguracionRepository(this@DashboardOperarioActivity).descargarCategoriasDeFirestore()
             } catch (e: Exception) {
                 // Silencioso
             }

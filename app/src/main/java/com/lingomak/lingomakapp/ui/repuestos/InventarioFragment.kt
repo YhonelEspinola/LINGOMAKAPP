@@ -40,6 +40,7 @@ class InventarioFragment : Fragment() {
     private val viewModel: InventarioViewModel by activityViewModels()
 
     private lateinit var adapter: RepuestosAdapter
+    private var listaCategoriasFiltro: List<String> = emptyList()
 
     private val createDocumentLauncher = registerForActivityResult(ActivityResultContracts.CreateDocument("text/csv")) { uri ->
         uri?.let {
@@ -54,38 +55,22 @@ class InventarioFragment : Fragment() {
         }
     }
 
-    // Categorías disponibles para el Spinner de filtro.
-    // Ajusta esta lista a las categorías reales de tu negocio.
-    private val categorias = listOf(
-        "Todas las categorías",
-        "Aceites",
-        "Filtros",
-        "Frenos",
-        "Eléctrico",
-        "Motor"
-    )
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-
-
         _binding = FragmentInventarioBinding.inflate(inflater, container, false)
 
-
         configurarRecyclerView()
-
-        configurarSpinnerCategorias()
-
         observarViewModel()
 
         // Forzar sincronización con Firestore al entrar para asegurar datos frescos
         viewModel.listarRepuestos()
 
         configurarEventos()
-
         validarAccesoAdmin()
 
         return binding.root
@@ -142,21 +127,21 @@ class InventarioFragment : Fragment() {
         })
     }
 
-    private fun configurarSpinnerCategorias() {
-
+    private fun configurarSpinnerCategorias(categorias: List<String>) {
+        listaCategoriasFiltro = listOf("Todas las categorías") + categorias
         val spinnerAdapter = ArrayAdapter(
             requireContext(),
             android.R.layout.simple_spinner_item,
-            categorias
+            listaCategoriasFiltro
         )
-
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-
         binding.spinnerCategoria.adapter = spinnerAdapter
     }
 
     private fun observarViewModel() {
-
+        viewModel.categorias.observe(viewLifecycleOwner) { lista ->
+            configurarSpinnerCategorias(lista.map { it.nombre })
+        }
 
         viewModel.repuestos.observe(viewLifecycleOwner) { listaRepuestos ->
             adapter.actualizarLista(listaRepuestos)
@@ -190,7 +175,8 @@ class InventarioFragment : Fragment() {
                 position: Int,
                 id: Long
             ) {
-                val categoriaSeleccionada = categorias[position]
+                if (listaCategoriasFiltro.isEmpty()) return
+                val categoriaSeleccionada = listaCategoriasFiltro[position]
 
                 if (categoriaSeleccionada == "Todas las categorías") {
                     viewModel.filtrarPorCategoria(null)

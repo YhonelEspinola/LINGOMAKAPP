@@ -34,6 +34,12 @@ class MantenimientoPagerAdapter(
     private var filterEstado1: String = "TODOS"
     var historyFechaInicio: Long = 0L
     var historyFechaFin: Long = Long.MAX_VALUE
+    
+    // Estado de expansión de filtros por página
+    private val expandedFilters = mutableMapOf<Int, Boolean>().apply {
+        put(0, true) // Por defecto expandidos en "En Cola"
+        put(1, true) // Por defecto expandidos en "Historial"
+    }
 
     fun updateData(newList: List<MantenimientoModel>) {
         allMantenimientos = newList
@@ -76,12 +82,35 @@ class MantenimientoPagerAdapter(
         fun bind(position: Int) {
             setupChips(position)
             
+            // Configurar Colapsador de Filtros
+            val isExpanded = expandedFilters[position] ?: true
+            actualizarUIPorExpansion(position, isExpanded)
+
+            binding.btnToggleFiltros.setOnClickListener {
+                val currentlyExpanded = expandedFilters[position] ?: true
+                val newValue = !currentlyExpanded
+                expandedFilters[position] = newValue
+                actualizarUIPorExpansion(position, newValue)
+            }
+
             if (position == 0) {
                 binding.layoutFiltroFecha.visibility = View.GONE
                 setupPage0()
             } else {
-                binding.layoutFiltroFecha.visibility = View.VISIBLE
+                // Si la página está expandida, mostramos el layout de fecha, si no, lo ocultamos
+                // pero setupPage1 debe ejecutarse para inicializar el listener
                 setupPage1()
+                if (!isExpanded) binding.layoutFiltroFecha.visibility = View.GONE
+            }
+        }
+
+        private fun actualizarUIPorExpansion(position: Int, expanded: Boolean) {
+            binding.layoutFiltrosExpandible.visibility = if (expanded) View.VISIBLE else View.GONE
+            binding.ivChevronFiltros.animate().rotation(if (expanded) 0f else -180f).setDuration(200).start()
+            
+            // Ajuste especial para el historial: el layout de fecha es parte de layoutFiltrosExpandible
+            if (position == 1) {
+                binding.layoutFiltroFecha.visibility = if (expanded) View.VISIBLE else View.GONE
             }
         }
 

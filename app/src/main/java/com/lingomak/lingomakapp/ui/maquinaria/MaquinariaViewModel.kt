@@ -7,12 +7,17 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.lingomak.lingomakapp.data.model.MaquinariaModel
 import com.lingomak.lingomakapp.data.repository.MaquinariaRepository
+import com.lingomak.lingomakapp.data.repository.ConfiguracionRepository
+import com.lingomak.lingomakapp.data.model.CategoriaModel
 import android.net.Uri
 import kotlinx.coroutines.launch
 
 class MaquinariaViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository = MaquinariaRepository(application)
+    private val configRepository = ConfiguracionRepository(application)
+
+    val categorias: LiveData<List<CategoriaModel>> = configRepository.obtenerCategoriasPorTipoObservable("MAQUINARIA", true)
 
     private val _mensajeError = MutableLiveData<String>()
     val mensajeError: LiveData<String> get() = _mensajeError

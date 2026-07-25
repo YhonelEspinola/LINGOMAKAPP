@@ -43,14 +43,7 @@ class EditarRepuestoFragment : Fragment() {
     private var qrLocalPath: String? = null
     private var currentPhotoPath: String? = null
 
-    private val categorias = listOf(
-        "Seleccione categoría",
-        "Aceites",
-        "Filtros",
-        "Frenos",
-        "Eléctrico",
-        "Motor"
-    )
+    private var listaCategorias: List<String> = emptyList()
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -98,7 +91,6 @@ class EditarRepuestoFragment : Fragment() {
         binding.etCodigoInterno.isEnabled = false // No permitir edición manual del código identificador
 
         uidRepuesto = arguments?.getString("uid") ?: ""
-        configurarSpinnerCategorias()
         configurarObservadores()
         configurarEventos()
         if (uidRepuesto.isNotEmpty()) {
@@ -145,13 +137,23 @@ class EditarRepuestoFragment : Fragment() {
         }
     }
 
-    private fun configurarSpinnerCategorias() {
-        val spinnerAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, categorias)
+    private fun configurarSpinnerCategorias(categorias: List<String>) {
+        listaCategorias = listOf("Seleccione categoría") + categorias
+        val spinnerAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, listaCategorias)
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.spinnerCategoria.adapter = spinnerAdapter
+        
+        // Si ya tenemos los datos del repuesto cargados, re-seleccionar la categoría
+        repuestoOriginal?.let { repuesto ->
+            val index = listaCategorias.indexOf(repuesto.categoria)
+            if (index >= 0) binding.spinnerCategoria.setSelection(index)
+        }
     }
 
     private fun configurarObservadores() {
+        viewModel.categorias.observe(viewLifecycleOwner) { lista ->
+            configurarSpinnerCategorias(lista.map { it.nombre })
+        }
         viewModel.repuestoSeleccionado.observe(viewLifecycleOwner) { repuesto ->
             if (repuesto != null) {
                 repuestoOriginal = repuesto
@@ -184,7 +186,7 @@ class EditarRepuestoFragment : Fragment() {
         binding.etProveedorNombre.setText(repuesto.proveedorNombre)
         binding.etProveedorContacto.setText(repuesto.proveedorContacto)
         
-        val index = categorias.indexOf(repuesto.categoria)
+        val index = listaCategorias.indexOf(repuesto.categoria)
         if (index >= 0) binding.spinnerCategoria.setSelection(index)
 
         if (repuesto.imagenUrl.isNotEmpty()) {

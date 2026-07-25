@@ -40,14 +40,7 @@ class AgregarRepuestoFragment : Fragment() {
     private var qrLocalPath: String? = null
     private var currentPhotoPath: String? = null
 
-    private val categorias = listOf(
-        "Seleccione categoría",
-        "Aceites",
-        "Filtros",
-        "Frenos",
-        "Eléctrico",
-        "Motor"
-    )
+    private var listaCategorias: List<String> = emptyList()
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -102,7 +95,6 @@ class AgregarRepuestoFragment : Fragment() {
         
         binding.etCodigoInterno.isEnabled = false // No permitir edición manual
 
-        configurarSpinnerCategorias()
         configurarObservadores()
         configurarEventos()
         return binding.root
@@ -149,13 +141,14 @@ class AgregarRepuestoFragment : Fragment() {
         }
     }
 
-    private fun configurarSpinnerCategorias() {
-        val spinnerAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, categorias)
+    private fun configurarSpinnerCategorias(categorias: List<String>) {
+        listaCategorias = listOf("Seleccione categoría") + categorias
+        val spinnerAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, listaCategorias)
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.spinnerCategoria.adapter = spinnerAdapter
         binding.spinnerCategoria.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                if (position > 0) viewModel.generarCodigoInterno(categorias[position])
+                if (position > 0) viewModel.generarCodigoInterno(listaCategorias[position])
                 else binding.etCodigoInterno.setText("")
             }
             override fun onNothingSelected(parent: AdapterView<*>?) {}
@@ -163,6 +156,9 @@ class AgregarRepuestoFragment : Fragment() {
     }
 
     private fun configurarObservadores() {
+        viewModel.categorias.observe(viewLifecycleOwner) { lista ->
+            configurarSpinnerCategorias(lista.map { it.nombre })
+        }
         viewModel.codigoGenerado.observe(viewLifecycleOwner) { codigo ->
             binding.etCodigoInterno.setText(codigo)
         }
@@ -225,7 +221,7 @@ class AgregarRepuestoFragment : Fragment() {
 
             viewModel.registrarRepuesto(
                 nombre = nombre,
-                categoria = categorias[categoriaPos],
+                categoria = listaCategorias[categoriaPos],
                 marca = binding.etMarca.text.toString().trim(),
                 descripcion = binding.etDescripcion.text.toString().trim(),
                 stockActual = stockActual,

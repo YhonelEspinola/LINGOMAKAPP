@@ -112,6 +112,7 @@ class DashboardAdminActivity : AppCompatActivity() {
                 com.lingomak.lingomakapp.data.repository.MaquinariaRepository(this@DashboardAdminActivity).descargarMaquinariasDeFirestore()
                 com.lingomak.lingomakapp.data.repository.MantenimientoRepository(this@DashboardAdminActivity).descargarCambiosDeFirestore()
                 com.lingomak.lingomakapp.data.repository.UserRepository(this@DashboardAdminActivity).descargarUsuariosDeFirestore()
+                com.lingomak.lingomakapp.data.repository.ConfiguracionRepository(this@DashboardAdminActivity).descargarCategoriasDeFirestore()
             } catch (e: Exception) {
                 // Silencioso
             }
@@ -366,6 +367,13 @@ class DashboardAdminActivity : AppCompatActivity() {
                             AlertasFragment()
                         )
 
+                        true
+                    }
+
+                    R.id.drawer_configuracion -> {
+                        abrirFragmentDrawer(
+                            com.lingomak.lingomakapp.ui.configuracion.ConfiguracionFragment()
+                        )
                         true
                     }
 

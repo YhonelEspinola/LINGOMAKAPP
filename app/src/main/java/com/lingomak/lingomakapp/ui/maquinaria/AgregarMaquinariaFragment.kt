@@ -28,6 +28,8 @@ class AgregarMaquinariaFragment : Fragment() {
     private val viewModel : MaquinariaViewModel by viewModels()
 
     private var imagenSeleccionadaUri : Uri? = null
+    private var listaCategorias: List<String> = emptyList()
+
     private val seleccionadarImagenLauncher =
         registerForActivityResult(ActivityResultContracts.GetContent()){ uri ->
             if (uri != null){
@@ -50,11 +52,8 @@ class AgregarMaquinariaFragment : Fragment() {
         _binding = FragmentAgregarMaquinariaBinding.inflate(inflater, container,false)
 
         configurarSpinnerEstado()
-        configurarSpinnerTipoMaquinaria()
         configurarEventos()
         observarViewModel()
-
-
 
         return binding.root
     }
@@ -85,10 +84,23 @@ class AgregarMaquinariaFragment : Fragment() {
     }
 
     private fun observarViewModel(){
+        viewModel.categorias.observe(viewLifecycleOwner) { lista ->
+            configurarSpinnerTipoMaquinaria(lista.map { it.nombre })
+        }
         viewModel.mensajeError.observe(viewLifecycleOwner) { mensaje ->
             mostrarCargando(false)
             Toast.makeText(requireContext(), mensaje, Toast.LENGTH_SHORT).show()
         }
+    }
+
+    private fun configurarSpinnerTipoMaquinaria(categorias: List<String>) {
+        listaCategorias = listOf("Seleccione un tipo") + categorias
+        val adapter = ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_spinner_dropdown_item,
+            listaCategorias
+        )
+        binding.spTipoMaquinaria.adapter = adapter
     }
 
     private fun validarFormulario(){
@@ -340,34 +352,6 @@ class AgregarMaquinariaFragment : Fragment() {
         val numeroAleatorio = (1000..9999).random()
 
         return "$prefijo-$fecha-$numeroAleatorio"
-    }
-
-    private fun configurarSpinnerTipoMaquinaria() {
-
-        val tiposMaquinaria = listOf(
-            "Seleccione un tipo",
-            "Excavadora",
-            "Retroexcavadora",
-            "Volquete",
-            "Cargador Frontal",
-            "Motoniveladora",
-            "Rodillo Compactador",
-            "Tractor Oruga",
-            "Camión Cisterna",
-            "Camión Grúa",
-            "Minicargador",
-            "Compresora",
-            "Generador Eléctrico",
-            "Otro"
-        )
-
-        val adapter = ArrayAdapter(
-            requireContext(),
-            android.R.layout.simple_spinner_dropdown_item,
-            tiposMaquinaria
-        )
-
-        binding.spTipoMaquinaria.adapter = adapter
     }
 
     override fun onDestroyView() {

@@ -24,15 +24,16 @@ class MaquinariaFragment : Fragment() {
     private lateinit var adapter: MaquinariaAdapter
 
     private var listaCompleta = listOf<MaquinariaModel>()
+    private var listaCategoriasFiltro: List<String> = emptyList()
 
     private var filtroEstado = "TODOS"
+    private var filtroCategoria = "TODAS"
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-
         _binding = FragmentMaquinariaBinding.inflate(inflater, container, false)
 
         configurarRecyclerView()
@@ -71,11 +72,13 @@ class MaquinariaFragment : Fragment() {
     }
 
     private fun observarViewModel() {
+        viewModel.categorias.observe(viewLifecycleOwner) { lista ->
+            listaCategoriasFiltro = listOf("TODAS") + lista.map { it.nombre.uppercase() }
+            actualizarChipsCategorias()
+        }
 
         viewModel.listaMaquinarias.observe(viewLifecycleOwner) { lista ->
-
             listaCompleta = lista
-
             aplicarFiltros()
         }
 
@@ -84,29 +87,35 @@ class MaquinariaFragment : Fragment() {
         }
     }
 
-    private fun configurarBusqueda() {
-
-        binding.etBuscarMaquinaria.addTextChangedListener(object : TextWatcher {
-
-            override fun beforeTextChanged(
-                s: CharSequence?,
-                start: Int,
-                count: Int,
-                after: Int
-            ) {
+    private fun actualizarChipsCategorias() {
+        binding.chipGroupCategoria.removeAllViews()
+        listaCategoriasFiltro.forEach { categoria ->
+            val chip = LayoutInflater.from(requireContext()).inflate(R.layout.layout_chip_choice, binding.chipGroupCategoria, false) as com.google.android.material.chip.Chip
+            chip.apply {
+                text = if (categoria == "TODAS") "Todas las categorías" else categoria
+                id = View.generateViewId()
+                isChecked = (filtroCategoria == categoria)
             }
+            binding.chipGroupCategoria.addView(chip)
+        }
 
-            override fun onTextChanged(
-                s: CharSequence?,
-                start: Int,
-                before: Int,
-                count: Int
-            ) {
+        binding.chipGroupCategoria.setOnCheckedStateChangeListener { group, checkedIds ->
+            val checkedId = checkedIds.firstOrNull() ?: View.NO_ID
+            val selectedChip = group.findViewById<com.google.android.material.chip.Chip>(checkedId)
+            val selectedText = selectedChip?.text?.toString()?.uppercase() ?: "TODAS"
+            
+            filtroCategoria = if (selectedText == "TODAS LAS CATEGORÍAS") "TODAS" else selectedText
+            aplicarFiltros()
+        }
+    }
+
+    private fun configurarBusqueda() {
+        binding.etBuscarMaquinaria.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 aplicarFiltros()
             }
-
-            override fun afterTextChanged(s: Editable?) {
-            }
+            override fun afterTextChanged(s: Editable?) {}
         })
     }
 
@@ -124,42 +133,29 @@ class MaquinariaFragment : Fragment() {
     }
 
     private fun aplicarFiltros() {
-
-        val textoBusqueda = binding.etBuscarMaquinaria.text
-            .toString()
-            .trim()
-            .lowercase()
+        val textoBusqueda = binding.etBuscarMaquinaria.text.toString().trim().lowercase()
 
         val listaFiltrada = listaCompleta.filter { maquinaria ->
-
             val coincideBusqueda =
                 maquinaria.nombre.lowercase().contains(textoBusqueda) ||
-                        maquinaria.codigoMaquinaria.lowercase().contains(textoBusqueda) ||
-                        maquinaria.placaSerie.lowercase().contains(textoBusqueda)
+                maquinaria.codigoMaquinaria.lowercase().contains(textoBusqueda) ||
+                maquinaria.placaSerie.lowercase().contains(textoBusqueda)
 
-            val coincideEstado =
-                filtroEstado == "TODOS" || maquinaria.estado == filtroEstado
+            val coincideEstado = filtroEstado == "TODOS" || maquinaria.estado == filtroEstado
+            val coincideCategoria = filtroCategoria == "TODAS" || maquinaria.tipo.uppercase() == filtroCategoria
 
-            coincideBusqueda && coincideEstado
+            coincideBusqueda && coincideEstado && coincideCategoria
         }
 
         adapter.actualizarLista(listaFiltrada)
-
         actualizarResumen(listaFiltrada)
     }
 
     private fun actualizarResumen(lista: List<MaquinariaModel>) {
-
         binding.tvTotalMaquinaria.text = lista.size.toString()
-
-        binding.tvOperativasMaquinaria.text =
-            lista.count { it.estado == "OPERATIVA" }.toString()
-
-        binding.tvMantenimientoMaquinaria.text =
-            lista.count { it.estado == "EN_MANTENIMIENTO" }.toString()
-
-        binding.tvInactivasMaquinaria.text =
-            lista.count { it.estado == "INACTIVA" }.toString()
+        binding.tvOperativasMaquinaria.text = lista.count { it.estado == "OPERATIVA" }.toString()
+        binding.tvMantenimientoMaquinaria.text = lista.count { it.estado == "EN_MANTENIMIENTO" }.toString()
+        binding.tvInactivasMaquinaria.text = lista.count { it.estado == "INACTIVA" }.toString()
     }
 
     private fun configurarEventos() {
@@ -171,12 +167,8 @@ class MaquinariaFragment : Fragment() {
             val containerId = if (requireActivity() is com.lingomak.lingomakapp.ui.dashboard.DashboardAdminActivity) 
                 R.id.fragmentContainerAdmin else R.id.containerOperario
 
-            parentFragmentManager
-                .beginTransaction()
-                .replace(
-                    containerId,
-                    AgregarMaquinariaFragment()
-                )
+            parentFragmentManager.beginTransaction()
+                .replace(containerId, AgregarMaquinariaFragment())
                 .addToBackStack(null)
                 .commit()
         }
