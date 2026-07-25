@@ -20,19 +20,10 @@
             android:paddingVertical="8dp"
             android:paddingEnd="16dp">
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Gestión de Mantenimientos"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:textColor="@color/secondary"/>
-
             <EditText
                 android:id="@+id/etBuscarMantenimiento"
                 android:layout_width="match_parent"
                 android:layout_height="44dp"
-                android:layout_marginTop="8dp"
                 android:background="@drawable/bg_edit_text"
                 android:hint="Buscar maquinaria o código"
                 android:paddingHorizontal="12dp"

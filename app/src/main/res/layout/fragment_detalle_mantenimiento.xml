@@ -392,5 +392,4 @@
             app:cornerRadius="12dp"/>
 
     </LinearLayout>
-
 </androidx.core.widget.NestedScrollView>

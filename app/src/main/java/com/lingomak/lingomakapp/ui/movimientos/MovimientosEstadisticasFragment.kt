@@ -75,31 +75,13 @@ class MovimientosEstadisticasFragment : Fragment() {
             viewModel.setRango(inicio, fin, etiqueta)
         }
 
-        pagerAdapter = EstadisticasPagerAdapter { meses ->
-            viewModel.setMesesTendencia(meses)
-        }
+        pagerAdapter = EstadisticasPagerAdapter()
         binding.viewPagerEstadisticas.adapter = pagerAdapter
 
         // Indicador de puntos
         TabLayoutMediator(binding.tabLayoutIndicator, binding.viewPagerEstadisticas) { _, _ ->
             // Sin texto
         }.attach()
-
-        // Reaccionar al cambio de página
-        binding.viewPagerEstadisticas.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
-            override fun onPageSelected(position: Int) {
-                // Página 2 (índice 1) es Tendencia
-                if (position == 1) {
-                    binding.selectorFechasEstadisticas.visibility = View.GONE
-                    binding.tvLabelFijoPeriodo.visibility = View.VISIBLE
-                    binding.tvRangoActual.visibility = View.INVISIBLE
-                } else {
-                    binding.selectorFechasEstadisticas.visibility = View.VISIBLE
-                    binding.tvLabelFijoPeriodo.visibility = View.GONE
-                    binding.tvRangoActual.visibility = View.VISIBLE
-                }
-            }
-        })
     }
 
     private fun observarViewModel() {

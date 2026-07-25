@@ -39,19 +39,6 @@
         android:layout_height="wrap_content"
         app:layout_constraintTop_toBottomOf="@id/layoutHeader" />
 
-    <!-- Texto alternativo para Página 2 (Tendencia) -->
-    <TextView
-        android:id="@+id/tvLabelFijoPeriodo"
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:background="#F3F4F6"
-        android:gravity="center"
-        android:text="Histórico de Tendencias"
-        android:textColor="@color/primary"
-        android:textStyle="bold"
-        android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@id/layoutHeader" />
-
     <LinearLayout
         android:id="@+id/layoutRangoConExport"
         android:layout_width="match_parent"
@@ -64,32 +51,12 @@
 
         <TextView
             android:id="@+id/tvRangoActual"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:text="Periodo seleccionado"
             android:textColor="@color/primary"
             android:textStyle="bold"
             android:textSize="14sp" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnExportarCsv"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:padding="0dp"
-            android:insetLeft="0dp"
-            android:insetTop="0dp"
-            android:insetRight="0dp"
-            android:insetBottom="0dp"
-            app:icon="@android:drawable/stat_sys_download"
-            app:iconGravity="textStart"
-            app:iconPadding="0dp"
-            app:iconSize="20dp"
-            app:iconTint="@color/primary"
-            app:backgroundTint="@color/white"
-            app:strokeColor="#DDDDDD"
-            app:strokeWidth="1dp"
-            app:cornerRadius="18dp" />
     </LinearLayout>
 
     <!-- ViewPager2 para el Carrusel -->
@@ -101,7 +68,7 @@
         app:layout_constraintBottom_toTopOf="@id/tabLayoutIndicator"
         app:layout_constraintTop_toBottomOf="@id/layoutRangoConExport" />
 
-    <!-- Indicador de Puntos (Corregido: tamaño fijo y espaciado real) -->
+    <!-- Indicador de Puntos -->
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/tabLayoutIndicator"
         android:layout_width="wrap_content"
@@ -118,6 +85,30 @@
         app:tabMinWidth="16dp"
         app:tabMaxWidth="16dp"
         app:tabRippleColor="@null" />
+
+    <!-- Botón de Exportar CSV (Flotante) -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnExportarCsv"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="12dp"
+        android:padding="0dp"
+        android:insetLeft="0dp"
+        android:insetTop="0dp"
+        android:insetRight="0dp"
+        android:insetBottom="0dp"
+        app:icon="@android:drawable/stat_sys_download"
+        app:iconGravity="textStart"
+        app:iconPadding="0dp"
+        app:iconSize="24dp"
+        app:iconTint="@color/primary"
+        app:backgroundTint="@color/white"
+        app:strokeColor="#DDDDDD"
+        app:strokeWidth="1dp"
+        app:cornerRadius="22dp"
+        app:layout_constraintBottom_toTopOf="@id/layoutRecomendacion"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <!-- Recomendación de Stock (Fija abajo) -->
     <LinearLayout

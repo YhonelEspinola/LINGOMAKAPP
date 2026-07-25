@@ -117,12 +117,10 @@ class DetalleMantenimientoFragment : Fragment() {
         // Pestaña Resolutor
         if (m.estado == "FINALIZADO") {
             binding.separatorResolutor.visibility = View.VISIBLE
-            binding.tvLabelResolutor.visibility = View.VISIBLE
             binding.tvResolutorDetalle.visibility = View.VISIBLE
             binding.tvResolutorDetalle.text = if (m.resolutorNombre.isNotBlank()) m.resolutorNombre else "No registrado"
         } else {
             binding.separatorResolutor.visibility = View.GONE
-            binding.tvLabelResolutor.visibility = View.GONE
             binding.tvResolutorDetalle.visibility = View.GONE
         }
 
@@ -242,27 +240,23 @@ class DetalleMantenimientoFragment : Fragment() {
             
             val todasReporte = m.imagenesReporte + m.imagenesReporteLocal
             if (todasReporte.isNotEmpty()) {
-                binding.tvLabelImagenesReporte.visibility = View.VISIBLE
                 binding.rvImagenesReporteDetalle.visibility = View.VISIBLE
                 val adapter = EvidenciasReadOnlyAdapter(todasReporte) { url ->
                     mostrarImagenAmpliada(url)
                 }
                 binding.rvImagenesReporteDetalle.adapter = adapter
             } else {
-                binding.tvLabelImagenesReporte.visibility = View.GONE
                 binding.rvImagenesReporteDetalle.visibility = View.GONE
             }
             
             val todasFinal = m.imagenesFinalizacion + m.imagenesFinalizacionLocal
             if (todasFinal.isNotEmpty()) {
-                binding.tvLabelImagenesFinal.visibility = View.VISIBLE
                 binding.rvImagenesFinalDetalle.visibility = View.VISIBLE
                 val adapter = EvidenciasReadOnlyAdapter(todasFinal) { url ->
                     mostrarImagenAmpliada(url)
                 }
                 binding.rvImagenesFinalDetalle.adapter = adapter
             } else {
-                binding.tvLabelImagenesFinal.visibility = View.GONE
                 binding.rvImagenesFinalDetalle.visibility = View.GONE
             }
         }

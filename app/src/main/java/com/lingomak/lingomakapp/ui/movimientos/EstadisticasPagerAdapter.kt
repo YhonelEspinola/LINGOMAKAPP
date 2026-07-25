@@ -15,9 +15,7 @@ import com.lingomak.lingomakapp.R
 import com.lingomak.lingomakapp.databinding.ItemEstadisticaPageBinding
 import com.lingomak.lingomakapp.utils.RoundedBarChartRenderer
 
-class EstadisticasPagerAdapter(
-    private val onTendenciaPeriodoChanged: (Int) -> Unit
-) : RecyclerView.Adapter<EstadisticasPagerAdapter.ViewHolder>() {
+class EstadisticasPagerAdapter() : RecyclerView.Adapter<EstadisticasPagerAdapter.ViewHolder>() {
 
     private var data: MovimientosEstadisticasViewModel.EstadisticasData? = null
     private val expandedPages = mutableSetOf<Int>()
@@ -90,16 +88,6 @@ class EstadisticasPagerAdapter(
             binding.tvTituloPagina.text = "Tendencia Mensual"
             binding.layoutP2Tendencia.visibility = View.VISIBLE
             
-            binding.chipGroupTendencia.setOnCheckedChangeListener { _, checkedId ->
-                val meses = when(checkedId) {
-                    R.id.chip3M -> 3
-                    R.id.chip6M -> 6
-                    R.id.chip12M -> 12
-                    else -> 6
-                }
-                onTendenciaPeriodoChanged(meses)
-            }
-
             val entriesEntradas = data.tendenciaMensual.mapIndexed { i, pair -> Entry(i.toFloat(), pair.second.first.toFloat()) }
             val entriesSalidas = data.tendenciaMensual.mapIndexed { i, pair -> Entry(i.toFloat(), pair.second.second.toFloat()) }
             

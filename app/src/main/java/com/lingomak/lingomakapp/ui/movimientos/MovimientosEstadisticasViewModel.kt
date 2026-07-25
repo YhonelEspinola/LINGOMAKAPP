@@ -25,9 +25,6 @@ class MovimientosEstadisticasViewModel(application: Application) : AndroidViewMo
     private val _etiquetaRango = MutableLiveData<String>("Últimos 30 días")
     val etiquetaRango: LiveData<String> get() = _etiquetaRango
 
-    private val _mesesTendencia = MutableLiveData<Int>(6)
-    val mesesTendencia: LiveData<Int> get() = _mesesTendencia
-
     private val todosLosMovimientos = movimientoRepo.obtenerTodos()
     private val todosLosRepuestos = repuestoDao.obtenerTodosObservable()
     private val todasLasMaquinas = maquinariaRepo.obtenerMaquinariasObservable()
@@ -41,58 +38,75 @@ class MovimientosEstadisticasViewModel(application: Application) : AndroidViewMo
             val mantenimientos = todosLosMantenimientos.value ?: emptyList()
             
             val r = _rango.value
-            val nMeses = _mesesTendencia.value ?: 6
             val repuestosMap = repuestos.associateBy { it.uid }
             val maquinasMap = maquinas.associateBy { it.uid }
 
-            // Periodo actual para la mayoría de estadísticas
-            val enPeriodo = if (r != null) {
-                movimientos.filter { it.fecha != null && it.fecha.time >= r.first && it.fecha.time <= r.second }
-            } else {
-                val cal = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, -30) }
-                movimientos.filter { it.fecha != null && it.fecha.after(cal.time) }
-            }
+            // Periodo actual
+            val cal30 = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, -30) }
+            val startTs = r?.first ?: cal30.timeInMillis
+            val endTs = r?.second ?: System.currentTimeMillis()
+
+            val enPeriodo = movimientos.filter { it.fecha != null && it.fecha.time in startTs..endTs }
 
             // PAGINA 1: Resumen
             val entradas = enPeriodo.filter { it.tipo == "ENTRADA" }.sumOf { it.cantidad }
             val salidas = enPeriodo.filter { it.tipo == "SALIDA" }.sumOf { it.cantidad }
-            val labelResumen = if (r != null) {
-                val diff = (r.second - r.first).coerceAtLeast(1)
-                val days = (diff / (1000 * 60 * 60 * 24)).coerceAtLeast(1)
-                String.format(Locale.getDefault(), "Promedio diario: %.1f/día", salidas.toDouble() / days.toDouble())
-            } else {
-                String.format(Locale.getDefault(), "Promedio diario: %.1f/día", salidas.toDouble() / 30.0)
-            }
+            
+            val diff = (endTs - startTs).coerceAtLeast(1)
+            val days = (diff / (1000 * 60 * 60 * 24)).coerceAtLeast(1)
+            val labelResumen = String.format(Locale.getDefault(), "Promedio diario: %.1f/día", salidas.toDouble() / days.toDouble())
+            
             val productoMasUsadoId = enPeriodo.filter { it.tipo == "SALIDA" }
                 .groupBy { it.repuestoUid }
                 .maxByOrNull { entry -> entry.value.sumOf { it.cantidad } }?.key
             val productoMasUsadoNombre = repuestosMap[productoMasUsadoId]?.nombre ?: "---"
 
-            // PAGINA 2: Tendencia (N meses dinámicos)
+            // PAGINA 2: Tendencia (Dinámica según el rango)
             val tendencia = mutableListOf<Pair<String, Pair<Int, Int>>>()
-            val sdfMes = SimpleDateFormat("MMM", Locale.getDefault())
-            for (i in (nMeses - 1) downTo 0) {
-                val cal = Calendar.getInstance()
-                cal.add(Calendar.MONTH, -i)
-                val mes = cal.get(Calendar.MONTH)
-                val anio = cal.get(Calendar.YEAR)
-                
-                val movsMes = movimientos.filter { m ->
-                    val mCal = Calendar.getInstance().apply { time = m.fecha ?: Date(0) }
-                    mCal.get(Calendar.MONTH) == mes && mCal.get(Calendar.YEAR) == anio
+            if (days <= 31) {
+                // Diaria
+                val sdfDia = SimpleDateFormat("dd/MM", Locale.getDefault())
+                for (i in 0 until days.toInt()) {
+                    val cal = Calendar.getInstance().apply { timeInMillis = startTs; add(Calendar.DAY_OF_YEAR, i) }
+                    val d = cal.get(Calendar.DAY_OF_MONTH)
+                    val m = cal.get(Calendar.MONTH)
+                    val a = cal.get(Calendar.YEAR)
+                    
+                    val movsDia = movimientos.filter { mov ->
+                        val mCal = Calendar.getInstance().apply { time = mov.fecha ?: Date(0) }
+                        mCal.get(Calendar.DAY_OF_MONTH) == d && mCal.get(Calendar.MONTH) == m && mCal.get(Calendar.YEAR) == a
+                    }
+                    val ent = movsDia.filter { it.tipo == "ENTRADA" }.sumOf { it.cantidad }
+                    val sal = movsDia.filter { it.tipo == "SALIDA" }.sumOf { it.cantidad }
+                    tendencia.add(sdfDia.format(cal.time) to (ent to sal))
                 }
-                val ent = movsMes.filter { it.tipo == "ENTRADA" }.sumOf { it.cantidad }
-                val sal = movsMes.filter { it.tipo == "SALIDA" }.sumOf { it.cantidad }
-                tendencia.add(sdfMes.format(cal.time) to (ent to sal))
+            } else {
+                // Mensual (últimos N meses del rango)
+                val months = (days / 30).coerceAtLeast(1).toInt().coerceAtMost(12)
+                val sdfMes = SimpleDateFormat("MMM", Locale.getDefault())
+                for (i in (months - 1) downTo 0) {
+                    val cal = Calendar.getInstance()
+                    cal.add(Calendar.MONTH, -i)
+                    val mes = cal.get(Calendar.MONTH)
+                    val anio = cal.get(Calendar.YEAR)
+                    
+                    val movsMes = movimientos.filter { mov ->
+                        val mCal = Calendar.getInstance().apply { time = mov.fecha ?: Date(0) }
+                        mCal.get(Calendar.MONTH) == mes && mCal.get(Calendar.YEAR) == anio
+                    }
+                    val ent = movsMes.filter { it.tipo == "ENTRADA" }.sumOf { it.cantidad }
+                    val sal = movsMes.filter { it.tipo == "SALIDA" }.sumOf { it.cantidad }
+                    tendencia.add(sdfMes.format(cal.time) to (ent to sal))
+                }
             }
 
-            // PAGINA 3: Top Repuestos (del periodo)
+            // PAGINA 3: Top Repuestos
             val topConsumidos = enPeriodo.filter { it.tipo == "SALIDA" }
                 .groupBy { it.repuestoUid }
                 .map { (uid, list) -> (repuestosMap[uid]?.nombre ?: "Desconocido") to list.sumOf { it.cantidad } }
                 .sortedByDescending { it.second }
 
-            // PAGINA 4: Baja/Nula rotación (del periodo)
+            // PAGINA 4: Baja/Nula rotación
             val bajaRotacion = repuestos.filter { it.estado == "ACTIVO" }
                 .map { rep ->
                     val cantSalidas = enPeriodo.filter { it.repuestoUid == rep.uid && it.tipo == "SALIDA" }.sumOf { it.cantidad }
@@ -116,16 +130,11 @@ class MovimientosEstadisticasViewModel(application: Application) : AndroidViewMo
             val salidasSinOM = enPeriodo.filter { it.tipo == "SALIDA" && it.ordenMantenimientoUid == null }.sumOf { it.cantidad }
 
             // PAGINA 8: Costos Mantenimiento
-            val mantEnPeriodo = mantenimientos.filter { m ->
-                if (m.estado != "FINALIZADO") return@filter false
-                val mDate = try { SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(m.fechaRealizada) } catch(e: Exception) { null }
+            val mantEnPeriodo = mantenimientos.filter { movMant ->
+                if (movMant.estado != "FINALIZADO") return@filter false
+                val mDate = try { SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(movMant.fechaRealizada) } catch(e: Exception) { null }
                 if (mDate == null) return@filter false
-                if (r != null) {
-                    mDate.time >= r.first && mDate.time <= r.second
-                } else {
-                    val cal30 = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, -30) }
-                    mDate.after(cal30.time)
-                }
+                mDate.time in startTs..endTs
             }
             val costoEst = mantEnPeriodo.sumOf { it.costoEstimado }
             val costoReal = mantEnPeriodo.sumOf { it.costoReal }
@@ -133,8 +142,7 @@ class MovimientosEstadisticasViewModel(application: Application) : AndroidViewMo
             val diffPerc = if (costoEst > 0) (diffCosto / costoEst) * 100 else 0.0
             val labelCostos = String.format(Locale.getDefault(), "Diferencia: S/ %.2f (%.1f%%)", diffCosto, diffPerc)
 
-            // RECOMENDACIÓN STOCK (30 días fija)
-            val cal30 = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, -30) }
+            // RECOMENDACIÓN STOCK (fija 30 días para estabilidad)
             val movs30 = movimientos.filter { it.fecha != null && it.fecha.after(cal30.time) }
             val productoEnRiesgo = repuestos.filter { it.estado == "ACTIVO" }
                 .map { rep ->
@@ -167,16 +175,11 @@ class MovimientosEstadisticasViewModel(application: Application) : AndroidViewMo
         addSource(todasLasMaquinas) { update() }
         addSource(todosLosMantenimientos) { update() }
         addSource(_rango) { update() }
-        addSource(_mesesTendencia) { update() }
     }
 
     fun setRango(inicio: Long, fin: Long, etiqueta: String) {
         _rango.value = inicio to fin
         _etiquetaRango.value = etiqueta
-    }
-
-    fun setMesesTendencia(meses: Int) {
-        _mesesTendencia.value = meses
     }
 
     data class EstadisticasData(
