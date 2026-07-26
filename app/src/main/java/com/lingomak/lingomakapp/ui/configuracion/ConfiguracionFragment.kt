@@ -1,5 +1,6 @@
 package com.lingomak.lingomakapp.ui.configuracion
 
+import com.lingomak.lingomakapp.R
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -11,7 +12,6 @@ import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.lingomak.lingomakapp.R
 import com.lingomak.lingomakapp.databinding.FragmentConfiguracionBinding
 
 class ConfiguracionFragment : Fragment() {
@@ -24,6 +24,8 @@ class ConfiguracionFragment : Fragment() {
     private lateinit var adapterRepuesto: CategoriaAdapter
     private lateinit var adapterMaquinaria: CategoriaAdapter
 
+    private var isManualChange = false
+
     private var repuestosExpanded = false
     private var maquinariaExpanded = false
 
@@ -34,10 +36,37 @@ class ConfiguracionFragment : Fragment() {
         _binding = FragmentConfiguracionBinding.inflate(inflater, container, false)
 
         setupRecyclerViews()
+        setupThemeSwitch()
         setupEventos()
         observarViewModel()
+        
+        validarRol()
 
         return binding.root
+    }
+
+    private fun setupThemeSwitch() {
+        val themeManager = com.lingomak.lingomakapp.utils.ThemeManager
+        val estaOscuro = themeManager.isDarkMode(requireContext())
+        binding.switchDarkMode.isChecked = estaOscuro
+        actualizarIconoTema(estaOscuro)
+
+        binding.switchDarkMode.setOnCheckedChangeListener { _, isChecked ->
+            actualizarIconoTema(isChecked)
+            themeManager.setDarkMode(requireContext(), isChecked)
+            // La actividad se recreará sola por setDefaultNightMode
+        }
+    }
+
+    private fun actualizarIconoTema(modoOscuro: Boolean) {
+        binding.ivIconoTema.setImageResource(
+            if (modoOscuro) R.drawable.ic_moon else R.drawable.ic_sun
+        )
+    }
+
+    private fun validarRol() {
+        val isAdmin = requireActivity() is com.lingomak.lingomakapp.ui.dashboard.DashboardAdminActivity
+        binding.layoutMaestrosAdmin.visibility = if (isAdmin) View.VISIBLE else View.GONE
     }
 
     private fun setupRecyclerViews() {

@@ -34,6 +34,10 @@
                 android:id="@+id/menu_perfil_operario"
                 android:icon="@drawable/per"
                 android:title="Mi Perfil" />
+            <item
+                android:id="@+id/nav_op_config"
+                android:icon="@drawable/settings"
+                android:title="Configuración" />
         </menu>
     </item>
 

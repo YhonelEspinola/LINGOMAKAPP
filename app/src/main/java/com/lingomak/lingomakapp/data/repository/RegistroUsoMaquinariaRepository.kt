@@ -91,7 +91,7 @@ class RegistroUsoMaquinariaRepository(context: Context) {
                         correoOperario = correoOperario,
                         horometroActual = horometroFinal,
                         horometroUltimoMantenimiento = maqEntity.horometroUltimoMantenimiento,
-                        intervaloMantenimientoHoras = 250, // Asumido por el modelo original
+                        intervaloMantenimientoHoras = 250,
                         horasDesdeUltimoMantenimiento = horasDesdeUltimoMantenimiento,
                         horasRestantes = horasRestantes,
                         motivo = obtenerMotivoSolicitud(horasRestantes),
@@ -115,14 +115,10 @@ class RegistroUsoMaquinariaRepository(context: Context) {
                 }
             }
 
-            // Escritura atómica en Room
             registroUsoDao.registrarUsoMaquinariaLocal(registroUso, maqActualizada, solicitudEntity)
 
-            // Encolar sincronización
             SincronizacionRegistroUsoMaquinariaWorker.encolar(appContext)
             SincronizacionMaquinariaWorker.encolar(appContext)
-            // No creamos worker separado para solicitudes, el de uso puede encargarse de sincronizarlas si queremos,
-            // pero para ser consistentes, vamos a añadir el método de sincronización de solicitudes en este repositorio o en uno nuevo.
 
             onSuccess()
         } catch (e: Exception) {

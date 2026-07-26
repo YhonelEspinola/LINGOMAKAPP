@@ -115,7 +115,8 @@
         android:id="@+id/layoutRecomendacion"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#E8F5E9"
+        android:layout_margin="16dp"
+        android:background="@drawable/bg_recomendacion_card"
         android:orientation="vertical"
         android:padding="16dp"
         android:visibility="gone"
@@ -125,7 +126,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="💡 Recomendación automática"
-            android:textColor="#2E7D32"
+            android:textColor="@color/success"
             android:textSize="13sp"
             android:textStyle="bold" />
 
@@ -134,7 +135,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:textColor="#2E7D32"
+            android:textColor="@color/success"
             android:textSize="14sp" />
     </LinearLayout>
 

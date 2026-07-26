@@ -20,9 +20,6 @@ class LingomakFirebaseMessagingService :
     ) {
         super.onMessageReceived(message)
 
-        /*
-         * Información visual enviada por la Cloud Function.
-         */
         val titulo =
             message.notification?.title
                 ?: "Centro de Monitoreo LINGOMAK"
@@ -31,18 +28,14 @@ class LingomakFirebaseMessagingService :
             message.notification?.body
                 ?: "Existe una nueva solicitud pendiente."
 
-        /*
-         * Datos personalizados enviados en data.
-         */
+
         val tipoDestino =
             message.data["tipo"].orEmpty()
 
         val uidSolicitud =
             message.data["uidSolicitud"].orEmpty()
 
-        /*
-         * Cada solicitud utilizará un ID distinto.
-         */
+
         val notificationId =
             if (uidSolicitud.isNotBlank()) {
                 uidSolicitud.hashCode()

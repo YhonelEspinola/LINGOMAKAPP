@@ -185,7 +185,7 @@
         app:iconSize="24dp"
         app:iconTint="@color/primary"
         app:backgroundTint="@color/white"
-        app:strokeColor="#DDDDDD"
+        app:strokeColor="@color/border"
         app:strokeWidth="1dp"
         app:cornerRadius="22dp"
         android:visibility="gone"

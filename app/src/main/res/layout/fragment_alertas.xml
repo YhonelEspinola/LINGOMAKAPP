@@ -224,7 +224,7 @@
             android:layout_width="match_parent"
             android:layout_height="220dp"
             android:gravity="center"
-            android:text="✅ Todo está funcionando correctamente\n\nNo hay alertas por el momento."
+            android:text="✅ No hay alertas por el momento."
             android:textColor="@color/text_secondary"
             android:textSize="15sp"
             android:visibility="gone" />

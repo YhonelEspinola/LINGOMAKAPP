@@ -127,7 +127,7 @@ class HomeOperarioFragment : Fragment() {
             if (pendientes == 0) {
                 binding.ivSyncIcon.setImageResource(R.drawable.ic_check)
                 binding.ivSyncIcon.setColorFilter(ContextCompat.getColor(requireContext(), R.color.success))
-                binding.tvSyncStatus.text = "✓ Todo sincronizado"
+                binding.tvSyncStatus.text = "Todo sincronizado"
                 binding.tvSyncStatus.setTextColor(ContextCompat.getColor(requireContext(), R.color.success))
             } else {
                 binding.ivSyncIcon.setImageResource(R.drawable.ic_swap_vert)

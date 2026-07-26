@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Paleta de colores LINGOMAK - MODO OSCURO (PROFUNDIDAD MEJORADA) -->
+    <color name="primary">#B52A2A</color> <!-- Rojo suavizado para OLED -->
+    <color name="primary_dark">#000000</color>
+    <color name="primary_light">#2A1212</color>
+
+    <color name="secondary">#E0E0E0</color>
+    <color name="background">#121212</color>
+    <color name="white">#1E1E1E</color>
+
+    <color name="surface_elevated">#2C2C2C</color>
+    <color name="recommendation_bg">#16321F</color>
+    <color name="alert_warning_bg">#3A2E10</color>
+    <color name="alert_warning_text">#FBBF24</color>
+    <color name="on_yellow_selection">#000000</color>
+
+    <color name="fixed_white">#FFFFFF</color>
+    <color name="fixed_black">#212121</color>
+
+    <color name="alert_success_bg">#16301F</color>
+    <color name="alert_success_text">#4ADE80</color>
+
+    <color name="chip_success_bg">#1E3A28</color>
+    <color name="chip_success_text">#4ADE80</color>
+
+    <color name="text_primary">#F5F5F5</color>
+    <color name="text_secondary">#B0B0B0</color>
+
+    <color name="success">#4ADE80</color>
+    <color name="warning">#FACC15</color>
+    <color name="danger">#F87171</color>
+
+    <color name="border">#383838</color>
+
+    <color name="brand_yellow">#F9CE07</color>
+
+    <color name="chip_unselected_bg">#2D2D2D</color>
+    <color name="chip_unselected_text">#B0B0B0</color>
+    <color name="overlay_black_translucent">#B3000000</color>
+</resources>

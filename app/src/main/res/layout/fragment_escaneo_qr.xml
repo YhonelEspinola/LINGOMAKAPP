@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/black">
+    android:background="@color/fixed_black">
 
     <androidx.camera.view.PreviewView
         android:id="@+id/previewView"
@@ -24,7 +24,7 @@
         android:src="@android:drawable/ic_menu_close_clear_cancel"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:tint="@android:color/white" />
+        app:tint="@color/fixed_white" />
 
     <LinearLayout
         android:id="@+id/layoutInstrucciones"
@@ -42,7 +42,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Escaneo de Código QR"
-            android:textColor="@android:color/white"
+            android:textColor="@color/fixed_white"
             android:textSize="18sp"
             android:textStyle="bold" />
 

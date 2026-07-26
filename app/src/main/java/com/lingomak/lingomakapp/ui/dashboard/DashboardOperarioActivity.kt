@@ -33,6 +33,7 @@ class DashboardOperarioActivity : AppCompatActivity() {
     private val alertasViewModel: AlertasViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        com.lingomak.lingomakapp.utils.ThemeManager.applyTheme(this)
         super.onCreate(savedInstanceState)
         binding = DashboardOperarioBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -180,6 +181,14 @@ class DashboardOperarioActivity : AppCompatActivity() {
                 R.id.menu_perfil_operario -> {
                     supportFragmentManager.beginTransaction()
                         .replace(R.id.containerOperario, PerfilOperarioFragment())
+                        .commit()
+                    binding.drawerLayoutOperario.close()
+                    true
+                }
+
+                R.id.nav_op_config -> {
+                    supportFragmentManager.beginTransaction()
+                        .replace(R.id.containerOperario, com.lingomak.lingomakapp.ui.configuracion.ConfiguracionFragment())
                         .commit()
                     binding.drawerLayoutOperario.close()
                     true

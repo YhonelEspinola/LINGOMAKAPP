@@ -33,7 +33,7 @@
             android:layout_height="wrap_content"
             app:cardCornerRadius="18dp"
             app:cardElevation="3dp"
-            app:cardBackgroundColor="@android:color/white">
+            app:cardBackgroundColor="@color/white">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -144,8 +144,8 @@
             android:layout_marginTop="22dp"
             app:cardCornerRadius="18dp"
             app:cardElevation="2dp"
-            app:cardBackgroundColor="#F9FAFB"
-            app:strokeColor="#E5E7EB"
+            app:cardBackgroundColor="@color/surface_elevated"
+            app:strokeColor="@color/border"
             app:strokeWidth="1dp">
 
             <LinearLayout

@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F5F5">
+    android:background="@color/background">
 
     <androidx.core.widget.NestedScrollView
         android:id="@+id/scrollMaquinaria"
@@ -109,10 +109,10 @@
                     android:layout_height="80dp"
                     android:layout_weight="1"
                     android:layout_marginEnd="4dp"
-                    app:cardBackgroundColor="#FFFFFF"
+                    app:cardBackgroundColor="@color/white"
                     app:cardCornerRadius="8dp"
                     app:cardElevation="0dp"
-                    app:strokeColor="#E0E0E0"
+                    app:strokeColor="@color/border"
                     app:strokeWidth="1dp">
 
                     <LinearLayout
@@ -147,10 +147,10 @@
                     android:layout_height="80dp"
                     android:layout_weight="1"
                     android:layout_marginHorizontal="4dp"
-                    app:cardBackgroundColor="#FFFFFF"
+                    app:cardBackgroundColor="@color/white"
                     app:cardCornerRadius="8dp"
                     app:cardElevation="0dp"
-                    app:strokeColor="#E0E0E0"
+                    app:strokeColor="@color/border"
                     app:strokeWidth="1dp">
 
                     <LinearLayout
@@ -185,10 +185,10 @@
                     android:layout_height="80dp"
                     android:layout_weight="1"
                     android:layout_marginHorizontal="4dp"
-                    app:cardBackgroundColor="#FFFFFF"
+                    app:cardBackgroundColor="@color/white"
                     app:cardCornerRadius="8dp"
                     app:cardElevation="0dp"
-                    app:strokeColor="#E0E0E0"
+                    app:strokeColor="@color/border"
                     app:strokeWidth="1dp">
 
                     <LinearLayout
@@ -223,10 +223,10 @@
                     android:layout_height="80dp"
                     android:layout_weight="1"
                     android:layout_marginStart="4dp"
-                    app:cardBackgroundColor="#FFFFFF"
+                    app:cardBackgroundColor="@color/white"
                     app:cardCornerRadius="8dp"
                     app:cardElevation="0dp"
-                    app:strokeColor="#E0E0E0"
+                    app:strokeColor="@color/border"
                     app:strokeWidth="1dp">
 
                     <LinearLayout
@@ -280,8 +280,8 @@
         android:layout_margin="20dp"
         app:elevation="0dp"
         app:icon="@android:drawable/ic_input_add"
-        app:iconTint="#FFFFFF"
-        app:backgroundTint="#7F0000"
+        app:iconTint="@color/white"
+        app:backgroundTint="@color/primary"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 

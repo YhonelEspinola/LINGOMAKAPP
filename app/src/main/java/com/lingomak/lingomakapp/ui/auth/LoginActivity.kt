@@ -20,6 +20,7 @@ class LoginActivity : AppCompatActivity() {
     private val viewModel : LoginViewModel by viewModels()
 
     override fun onCreate(savedInstance: Bundle?) {
+        com.lingomak.lingomakapp.utils.ThemeManager.applyTheme(this)
         super.onCreate(savedInstance)
 
         binding = AuthLoginBinding.inflate(layoutInflater)

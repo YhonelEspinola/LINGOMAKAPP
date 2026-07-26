@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Seleccionado (Blanco para contraste con negro) -->
-    <item android:color="@color/white" android:state_checked="true" />
+    <!-- Seleccionado (Blanco para contraste con negro/gris oscuro) -->
+    <item android:color="@color/fixed_white" android:state_checked="true" />
     <!-- No seleccionado (Negro para contraste con amarillo) -->
-    <item android:color="@color/secondary" />
+    <item android:color="@color/fixed_black" />
 </selector>

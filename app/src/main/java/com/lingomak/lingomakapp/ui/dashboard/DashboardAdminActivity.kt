@@ -44,6 +44,7 @@ class DashboardAdminActivity : AppCompatActivity() {
     private val alertasViewModel: AlertasViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        com.lingomak.lingomakapp.utils.ThemeManager.applyTheme(this)
         super.onCreate(savedInstanceState)
 
         binding =
@@ -203,15 +204,7 @@ class DashboardAdminActivity : AppCompatActivity() {
         intentRecibido: Intent?
     ): Boolean {
 
-        /*
-         * Las notificaciones creadas por NotificationHelper
-         * utilizan "tipoDestino".
-         *
-         * Las notificaciones automáticas de FCM pueden llegar
-         * con la clave original "tipo".
-         *
-         * Por eso admitimos ambas.
-         */
+
         val tipoDestino =
             intentRecibido
                 ?.getStringExtra("tipoDestino")
@@ -234,12 +227,6 @@ class DashboardAdminActivity : AppCompatActivity() {
                 val fragment =
                     SolicitudesMantenimientoFragment().apply {
 
-                        /*
-                         * Guardamos el UID en el Fragment.
-                         *
-                         * Todavía no lo usamos para filtrar,
-                         * pero luego podremos resaltar la solicitud.
-                         */
                         arguments = Bundle().apply {
                             putString(
                                 "uidSolicitudDestacada",
@@ -263,9 +250,7 @@ class DashboardAdminActivity : AppCompatActivity() {
         }
     }
 
-    /**
-     * Abre la pantalla principal del administrador.
-     */
+
     private fun abrirHome() {
         supportFragmentManager
             .beginTransaction()
@@ -276,10 +261,7 @@ class DashboardAdminActivity : AppCompatActivity() {
             .commit()
     }
 
-    /**
-     * Configura el botón del Toolbar que abre
-     * el NavigationDrawer.
-     */
+
     private fun configurarToolbar() {
 
         binding.toolbarAdmin

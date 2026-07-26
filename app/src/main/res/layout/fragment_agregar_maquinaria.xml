@@ -38,7 +38,7 @@
             app:cardCornerRadius="14dp"
             app:cardElevation="2dp"
             app:strokeWidth="0dp"
-            app:cardBackgroundColor="@android:color/white">
+            app:cardBackgroundColor="@color/white">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -284,7 +284,7 @@
                     android:layout_height="56dp"
                     android:layout_marginTop="24dp"
                     android:text="GUARDAR MAQUINARIA"
-                    android:textColor="@android:color/white"
+                    android:textColor="@color/white"
                     android:textStyle="bold"
                     app:backgroundTint="@color/primary"
                     app:cornerRadius="12dp" />

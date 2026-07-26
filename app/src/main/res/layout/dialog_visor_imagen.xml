@@ -2,7 +2,7 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/black">
+    android:background="@color/fixed_black">
 
     <ImageView
         android:id="@+id/ivVisorCompleto"
@@ -19,7 +19,7 @@
         android:layout_margin="16dp"
         android:background="?attr/selectableItemBackgroundBorderless"
         android:src="@android:drawable/ic_menu_close_clear_cancel"
-        app:tint="@android:color/white"
+        app:tint="@color/fixed_white"
         xmlns:app="http://schemas.android.com/apk/res-auto" />
 
 </FrameLayout>

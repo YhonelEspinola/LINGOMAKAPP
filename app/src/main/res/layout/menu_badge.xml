@@ -15,7 +15,7 @@
         android:minHeight="20dp"
         android:paddingHorizontal="6dp"
         android:paddingVertical="2dp"
-        android:textColor="@color/white"
+        android:textColor="@color/fixed_white"
         android:textSize="11sp"
         android:textStyle="bold"
         android:visibility="gone" />

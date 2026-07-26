@@ -1,26 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Paleta de colores LINGOMAK -->
+    <!-- Paleta de colores LINGOMAK - MODO CLARO -->
     <color name="primary">#7F0000</color> <!-- Rojo corporativo -->
     <color name="primary_dark">#600000</color>
     <color name="primary_light">#FFF1F1</color>
 
-    <color name="secondary">#212121</color> <!-- Negro/Gris oscuro -->
+    <color name="secondary">#212121</color>
     <color name="background">#F5F5F5</color>
     <color name="white">#FFFFFF</color>
+
+    <color name="surface_elevated">#FAFAFA</color>
+    <color name="recommendation_bg">#E8F5E9</color>
+    <color name="alert_warning_bg">#FFF8E1</color>
+    <color name="alert_warning_text">#B45309</color>
+    <color name="on_yellow_selection">#212121</color>
+
+    <color name="fixed_white">#FFFFFF</color>
+    <color name="fixed_black">#212121</color>
+
+    <color name="alert_success_bg">#E8F5E9</color>
+    <color name="alert_success_text">#2E7D32</color>
+
+    <color name="chip_success_bg">#DCFCE7</color>
+    <color name="chip_success_text">#166534</color>
 
     <color name="text_primary">#212121</color>
     <color name="text_secondary">#757575</color>
 
-    <color name="success">#15803D</color> <!-- Verde éxito -->
-    <color name="warning">#EAB308</color> <!-- Amarillo/Naranja advertencia -->
-    <color name="danger">#DC2626</color> <!-- Rojo error -->
+    <color name="success">#15803D</color>
+    <color name="warning">#EAB308</color>
+    <color name="danger">#DC2626</color>
 
     <color name="border">#E0E0E0</color>
 
-    <color name="brand_yellow">#F9CE07</color> <!-- Amarillo vibrante del logo -->
+    <color name="brand_yellow">#F9CE07</color>
 
-    <!-- Colores auxiliares para Chips y UI -->
     <color name="chip_unselected_bg">#EEEEEE</color>
     <color name="chip_unselected_text">#757575</color>
     <color name="overlay_black_translucent">#99000000</color>

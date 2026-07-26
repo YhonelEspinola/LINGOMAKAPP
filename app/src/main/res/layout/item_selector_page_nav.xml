@@ -22,7 +22,7 @@
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="Anterior"
             android:src="@drawable/ic_chevron_left"
-            app:tint="@color/white" />
+            app:tint="@color/fixed_black" />
 
         <TextView
             android:id="@+id/tvPeriodoLabel"
@@ -34,7 +34,7 @@
             android:gravity="center"
             android:paddingVertical="4dp"
             android:text="Este mes ▼"
-            android:textColor="@color/white"
+            android:textColor="@color/fixed_white"
             android:textSize="14sp"
             android:textStyle="bold" />
 
@@ -45,7 +45,7 @@
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="Siguiente"
             android:src="@drawable/ic_chevron_right"
-            app:tint="@color/white" />
+            app:tint="@color/fixed_black" />
 
     </LinearLayout>
 

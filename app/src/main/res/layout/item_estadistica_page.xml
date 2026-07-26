@@ -123,7 +123,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:stretchColumns="0">
-                <TableRow android:background="#F9FAFB" android:paddingVertical="12dp">
+                <TableRow android:background="@color/surface_elevated" android:paddingVertical="12dp">
                     <TextView android:id="@+id/tvCol1Header" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Item" android:textStyle="bold" android:paddingHorizontal="16dp" android:textColor="@color/text_primary"/>
                     <TextView android:id="@+id/tvCol2Header" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Valor" android:textStyle="bold" android:paddingHorizontal="16dp" android:gravity="end" android:textColor="@color/text_primary"/>
                 </TableRow>

@@ -204,7 +204,7 @@ class RepuestoRepository(context: Context) {
                 }
 
                 if (huboCambioLocal) {
-                    // Actualizamos localmente para limpiar los paths locales y guardar las URLs
+
                     val entityActualizada = entity.copy(
                         imagenUrl = modeloParaSubir.imagenUrl,
                         codigoQR = modeloParaSubir.codigoQR,
@@ -219,8 +219,7 @@ class RepuestoRepository(context: Context) {
                 val timestampRemoto = docRemoto.getTimestamp("fechaActualizacion")
                     ?.toDate()?.time ?: 0L
 
-                // Last-write-wins: si el remoto es más nuevo que nuestro
-                // cambio local, el remoto gana y descartamos la subida
+                // Last-write-wins, cuando el remoto es más nuevo que nuestro
                 if (docRemoto.exists() && timestampRemoto > entity.timestampLocal) {
                     repuestoDao.marcarComoSincronizado(entity.uid)
                     continue
@@ -232,8 +231,7 @@ class RepuestoRepository(context: Context) {
 
                 repuestoDao.marcarComoSincronizado(entity.uid)
             } catch (exception: Exception) {
-                // Se deja el registro como pendiente; el próximo intento
-                // de WorkManager (con backoff) lo reintentará.
+                // Se deja el registro como pendiente; el próximo intento de WorkManager lo reintentará.
             }
         }
     }
