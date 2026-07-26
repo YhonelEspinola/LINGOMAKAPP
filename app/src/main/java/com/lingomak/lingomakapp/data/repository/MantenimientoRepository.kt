@@ -25,13 +25,9 @@ import kotlinx.coroutines.tasks.await
 import java.io.File
 import java.util.*
 
-data class ConsumoRepuesto(
-    val repuestoUid: String,
-    val nombre: String,
-    val cantidad: Int
-)
 
 class MantenimientoRepository(context: Context) {
+
 
     private val db = FirebaseFirestore.getInstance()
     private val storage = FirebaseStorage.getInstance()
