@@ -31,6 +31,29 @@ class MaquinariaAdapter(
             binding.tvUbicacionMaquinaria.text =
                 maquinaria.ubicacionActual.ifEmpty { "sin ubicacion" }
 
+            // Cálculo de horas para mantenimiento
+            val horasDesdeUltimo = maquinaria.horometroActual - maquinaria.horometroUltimoMantenimiento
+            val horasRestantes = maquinaria.intervaloMantenimientoHoras - horasDesdeUltimo
+
+            when {
+                horasRestantes <= 0 -> {
+                    binding.tvHorasRestantes.text = "Mantenimiento requerido"
+                    binding.tvHorasRestantes.setTextColor(Color.rgb(185, 28, 28)) // Rojo
+                }
+                horasRestantes <= 20 -> {
+                    binding.tvHorasRestantes.text = "Faltan ${String.format("%.1f", horasRestantes)} h para mantenimiento"
+                    binding.tvHorasRestantes.setTextColor(Color.rgb(185, 28, 28)) // Rojo
+                }
+                horasRestantes <= 50 -> {
+                    binding.tvHorasRestantes.text = "Faltan ${String.format("%.1f", horasRestantes)} h para mantenimiento"
+                    binding.tvHorasRestantes.setTextColor(Color.rgb(180, 83, 9)) // Naranja
+                }
+                else -> {
+                    binding.tvHorasRestantes.text = "Faltan ${String.format("%.1f", horasRestantes)} h para mantenimiento"
+                    binding.tvHorasRestantes.setTextColor(Color.rgb(22, 101, 52)) // Verde
+                }
+            }
+
             if (maquinaria.imagenUrl.isNotEmpty()){
                 Glide.with(binding.root.context)
                     .load(maquinaria.imagenUrl)
