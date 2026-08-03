@@ -158,6 +158,56 @@
             </com.google.android.material.chip.ChipGroup>
         </HorizontalScrollView>
 
+        <HorizontalScrollView
+            android:id="@+id/scrollFiltrosEstado"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:clipToPadding="false"
+            android:scrollbars="none">
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/chipGroupEstado"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:selectionRequired="true"
+                app:singleSelection="true">
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipTodosEstado"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:text="Todos"
+                    app:chipBackgroundColor="@color/selector_chip_choice"
+                    app:chipStrokeWidth="0dp"
+                    android:textColor="@color/selector_chip_text" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipActivos"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Activos"
+                    app:chipBackgroundColor="@color/selector_chip_choice"
+                    app:chipStrokeWidth="0dp"
+                    android:textColor="@color/selector_chip_text" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipInactivos"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Inactivos"
+                    app:chipBackgroundColor="@color/selector_chip_choice"
+                    app:chipStrokeWidth="0dp"
+                    android:textColor="@color/selector_chip_text" />
+
+            </com.google.android.material.chip.ChipGroup>
+        </HorizontalScrollView>
+
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView

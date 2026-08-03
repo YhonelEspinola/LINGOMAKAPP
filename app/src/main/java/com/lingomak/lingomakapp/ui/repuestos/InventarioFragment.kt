@@ -27,7 +27,7 @@ import com.lingomak.lingomakapp.utils.CsvExporter
  * - rvRepuestos (RecyclerView)
  * - etBuscar (EditText de búsqueda)
  * - spinnerCategoria (Spinner de filtro por categoría)
- * - chipTodos, chipActivos, chipInactivos (filtros rápidos de estado)
+ * - chipTodosEstado, chipActivos, chipInactivos (filtros rápidos de estado)
  * - fabAgregarRepuesto (botón para ir a AgregarRepuestoFragment)
  * - progressBar (indicador de carga)
  */
@@ -153,6 +153,11 @@ class InventarioFragment : Fragment() {
     }
 
     private fun configurarEventos() {
+
+        // Búsqueda en tiempo real
+        binding.etBuscar.addTextChangedListener { text ->
+            viewModel.buscarRepuesto(text.toString())
+        }
 
         // Toggle Filtros Colapsable
         binding.btnToggleFiltros.setOnClickListener {
