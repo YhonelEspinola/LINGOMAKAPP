@@ -1,7 +1,6 @@
 package com.lingomak.lingomakapp.ui.repuestos
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
@@ -14,21 +13,20 @@ import com.lingomak.lingomakapp.utils.ImageOptimizer
 class RepuestosOpAdapter(
     private var listaRepuestos: List<RepuestoModel>,
     private val onItemClick: (RepuestoModel) -> Unit
-) : RecyclerView.Adapter<RepuestosOpAdapter.RepuestoOpViewHolder>() {
+) : RecyclerView.Adapter<RepuestosOpAdapter.RepuestoViewHolder>() {
 
-    inner class RepuestoOpViewHolder(private val binding: ItemRepuestoBinding) :
+    inner class RepuestoViewHolder(private val binding: ItemRepuestoBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
         fun bind(repuesto: RepuestoModel) {
             binding.tvNombre.text = repuesto.nombre
             binding.tvCategoria.text = repuesto.categoria
             binding.tvStockActual.text = repuesto.stockActual.toString()
-
-            // Manejo de visibilidad y overlay según estado
+            
             if (repuesto.estado.equals("INACTIVO", ignoreCase = true)) {
-                binding.overlayInactivo.visibility = View.VISIBLE
+                binding.overlayInactivo.visibility = android.view.View.VISIBLE
             } else {
-                binding.overlayInactivo.visibility = View.GONE
+                binding.overlayInactivo.visibility = android.view.View.GONE
             }
 
             if (repuesto.imagenUrl.isNotEmpty()) {
@@ -36,11 +34,11 @@ class RepuestosOpAdapter(
                 Glide.with(binding.root.context)
                     .load(optimizedUrl)
                     .thumbnail(Glide.with(binding.root.context).load(repuesto.imagenUrl).override(100))
-                    .placeholder(android.R.drawable.ic_menu_gallery)
-                    .error(android.R.drawable.ic_menu_gallery)
+                    .placeholder(R.drawable.bg_image_placeholder)
+                    .error(R.drawable.bg_image_placeholder)
                     .into(binding.ivRepuesto)
             } else {
-                binding.ivRepuesto.setImageResource(android.R.drawable.ic_menu_gallery)
+                binding.ivRepuesto.setImageResource(R.drawable.bg_image_placeholder)
             }
 
             val colorRes = when {
@@ -59,16 +57,16 @@ class RepuestosOpAdapter(
         }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RepuestoOpViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RepuestoViewHolder {
         val binding = ItemRepuestoBinding.inflate(
             LayoutInflater.from(parent.context),
             parent,
             false
         )
-        return RepuestoOpViewHolder(binding)
+        return RepuestoViewHolder(binding)
     }
 
-    override fun onBindViewHolder(holder: RepuestoOpViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: RepuestoViewHolder, position: Int) {
         holder.bind(listaRepuestos[position])
     }
 

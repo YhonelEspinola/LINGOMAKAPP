@@ -7,105 +7,101 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.tabs.TabLayoutMediator
 import com.lingomak.lingomakapp.R
-import com.lingomak.lingomakapp.data.model.MaquinariaModel
-import com.lingomak.lingomakapp.databinding.FragmentMaquinariaBinding
+import com.lingomak.lingomakapp.data.model.BitacoraUsoModel
+import com.lingomak.lingomakapp.databinding.FragmentMaquinariaAdminBinding
+import com.lingomak.lingomakapp.utils.CsvExporter
+import com.google.gson.Gson
 
 class MaquinariaFragment : Fragment() {
 
-    private var _binding: FragmentMaquinariaBinding? = null
+    private var _binding: FragmentMaquinariaAdminBinding? = null
     private val binding get() = _binding!!
 
-    private val viewModel: MaquinariaViewModel by viewModels()
+    private val maquinariaViewModel: MaquinariaViewModel by viewModels()
+    private val bitacoraViewModel: BitacoraUsoViewModel by viewModels()
 
-    private lateinit var adapter: MaquinariaAdapter
+    private lateinit var pagerAdapter: MaquinariaAdminPagerAdapter
+    private var bitacoraFiltrada: List<BitacoraUsoModel> = emptyList()
 
-    private var listaCompleta = listOf<MaquinariaModel>()
-    private var listaCategoriasFiltro: List<String> = emptyList()
-
-    private var filtroEstado = "TODOS"
-    private var filtroCategoria = "TODAS"
+    private val createDocumentLauncher = registerForActivityResult(ActivityResultContracts.CreateDocument("text/csv")) { uri ->
+        uri?.let {
+            val csvContent = CsvExporter.buildBitacoraCsvContent(bitacoraFiltrada)
+            CsvExporter.saveCsvToUri(requireContext(), it, csvContent)
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentMaquinariaBinding.inflate(inflater, container, false)
+        _binding = FragmentMaquinariaAdminBinding.inflate(inflater, container, false)
 
-        configurarRecyclerView()
-        observarViewModel()
+        setupViewPager()
         configurarBusqueda()
-        configurarFiltros()
         configurarEventos()
+        observarViewModels()
 
-        viewModel.listarMaquinarias()
+        maquinariaViewModel.listarMaquinarias()
+        bitacoraViewModel.cargarBitacora()
 
         return binding.root
     }
 
-    private fun configurarRecyclerView() {
-        adapter = MaquinariaAdapter(
-            listaMaquinarias = emptyList(),
-            onMaquinariaClick = { maquinaria ->
-                val detalleFragment = DetalleMaquinariaFragment()
-                val bundle = Bundle()
-                bundle.putString("uid", maquinaria.uid)
-                detalleFragment.arguments = bundle
-
-                val containerId = if (requireActivity() is com.lingomak.lingomakapp.ui.dashboard.DashboardAdminActivity) 
-                    R.id.fragmentContainerAdmin else R.id.containerOperario
-
-                parentFragmentManager
-                    .beginTransaction()
-                    .replace(containerId, detalleFragment)
-                    .addToBackStack(null)
-                    .commit()
-            }
+    private fun setupViewPager() {
+        pagerAdapter = MaquinariaAdminPagerAdapter(
+            onMaquinariaClick = { abrirDetalleMaquinaria(it.uid) },
+            onBitacoraClick = { abrirDetalleBitacora(it) },
+            onBitacoraFiltered = { bitacoraFiltrada = it }
         )
+        
+        binding.viewPagerMaquinaria.adapter = pagerAdapter
 
-        binding.rvMaquinarias.layoutManager = LinearLayoutManager(requireContext())
-        binding.rvMaquinarias.adapter = adapter
-    }
+        TabLayoutMediator(binding.tabLayoutMaquinaria, binding.viewPagerMaquinaria) { tab, position ->
+            tab.text = if (position == 0) "MAQUINARIA" else "BITÁCORA DE USO"
+        }.attach()
 
-    private fun observarViewModel() {
-        viewModel.categorias.observe(viewLifecycleOwner) { lista ->
-            listaCategoriasFiltro = listOf("TODAS") + lista.map { it.nombre.uppercase() }
-            actualizarChipsCategorias()
-        }
-
-        viewModel.listaMaquinarias.observe(viewLifecycleOwner) { lista ->
-            listaCompleta = lista
-            aplicarFiltros()
-        }
-
-        viewModel.mensajeError.observe(viewLifecycleOwner) { mensaje ->
-            Toast.makeText(requireContext(), mensaje, Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    private fun actualizarChipsCategorias() {
-        binding.chipGroupCategoria.removeAllViews()
-        listaCategoriasFiltro.forEach { categoria ->
-            val chip = LayoutInflater.from(requireContext()).inflate(R.layout.layout_chip_choice, binding.chipGroupCategoria, false) as com.google.android.material.chip.Chip
-            chip.apply {
-                text = if (categoria == "TODAS") "Todas las categorías" else categoria
-                id = View.generateViewId()
-                isChecked = (filtroCategoria == categoria)
+        binding.viewPagerMaquinaria.registerOnPageChangeCallback(object : androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback() {
+            override fun onPageSelected(position: Int) {
+                actualizarFabPorPagina(position)
             }
-            binding.chipGroupCategoria.addView(chip)
-        }
+        })
+        
+        // Llamada manual inicial (Tarea 9)
+        actualizarFabPorPagina(0)
+    }
 
-        binding.chipGroupCategoria.setOnCheckedStateChangeListener { group, checkedIds ->
-            val checkedId = checkedIds.firstOrNull() ?: View.NO_ID
-            val selectedChip = group.findViewById<com.google.android.material.chip.Chip>(checkedId)
-            val selectedText = selectedChip?.text?.toString()?.uppercase() ?: "TODAS"
-            
-            filtroCategoria = if (selectedText == "TODAS LAS CATEGORÍAS") "TODAS" else selectedText
-            aplicarFiltros()
+    private fun actualizarFabPorPagina(position: Int) {
+        binding.btnExportarBitacoraCsv.visibility = if (position == 1) View.VISIBLE else View.GONE
+
+        // Actualizar FAB según pestaña
+        if (position == 0) {
+            binding.fabAccionMaquinaria.text = "REGISTRAR ACTIVO"
+        } else {
+            binding.fabAccionMaquinaria.text = "REGISTRAR USO"
+        }
+    }
+
+    private fun observarViewModels() {
+        maquinariaViewModel.listaMaquinarias.observe(viewLifecycleOwner) {
+            pagerAdapter.updateMaquinarias(it)
+        }
+        maquinariaViewModel.maquinariasActivas.observe(viewLifecycleOwner) {
+            pagerAdapter.updateCatalogoMaquinas(it)
+        }
+        maquinariaViewModel.operariosActivos.observe(viewLifecycleOwner) {
+            pagerAdapter.updateCatalogoOperarios(it)
+        }
+        maquinariaViewModel.categorias.observe(viewLifecycleOwner) {
+            pagerAdapter.updateCategorias(it)
+        }
+        bitacoraViewModel.listaBitacora.observe(viewLifecycleOwner) {
+            pagerAdapter.updateBitacora(it)
         }
     }
 
@@ -113,65 +109,97 @@ class MaquinariaFragment : Fragment() {
         binding.etBuscarMaquinaria.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                aplicarFiltros()
+                pagerAdapter.updateSearch(s.toString())
             }
             override fun afterTextChanged(s: Editable?) {}
         })
     }
 
-    private fun configurarFiltros() {
-        binding.chipGroupEstado.setOnCheckedStateChangeListener { _, checkedIds ->
-            val checkedId = checkedIds.firstOrNull() ?: View.NO_ID
-            filtroEstado = when (checkedId) {
-                binding.chipEstadoOperativa.id -> "OPERATIVA"
-                binding.chipEstadoMantenimiento.id -> "EN_MANTENIMIENTO"
-                binding.chipEstadoInactiva.id -> "INACTIVA"
-                else -> "TODOS"
-            }
-            aplicarFiltros()
-        }
-    }
-
-    private fun aplicarFiltros() {
-        val textoBusqueda = binding.etBuscarMaquinaria.text.toString().trim().lowercase()
-
-        val listaFiltrada = listaCompleta.filter { maquinaria ->
-            val coincideBusqueda =
-                maquinaria.nombre.lowercase().contains(textoBusqueda) ||
-                maquinaria.codigoMaquinaria.lowercase().contains(textoBusqueda) ||
-                maquinaria.placaSerie.lowercase().contains(textoBusqueda)
-
-            val coincideEstado = filtroEstado == "TODOS" || maquinaria.estado == filtroEstado
-            val coincideCategoria = filtroCategoria == "TODAS" || maquinaria.tipo.uppercase() == filtroCategoria
-
-            coincideBusqueda && coincideEstado && coincideCategoria
-        }
-
-        adapter.actualizarLista(listaFiltrada)
-        actualizarResumen(listaFiltrada)
-    }
-
-    private fun actualizarResumen(lista: List<MaquinariaModel>) {
-        binding.tvTotalMaquinaria.text = lista.size.toString()
-        binding.tvOperativasMaquinaria.text = lista.count { it.estado == "OPERATIVA" }.toString()
-        binding.tvMantenimientoMaquinaria.text = lista.count { it.estado == "EN_MANTENIMIENTO" }.toString()
-        binding.tvInactivasMaquinaria.text = lista.count { it.estado == "INACTIVA" }.toString()
-    }
-
     private fun configurarEventos() {
-        if (requireActivity() is com.lingomak.lingomakapp.ui.dashboard.DashboardOperarioActivity) {
-            binding.fabAgregarMaquinaria.visibility = View.GONE
+        binding.fabAccionMaquinaria.setOnClickListener {
+            if (binding.viewPagerMaquinaria.currentItem == 0) {
+                abrirAgregarMaquinaria()
+            } else {
+                abrirRegistrarUso()
+            }
         }
 
-        binding.fabAgregarMaquinaria.setOnClickListener {
-            val containerId = if (requireActivity() is com.lingomak.lingomakapp.ui.dashboard.DashboardAdminActivity) 
-                R.id.fragmentContainerAdmin else R.id.containerOperario
-
-            parentFragmentManager.beginTransaction()
-                .replace(containerId, AgregarMaquinariaFragment())
-                .addToBackStack(null)
-                .commit()
+        binding.btnExportarBitacoraCsv.setOnClickListener {
+            if (bitacoraFiltrada.isNotEmpty()) {
+                CsvExporter.exportBitacora(
+                    requireContext(),
+                    bitacoraFiltrada,
+                    createDocumentLauncher,
+                    pagerAdapter.bitacoraFechaInicio,
+                    pagerAdapter.bitacoraFechaFin
+                )
+            } else {
+                Toast.makeText(requireContext(), "No hay datos para exportar", Toast.LENGTH_SHORT).show()
+            }
         }
+    }
+
+    private fun abrirDetalleMaquinaria(uid: String) {
+        val fragment = DetalleMaquinariaFragment()
+        val bundle = Bundle()
+        bundle.putString("uid", uid)
+        fragment.arguments = bundle
+        parentFragmentManager.beginTransaction()
+            .replace(R.id.fragmentContainerAdmin, fragment)
+            .addToBackStack(null)
+            .commit()
+    }
+
+    private fun abrirDetalleBitacora(model: BitacoraUsoModel) {
+        val fragment = DetalleBitacoraFragment()
+        val bundle = Bundle()
+        bundle.putString("registro_uid", model.uid)
+        fragment.arguments = bundle
+        parentFragmentManager.beginTransaction()
+            .replace(R.id.fragmentContainerAdmin, fragment)
+            .addToBackStack(null)
+            .commit()
+    }
+
+    private fun abrirAgregarMaquinaria() {
+        parentFragmentManager.beginTransaction()
+            .replace(R.id.fragmentContainerAdmin, AgregarMaquinariaFragment())
+            .addToBackStack(null)
+            .commit()
+    }
+
+    private fun abrirRegistrarUso() {
+        val maquinas = pagerAdapter.catalogoMaquinasActual.map { it.nombre }.sorted()
+        if (maquinas.isEmpty()) {
+            Toast.makeText(requireContext(), "No hay maquinarias operativas disponibles", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext(), R.style.RoundedAlertDialog)
+            .setTitle("Seleccione maquinaria")
+            .setItems(maquinas.toTypedArray()) { _, which ->
+                val nombre = maquinas[which]
+                val maq = pagerAdapter.catalogoMaquinasActual.first { it.nombre == nombre }
+                val fragment = RegistrarUsoMaquinariaFragment()
+                val bundle = Bundle().apply {
+                    putString("uidMaquinaria", maq.uid)
+                    putString("codigoMaquinaria", maq.codigoMaquinaria)
+                    putString("nombreMaquinaria", maq.nombre)
+                    putString("tipoMaquinaria", maq.tipo)
+                    putDouble("horometroActual", maq.horometroActual)
+                    putDouble("horometroUltimoMantenimiento", maq.horometroUltimoMantenimiento)
+                    putInt("intervaloMantenimientoHoras", maq.intervaloMantenimientoHoras)
+                    if (maq.capacidadTanqueGls != null) {
+                        putDouble("capacidadTanqueGls", maq.capacidadTanqueGls!!)
+                    }
+                }
+                fragment.arguments = bundle
+                parentFragmentManager.beginTransaction()
+                    .replace(R.id.fragmentContainerAdmin, fragment)
+                    .addToBackStack(null)
+                    .commit()
+            }
+            .show()
     }
 
     override fun onDestroyView() {

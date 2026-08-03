@@ -15,8 +15,9 @@ data class MaquinariaModel(
     var placaSerie: String = "",
     var anio: Int = 0,
     var estado: String = "",
-    var horometroActual: Int = 0,
-    var horometroUltimoMantenimiento: Int = 0,
+    var horometroActual: Double = 0.0,
+    var horometroUltimoMantenimiento: Double = 0.0,
+    var capacidadTanqueGls: Double? = null,
     var intervaloMantenimientoHoras: Int = 250,
     var ubicacionActual: String = "",
     var imagenUrl: String = "",
@@ -24,4 +25,28 @@ data class MaquinariaModel(
     var fechaRegistro: String = "",
     var fechaActualizacion: String = "",
     var registradoPor: String = ""
-)
+) {
+    fun aEntity(estadoSync: String = "SINCRONIZADO", timestampLocal: Long = System.currentTimeMillis()) = com.lingomak.lingomakapp.data.local.entity.MaquinariaEntity(
+        uid = uid,
+        codigoMaquinaria = codigoMaquinaria,
+        nombre = nombre,
+        tipo = tipo,
+        marca = marca,
+        modelo = modelo,
+        placaSerie = placaSerie,
+        anio = anio,
+        estado = estado,
+        horometroActual = horometroActual,
+        horometroUltimoMantenimiento = horometroUltimoMantenimiento,
+        capacidadTanqueGls = capacidadTanqueGls,
+        intervaloMantenimientoHoras = intervaloMantenimientoHoras,
+        ubicacionActual = ubicacionActual,
+        imagenUrl = imagenUrl,
+        observaciones = observaciones,
+        fechaRegistro = fechaRegistro,
+        fechaActualizacion = fechaActualizacion,
+        registradoPor = registradoPor,
+        estadoSync = estadoSync,
+        timestampLocal = timestampLocal
+    )
+}

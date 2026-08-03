@@ -26,13 +26,13 @@ class OperarioMaquinariaAdapter(
             binding.tvTipoMarcaModelo.text =
                 "${maquinaria.tipo} | ${maquinaria.marca} | ${maquinaria.modelo}"
 
-            binding.tvEstadoMaquinaria.text = "🟢 ${maquinaria.estado}"
+            binding.tvEstadoMaquinaria.text = maquinaria.estado
 
             binding.tvHorometroMaquinaria.text =
-                "⏱ Horómetro actual: ${maquinaria.horometroActual} h"
+                "Horómetro actual: ${maquinaria.horometroActual} h"
 
             binding.tvUbicacionMaquinaria.text =
-                "📍 ${maquinaria.ubicacionActual.ifEmpty { "Sin ubicación" }}"
+                maquinaria.ubicacionActual.ifEmpty { "Sin ubicación" }
 
 
             val horasDesdeUltimo =
@@ -46,7 +46,7 @@ class OperarioMaquinariaAdapter(
             when {
                 horasRestantes <= 0 -> {
                     binding.tvHorasRestantes.text =
-                        "🔴 Mantenimiento requerido"
+                        "Mantenimiento requerido"
 
                     binding.tvHorasRestantes.setTextColor(
                         Color.rgb(185, 28, 28)
@@ -55,7 +55,7 @@ class OperarioMaquinariaAdapter(
 
                 horasRestantes <= 20 -> {
                     binding.tvHorasRestantes.text =
-                        "🔴 Faltan $horasRestantes h para mantenimiento"
+                        "Faltan $horasRestantes h para mantenimiento"
 
                     binding.tvHorasRestantes.setTextColor(
                         Color.rgb(185, 28, 28)
@@ -64,7 +64,7 @@ class OperarioMaquinariaAdapter(
 
                 horasRestantes <= 50 -> {
                     binding.tvHorasRestantes.text =
-                        "🟡 Faltan $horasRestantes h para mantenimiento"
+                        "Faltan $horasRestantes h para mantenimiento"
 
                     binding.tvHorasRestantes.setTextColor(
                         Color.rgb(180, 83, 9)
@@ -73,7 +73,7 @@ class OperarioMaquinariaAdapter(
 
                 else -> {
                     binding.tvHorasRestantes.text =
-                        "🟢 Faltan $horasRestantes h para mantenimiento"
+                        "Faltan $horasRestantes h para mantenimiento"
 
                     binding.tvHorasRestantes.setTextColor(
                         Color.rgb(22, 101, 52)
@@ -84,12 +84,12 @@ class OperarioMaquinariaAdapter(
             if (maquinaria.imagenUrl.isNotEmpty()) {
                 Glide.with(binding.root.context)
                     .load(maquinaria.imagenUrl)
-                    .placeholder(R.drawable.ic_maquinaria_placeholder)
-                    .error(R.drawable.ic_maquinaria_placeholder)
+                    .placeholder(R.drawable.bg_image_placeholder)
+                    .error(R.drawable.bg_image_placeholder)
                     .into(binding.imgMaquinaria)
             } else {
                 binding.imgMaquinaria.setImageResource(
-                    R.drawable.ic_maquinaria_placeholder
+                    R.drawable.bg_image_placeholder
                 )
             }
 

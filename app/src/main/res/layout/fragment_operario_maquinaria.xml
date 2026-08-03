@@ -7,87 +7,42 @@
     android:layout_height="match_parent"
     android:background="@color/background">
 
-    <LinearLayout
-        android:id="@+id/layoutHeaderOperarioMaquinaria"
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbarMaquinariaOperario"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="20dp"
+        android:background="@color/white"
         app:layout_constraintTop_toTopOf="parent">
 
-        <TextView
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Maquinaria disponible"
-            android:textColor="@color/text_primary"
-            android:textSize="26sp"
-            android:textStyle="bold" />
+            android:orientation="vertical"
+            android:paddingVertical="8dp"
+            android:paddingEnd="16dp">
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="Seleccione la máquina que utilizará durante su jornada laboral."
-            android:textColor="@color/text_secondary"
-            android:textSize="14sp" />
-
-        <EditText
-            android:id="@+id/etBuscarMaquinaria"
-            android:layout_width="match_parent"
-            android:layout_height="52dp"
-            android:layout_marginTop="18dp"
-            android:background="@drawable/bg_edit_text"
-            android:hint="Buscar maquinaria"
-            android:inputType="text"
-            android:padding="12dp" />
-
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="2dp"
-            app:cardBackgroundColor="@color/white">
-
-            <LinearLayout
+            <EditText
+                android:id="@+id/etBuscarMaquinaria"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:padding="16dp">
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Maquinaria operativa"
-                    android:textColor="@color/text_primary"
-                    android:textSize="15sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/tvTotalOperativas"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="0 disponibles"
-                    android:textColor="@color/secondary"
-                    android:textSize="14sp"
-                    android:textStyle="bold" />
-
-            </LinearLayout>
-
-        </com.google.android.material.card.MaterialCardView>
-
-    </LinearLayout>
+                android:layout_height="44dp"
+                android:background="@drawable/bg_edit_text"
+                android:hint="Buscar maquinaria..."
+                android:paddingHorizontal="12dp"
+                android:textSize="13sp"
+                android:inputType="text"
+                android:singleLine="true" />
+        </LinearLayout>
+    </androidx.appcompat.widget.Toolbar>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvMaquinariaOperario"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:layout_marginTop="8dp"
         android:clipToPadding="false"
-        android:paddingHorizontal="8dp"
+        android:paddingHorizontal="16dp"
         android:paddingBottom="16dp"
-        app:layout_constraintTop_toBottomOf="@id/layoutHeaderOperarioMaquinaria"
+        app:layout_constraintTop_toBottomOf="@id/toolbarMaquinariaOperario"
         app:layout_constraintBottom_toBottomOf="parent"
         tools:listitem="@layout/item_maquinaria_operario" />
 
@@ -100,7 +55,7 @@
         android:textSize="15sp"
         android:gravity="center"
         android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@id/layoutHeaderOperarioMaquinaria"
+        app:layout_constraintTop_toBottomOf="@id/toolbarMaquinariaOperario"
         app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

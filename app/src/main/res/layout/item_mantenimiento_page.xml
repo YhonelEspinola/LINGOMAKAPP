@@ -76,6 +76,24 @@
                 android:layout_marginTop="4dp" />
         </LinearLayout>
 
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilFiltroUsuario"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:hint="Filtrar por Usuario"
+            android:visibility="gone">
+
+            <AutoCompleteTextView
+                android:id="@+id/spFiltroUsuario"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="none"
+                android:textSize="13sp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
         <!-- Filtros de Tipo y Estado -->
         <HorizontalScrollView
             android:layout_width="match_parent"
@@ -88,31 +106,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 app:selectionRequired="true"
-                app:singleSelection="true">
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chipTipoTodos"
-                    style="@style/Widget.MaterialComponents.Chip.Choice"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:checked="true"
-                    android:text="TODOS" />
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chipTipoPreventivo"
-                    style="@style/Widget.MaterialComponents.Chip.Choice"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="PREVENTIVO" />
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chipTipoCorrectivo"
-                    style="@style/Widget.MaterialComponents.Chip.Choice"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="CORRECTIVO" />
-
-            </com.google.android.material.chip.ChipGroup>
+                app:singleSelection="true" />
         </HorizontalScrollView>
 
         <HorizontalScrollView
@@ -131,7 +125,6 @@
                 <!-- Chips dinámicos según pestaña -->
             </com.google.android.material.chip.ChipGroup>
         </HorizontalScrollView>
-
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView

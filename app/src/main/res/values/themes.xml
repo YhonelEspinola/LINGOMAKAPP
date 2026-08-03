@@ -42,4 +42,8 @@
         <item name="android:background">@android:color/transparent</item>
     </style>
 
+    <style name="RoundedAlertDialog" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
+        <item name="shapeAppearanceOverlay">@style/ShapeAppearance.LargeComponent.Rounded</item>
+    </style>
+
 </resources>

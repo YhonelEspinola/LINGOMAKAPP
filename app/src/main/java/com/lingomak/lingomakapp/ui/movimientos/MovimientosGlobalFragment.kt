@@ -6,12 +6,14 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.activity.result.contract.ActivityResultContracts
 import com.lingomak.lingomakapp.R
+import com.lingomak.lingomakapp.data.repository.UserRepository
 import com.lingomak.lingomakapp.databinding.FragmentMovimientosGlobalBinding
 import com.lingomak.lingomakapp.ui.dashboard.DashboardAdminActivity
 import com.lingomak.lingomakapp.utils.CsvExporter
@@ -52,6 +54,19 @@ class MovimientosGlobalFragment : Fragment() {
     }
 
     private fun setupUI() {
+        // Toggle Filtros Colapsable
+        binding.btnToggleFiltros.setOnClickListener {
+            val currentlyVisible = binding.layoutFiltrosExpandible.visibility == View.VISIBLE
+            val nextVisibility = if (currentlyVisible) View.GONE else View.VISIBLE
+            binding.layoutFiltrosExpandible.visibility = nextVisibility
+            
+            // Animación del chevron
+            binding.ivChevronFiltros.animate()
+                .rotation(if (currentlyVisible) 0f else 180f)
+                .setDuration(200)
+                .start()
+        }
+
         adapter = MovimientosGlobalAdapter(emptyList()) { pair ->
             val fragment = DetalleMovimientoFragment()
             val bundle = Bundle().apply {
@@ -59,7 +74,7 @@ class MovimientosGlobalFragment : Fragment() {
             }
             fragment.arguments = bundle
             
-            val containerId = if (requireActivity() is com.lingomak.lingomakapp.ui.dashboard.DashboardAdminActivity) 
+            val containerId = if (requireActivity() is DashboardAdminActivity)
                 R.id.fragmentContainerAdmin else R.id.containerOperario
                 
             parentFragmentManager.beginTransaction()
@@ -70,7 +85,9 @@ class MovimientosGlobalFragment : Fragment() {
         binding.rvMovimientos.layoutManager = LinearLayoutManager(requireContext())
         binding.rvMovimientos.adapter = adapter
 
-        // Implementar Scroll Infinito (Paginación para Admin)
+        setupDropdowns()
+
+        // Implementar Scroll Infinito
         binding.rvMovimientos.addOnScrollListener(object : androidx.recyclerview.widget.RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: androidx.recyclerview.widget.RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
@@ -90,17 +107,9 @@ class MovimientosGlobalFragment : Fragment() {
             fechaFin = fin
             viewModel.setRangoFechas(inicio, fin)
             // Actualizar el texto del filtro actual arriba del buscador
-            binding.root.findViewById<TextView>(R.id.tvFiltroActual)?.text = etiqueta
+            binding.tvFiltroActual.text = etiqueta
         }
         binding.selectorFechas.dispararSeleccionActual()
-
-        binding.etBuscar.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                viewModel.filtrarPorTexto(s.toString())
-            }
-            override fun afterTextChanged(s: Editable?) {}
-        })
 
         binding.chipGroupTipo.setOnCheckedChangeListener { _, checkedId ->
             when (checkedId) {
@@ -110,33 +119,48 @@ class MovimientosGlobalFragment : Fragment() {
             }
         }
 
-        binding.btnRegistrar.setOnClickListener {
-            val fragment = EscaneoQRFragment()
-            val containerId = if (requireActivity() is com.lingomak.lingomakapp.ui.dashboard.DashboardAdminActivity) 
-                R.id.fragmentContainerAdmin else R.id.containerOperario
-                
-            parentFragmentManager.beginTransaction()
-                .replace(containerId, fragment)
-                .addToBackStack(null)
-                .commit()
-        }
-
         binding.btnExportarCsv.setOnClickListener {
-            val data = viewModel.movimientosFiltrados.value ?: emptyList()
-            CsvExporter.exportMovimientos(
-                context = requireContext(),
-                data = data,
-                launcher = createDocumentLauncher,
-                inicio = fechaInicio,
-                fin = fechaFin
-            )
+            val label = binding.tvFiltroActual.text.toString()
+            val fileName = "movimientos_${label.replace(" ", "_")}_${System.currentTimeMillis()}.csv"
+            createDocumentLauncher.launch(fileName)
         }
-        
-        validarAccesoAdmin()
 
-        filtroInicialTexto = arguments?.getString("filtroTexto") ?: ""
+        validarAccesoAdmin()
     }
 
+
+    private fun setupDropdowns() {
+        // User Dropdown (Fix 6.1)
+        val userRepo = UserRepository(requireContext())
+        userRepo.obtenerUsuariosObservable().observe(viewLifecycleOwner) { usuarios ->
+            val nombres = listOf("TODOS") + usuarios.map { it.nombre }.sorted()
+            val adapterUser = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, nombres)
+            binding.spFiltroUsuario.setAdapter(adapterUser)
+            binding.spFiltroUsuario.setText("TODOS", false)
+        }
+        binding.spFiltroUsuario.setOnItemClickListener { parent, _, position, _ ->
+            viewModel.filtrarPorUsuario(parent.getItemAtPosition(position) as String)
+        }
+
+        // Repuesto Dropdown (Reemplaza HistorialRepuestoFragment - Punto 2)
+        viewModel.todosLosRepuestos.observe(viewLifecycleOwner) { repuestos ->
+            val nombres = listOf("TODOS") + repuestos.map { it.nombre }.sorted()
+            val adapterRep = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, nombres)
+            binding.spFiltroRepuesto.setAdapter(adapterRep)
+            
+            // Si venimos con un filtro inicial de repuesto (desde DetalleRepuestoFragment)
+            val initialRep = arguments?.getString("nombreRepuesto")
+            if (!initialRep.isNullOrEmpty()) {
+                binding.spFiltroRepuesto.setText(initialRep, false)
+                viewModel.filtrarPorRepuesto(initialRep)
+            } else {
+                binding.spFiltroRepuesto.setText("TODOS", false)
+            }
+        }
+        binding.spFiltroRepuesto.setOnItemClickListener { parent, _, position, _ ->
+            viewModel.filtrarPorRepuesto(parent.getItemAtPosition(position) as String)
+        }
+    }
 
     private fun validarAccesoAdmin() {
         val isAdmin = requireActivity() is DashboardAdminActivity

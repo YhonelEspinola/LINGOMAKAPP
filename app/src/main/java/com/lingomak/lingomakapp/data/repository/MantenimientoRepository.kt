@@ -11,6 +11,7 @@ import com.google.firebase.storage.FirebaseStorage
 import com.lingomak.lingomakapp.data.local.AppDatabase
 import com.lingomak.lingomakapp.data.local.entity.MantenimientoEntity
 import com.lingomak.lingomakapp.data.local.entity.MovimientoEntity
+import com.lingomak.lingomakapp.data.local.entity.SolicitudMantenimientoEntity
 import com.lingomak.lingomakapp.data.model.AlertaModel
 import com.lingomak.lingomakapp.data.model.MantenimientoModel
 import com.lingomak.lingomakapp.utils.DateUtils
@@ -38,6 +39,7 @@ class MantenimientoRepository(context: Context) {
     private val database = AppDatabase.getInstance(context)
     private val maintenanceDao = database.mantenimientoDao()
     private val maquinariaDao = database.maquinariaDao()
+    private val solicitudDao = database.solicitudMantenimientoDao()
     private val repuestoDao = database.repuestoDao()
     private val movimientoDao = database.movimientoDao()
     private val userDao = database.userDao()
@@ -92,34 +94,19 @@ class MantenimientoRepository(context: Context) {
         onError: (String) -> Unit
     ){
         try {
-            val entity = mantenimiento.aEntity("PENDIENTE_CREAR", System.currentTimeMillis())
-            maintenanceDao.insertarOActualizar(entity)
+            val user = FirebaseAuth.getInstance().currentUser
+            val entidad = mantenimiento.copy(
+                registradoPor = user?.email ?: "SISTEMA",
+                modificadoPorUid = null,
+                modificadoPorNombre = null,
+                fechaUltimaModificacion = null
+            ).aEntity("PENDIENTE_CREAR", System.currentTimeMillis())
+            
+            maintenanceDao.insertarOActualizar(entidad)
             SincronizacionMantenimientoWorker.encolar(appContext)
             onSuccess()
         } catch (e: Exception) {
             onError(e.message ?: "Error al guardar mantenimiento localmente")
-        }
-    }
-
-    suspend fun cambiarEstadoMantenimiento(
-        uid: String,
-        nuevoEstado: String,
-        onSuccess: () -> Unit,
-        onError: (String) -> Unit
-    ) {
-        try {
-            val userEmail = FirebaseAuth.getInstance().currentUser?.email ?: "SISTEMA"
-            maintenanceDao.cambiarEstadoLocal(
-                uid = uid,
-                nuevoEstado = nuevoEstado,
-                actualizadoPor = userEmail,
-                fechaActualizacion = obtenerFechaActual(),
-                timestamp = System.currentTimeMillis()
-            )
-            SincronizacionMantenimientoWorker.encolar(appContext)
-            onSuccess()
-        } catch (e: Exception) {
-            onError(e.message ?: "Error al cambiar estado localmente")
         }
     }
 
@@ -129,10 +116,17 @@ class MantenimientoRepository(context: Context) {
         onError: (String) -> Unit
     ) {
         try {
+            val user = FirebaseAuth.getInstance().currentUser
             val actual = maintenanceDao.obtenerPorUid(mantenimiento.uid)
                 ?: throw IllegalStateException("No se encontró el mantenimiento")
             
-            val actualizado = mantenimiento.aEntity(
+            val actualizado = mantenimiento.copy(
+                modificadoPorUid = user?.uid,
+                modificadoPorNombre = user?.displayName ?: "Usuario",
+                fechaUltimaModificacion = obtenerFechaActual(),
+                actualizadoPor = user?.email ?: "SISTEMA",
+                fechaActualizacion = obtenerFechaActual()
+            ).aEntity(
                 estadoSync = if (actual.estadoSync == "SINCRONIZADO") "PENDIENTE_ACTUALIZAR" else actual.estadoSync,
                 timestampLocal = System.currentTimeMillis()
             )
@@ -151,14 +145,25 @@ class MantenimientoRepository(context: Context) {
         onError: (String) -> Unit
     ){
         try {
+            val user = FirebaseAuth.getInstance().currentUser
             val mActual = maintenanceDao.obtenerPorUid(uidMantenimiento)
                 ?: throw Exception("No se encontró mantenimiento")
+            
+            // Guard: Solo se puede iniciar si está PENDIENTE (Fix 4.3)
+            if (mActual.estado != "PENDIENTE") {
+                throw Exception("Solo se puede iniciar un mantenimiento en estado PENDIENTE. Estado actual: ${mActual.estado}")
+            }
+
             val maqActual = maquinariaDao.obtenerPorUid(uidMaquinaria)
                 ?: throw Exception("No se encontró maquinaria")
 
             val mActualizado = mActual.copy(
                 estado = "EN_PROCESO",
+                actualizadoPor = user?.email ?: "SISTEMA",
                 fechaActualizacion = obtenerFechaActual(),
+                modificadoPorUid = user?.uid,
+                modificadoPorNombre = user?.displayName ?: "Usuario",
+                fechaUltimaModificacion = obtenerFechaActual(),
                 estadoSync = if (mActual.estadoSync == "SINCRONIZADO") "PENDIENTE_ACTUALIZAR" else mActual.estadoSync,
                 timestampLocal = System.currentTimeMillis()
             )
@@ -178,6 +183,120 @@ class MantenimientoRepository(context: Context) {
             onSuccess()
         } catch (e: Exception) {
             onError(e.message ?: "Error al iniciar mantenimiento")
+        }
+    }
+
+    suspend fun reprogramarMantenimiento(
+        uid: String,
+        nuevaFecha: String,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        try {
+            val user = FirebaseAuth.getInstance().currentUser
+            val actual = maintenanceDao.obtenerPorUid(uid)
+                ?: throw Exception("No se encontró el mantenimiento")
+
+            // Guard: Solo se puede reprogramar si está VENCIDO o PENDIENTE (Fix 4.3)
+            if (actual.estado != "VENCIDO" && actual.estado != "PENDIENTE") {
+                throw Exception("No se puede reprogramar un mantenimiento en estado ${actual.estado}")
+            }
+
+            val actualizado = actual.copy(
+                fechaProgramada = nuevaFecha,
+                estado = "PENDIENTE",
+                actualizadoPor = user?.email ?: "SISTEMA",
+                fechaActualizacion = obtenerFechaActual(),
+                modificadoPorUid = user?.uid,
+                modificadoPorNombre = user?.displayName ?: "Usuario",
+                fechaUltimaModificacion = obtenerFechaActual(),
+                estadoSync = if (actual.estadoSync == "SINCRONIZADO") "PENDIENTE_ACTUALIZAR" else actual.estadoSync,
+                timestampLocal = System.currentTimeMillis()
+            )
+
+            maintenanceDao.insertarOActualizar(actualizado)
+            SincronizacionMantenimientoWorker.encolar(appContext)
+            onSuccess()
+        } catch (e: Exception) {
+            onError(e.message ?: "Error al reprogramar mantenimiento")
+        }
+    }
+
+    suspend fun cancelarMantenimiento(
+        uid: String,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        try {
+            val user = FirebaseAuth.getInstance().currentUser
+            val actual = maintenanceDao.obtenerPorUid(uid)
+                ?: throw Exception("No se encontró el mantenimiento")
+
+            // Guard: Solo se puede cancelar si está PENDIENTE o VENCIDO
+            if (actual.estado != "PENDIENTE" && actual.estado != "VENCIDO") {
+                throw Exception("No se puede cancelar un mantenimiento en estado ${actual.estado}")
+            }
+
+            val actualizado = actual.copy(
+                estado = "CANCELADO",
+                actualizadoPor = user?.email ?: "SISTEMA",
+                fechaActualizacion = obtenerFechaActual(),
+                modificadoPorUid = user?.uid,
+                modificadoPorNombre = user?.displayName ?: "Usuario",
+                fechaUltimaModificacion = obtenerFechaActual(),
+                estadoSync = if (actual.estadoSync == "SINCRONIZADO") "PENDIENTE_ACTUALIZAR" else actual.estadoSync,
+                timestampLocal = System.currentTimeMillis()
+            )
+
+            maintenanceDao.insertarOActualizar(actualizado)
+            SincronizacionMantenimientoWorker.encolar(appContext)
+            onSuccess()
+        } catch (e: Exception) {
+            onError(e.message ?: "Error al cancelar mantenimiento")
+        }
+    }
+
+    suspend fun solicitarReprogramacion(
+        uidMantenimiento: String,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        try {
+            val user = FirebaseAuth.getInstance().currentUser
+            val mActual = maintenanceDao.obtenerPorUid(uidMantenimiento)
+                ?: throw Exception("No se encontró mantenimiento")
+            val maqActual = maquinariaDao.obtenerPorUid(mActual.uidMaquinaria)
+                ?: throw Exception("No se encontró maquinaria")
+
+            val solicitud = SolicitudMantenimientoEntity(
+                uid = UUID.randomUUID().toString(),
+                uidMaquinaria = maqActual.uid,
+                codigoMaquinaria = maqActual.codigoMaquinaria,
+                nombreMaquinaria = maqActual.nombre,
+                tipoMaquinaria = maqActual.tipo,
+                uidOperario = user?.uid ?: "",
+                nombreOperario = user?.displayName ?: "Operario",
+                correoOperario = user?.email ?: "",
+                horometroActual = maqActual.horometroActual.toInt(),
+                horometroUltimoMantenimiento = maqActual.horometroUltimoMantenimiento.toInt(),
+                intervaloMantenimientoHoras = maqActual.intervaloMantenimientoHoras,
+                horasDesdeUltimoMantenimiento = (maqActual.horometroActual - maqActual.horometroUltimoMantenimiento).toInt(),
+                horasRestantes = (maqActual.intervaloMantenimientoHoras - (maqActual.horometroActual - maqActual.horometroUltimoMantenimiento)).toInt(),
+                motivo = "Mantenimiento vencido: ${mActual.codigoMantenimiento}. El operario solicita reprogramación.",
+                estadoSolicitud = "PENDIENTE_APROBACION",
+                origen = "REPROGRAMACION",
+                fechaSugerida = obtenerFechaActual(),
+                fechaRegistro = obtenerFechaActual(),
+                uidMantenimientoGenerado = mActual.uid, // Referencia al mantenimiento a reprogramar
+                estadoSync = "PENDIENTE_CREAR",
+                timestampLocal = System.currentTimeMillis()
+            )
+
+            solicitudDao.insertarOActualizar(solicitud)
+            SincronizacionMantenimientoWorker.encolar(appContext)
+            onSuccess()
+        } catch (e: Exception) {
+            onError(e.message ?: "Error al solicitar reprogramación")
         }
     }
 
@@ -207,6 +326,12 @@ class MantenimientoRepository(context: Context) {
             database.withTransaction {
                 val mActual = maintenanceDao.obtenerPorUid(uid)
                     ?: throw Exception("No se encontró mantenimiento")
+                
+                // Guard: Solo se puede finalizar si está EN_PROCESO
+                if (mActual.estado != "EN_PROCESO") {
+                    throw Exception("Solo se puede finalizar un mantenimiento que esté EN PROCESO. Estado actual: ${mActual.estado}")
+                }
+
                 val maqActual = maquinariaDao.obtenerPorUid(uidMaquinaria)
                     ?: throw Exception("No se encontró maquinaria")
 
@@ -232,7 +357,11 @@ class MantenimientoRepository(context: Context) {
                     costoReal = costoReal,
                     observaciones = observacionesFinales,
                     resolutorNombre = userName,
+                    actualizadoPor = user?.email ?: "SISTEMA",
                     fechaActualizacion = obtenerFechaActual(),
+                    modificadoPorUid = userUid,
+                    modificadoPorNombre = userName,
+                    fechaUltimaModificacion = obtenerFechaActual(),
                     imagenesFinalizacionLocal = imagenesFinalizacionLocal,
                     estadoSync = if (mActual.estadoSync == "SINCRONIZADO") "PENDIENTE_ACTUALIZAR" else mActual.estadoSync,
                     timestampLocal = System.currentTimeMillis()
@@ -242,8 +371,8 @@ class MantenimientoRepository(context: Context) {
                 // 3. Actualizar Maquinaria
                 val maqActualizada = maqActual.copy(
                     estado = "OPERATIVA",
-                    horometroUltimoMantenimiento = horometroReal,
-                    horometroActual = horometroReal,
+                    horometroUltimoMantenimiento = horometroReal.toDouble(),
+                    horometroActual = horometroReal.toDouble(),
                     fechaActualizacion = obtenerFechaActual(),
                     estadoSync = if (maqActual.estadoSync == "SINCRONIZADO") "PENDIENTE_ACTUALIZAR" else maqActual.estadoSync,
                     timestampLocal = System.currentTimeMillis()
@@ -540,6 +669,9 @@ class MantenimientoRepository(context: Context) {
             actualizadoPor = actualizadoPor,
             prioridad = prioridad,
             resolutorNombre = resolutorNombre,
+            modificadoPorUid = modificadoPorUid,
+            modificadoPorNombre = modificadoPorNombre,
+            fechaUltimaModificacion = fechaUltimaModificacion,
             imagenesReporte = imagenesReporte,
             imagenesFinalizacion = imagenesFinalizacion,
             imagenesReporteLocal = imagenesReporteLocal,
@@ -576,6 +708,9 @@ class MantenimientoRepository(context: Context) {
             actualizadoPor = actualizadoPor,
             prioridad = prioridad,
             resolutorNombre = resolutorNombre,
+            modificadoPorUid = modificadoPorUid,
+            modificadoPorNombre = modificadoPorNombre,
+            fechaUltimaModificacion = fechaUltimaModificacion,
             imagenesReporte = imagenesReporte,
             imagenesFinalizacion = imagenesFinalizacion,
             imagenesReporteLocal = imagenesReporteLocal,

@@ -633,9 +633,18 @@ class ProgramarMantenimientoFragment : Fragment() {
              * se actualiza la solicitud después de crear el
              * mantenimiento.
              */
-            marcarSolicitudComoConvertida(
-                uidMantenimiento = mantenimiento.uid
-            )
+            
+            // Fix 4.5: Si es una reprogramación, actualizamos el mantenimiento original
+            val origenSolicitud = arguments?.getString("origenSolicitud") ?: ""
+            val uidMantenimientoOriginal = arguments?.getString("uidMantenimientoOriginal") ?: ""
+            
+            if (origenSolicitud == "REPROGRAMACION" && uidMantenimientoOriginal.isNotEmpty()) {
+                mantenimientoViewModel.reprogramarMantenimiento(uidMantenimientoOriginal, mantenimiento.fechaProgramada) {
+                    marcarSolicitudComoConvertida(uidMantenimiento = mantenimiento.uid)
+                }
+            } else {
+                marcarSolicitudComoConvertida(uidMantenimiento = mantenimiento.uid)
+            }
         }
     }
 

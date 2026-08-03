@@ -18,6 +18,7 @@ import android.widget.Toast
 import com.lingomak.lingomakapp.data.model.MantenimientoModel
 import com.lingomak.lingomakapp.data.model.MovimientoModel
 import com.lingomak.lingomakapp.data.model.RepuestoModel
+import com.lingomak.lingomakapp.data.model.BitacoraUsoModel
 import com.lingomak.lingomakapp.ui.movimientos.MovimientosEstadisticasViewModel
 import java.io.File
 import java.io.FileOutputStream
@@ -97,6 +98,32 @@ object CsvExporter {
         val rows = data.map {
             val resolutor = if (it.resolutorNombre.isBlank()) "No registrado" else it.resolutorNombre
             escapeCsv(it.codigoMantenimiento) + "," + escapeCsv(it.tipoMantenimiento) + "," + escapeCsv(it.nombreMaquinaria) + "," + escapeCsv(it.descripcion) + "," + escapeCsv(it.fechaProgramada) + "," + escapeCsv(it.fechaRealizada) + "," + escapeCsv(it.estado) + "," + escapeCsv(it.responsable) + "," + escapeCsv(resolutor) + "," + escapeCsv(it.prioridad) + "," + it.costoEstimado + "," + it.costoReal + "," + it.horometroProgramado + "," + it.horometroReal
+        }
+        return header + "\n" + rows.joinToString("\n")
+    }
+
+    fun exportBitacora(
+        context: Context,
+        data: List<BitacoraUsoModel>,
+        launcher: ActivityResultLauncher<String>? = null,
+        inicio: Long? = null,
+        fin: Long? = null
+    ) {
+        val csvContent = buildBitacoraCsvContent(data)
+        val fileName = generateFileName("BitacoraUso", inicio, fin)
+        showExportDialog(context, fileName, csvContent, launcher)
+    }
+
+    fun buildBitacoraCsvContent(data: List<BitacoraUsoModel>): String {
+        val header = "Fecha,Máquina,Marca,Modelo,Código,Operario,Tipo Movimiento,Trabajo Realizado,Horómetro Inicial,Horómetro Final,Horas,Obra,Contratista,Ubicación,Repostaje (Gls),Tipo Carga"
+        val rows = data.map {
+            val repostaje = it.galonesCombustible.toString()
+            val tipoCarga = it.tipoCarga ?: "N/A"
+            escapeCsv(it.fecha) + "," + escapeCsv(it.nombreMaquinaria) + "," + escapeCsv(it.marcaMaquinaria) + "," + 
+            escapeCsv(it.modeloMaquinaria) + "," + escapeCsv(it.codigoMaquinaria) + "," + escapeCsv(it.operarioNombre) + "," + 
+            escapeCsv(it.tipoMovimiento) + "," + escapeCsv(it.trabajoRealizado) + "," + it.horometroAnterior + "," + 
+            it.horometroFinal + "," + it.horasUso + "," + escapeCsv(it.obra ?: "") + "," + 
+            escapeCsv(it.contratista ?: "") + "," + escapeCsv(it.ubicacion ?: "") + "," + repostaje + "," + escapeCsv(tipoCarga)
         }
         return header + "\n" + rows.joinToString("\n")
     }

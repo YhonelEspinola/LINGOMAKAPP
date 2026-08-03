@@ -74,16 +74,6 @@ class MantenimientoViewModel(application: Application) : AndroidViewModel(applic
         }
     }
 
-    fun cambiarEstadoMantenimiento(uid: String, nuevoEstado: String, onExito: () -> Unit) {
-        viewModelScope.launch(Dispatchers.IO) {
-            repository.cambiarEstadoMantenimiento(uid, nuevoEstado, {
-                viewModelScope.launch(Dispatchers.Main) { onExito() }
-            }, { error ->
-                _mensajeError.postValue(error)
-            })
-        }
-    }
-
     fun actualizarMantenimiento(mantenimiento: MantenimientoModel, onExito: () -> Unit) {
         viewModelScope.launch(Dispatchers.IO) {
             repository.actualizarMantenimiento(mantenimiento, {
@@ -118,6 +108,36 @@ class MantenimientoViewModel(application: Application) : AndroidViewModel(applic
     fun iniciarMantenimiento(uidMantenimiento: String, uidMaquinaria: String, onExito: () -> Unit) {
         viewModelScope.launch(Dispatchers.IO) {
             repository.iniciarMantenimiento(uidMantenimiento, uidMaquinaria, {
+                viewModelScope.launch(Dispatchers.Main) { onExito() }
+            }, { error ->
+                _mensajeError.postValue(error)
+            })
+        }
+    }
+
+    fun reprogramarMantenimiento(uid: String, nuevaFecha: String, onExito: () -> Unit) {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.reprogramarMantenimiento(uid, nuevaFecha, {
+                viewModelScope.launch(Dispatchers.Main) { onExito() }
+            }, { error ->
+                _mensajeError.postValue(error)
+            })
+        }
+    }
+
+    fun cancelarMantenimiento(uid: String, onExito: () -> Unit) {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.cancelarMantenimiento(uid, {
+                viewModelScope.launch(Dispatchers.Main) { onExito() }
+            }, { error ->
+                _mensajeError.postValue(error)
+            })
+        }
+    }
+
+    fun solicitarReprogramacion(uidMantenimiento: String, onExito: () -> Unit) {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.solicitarReprogramacion(uidMantenimiento, {
                 viewModelScope.launch(Dispatchers.Main) { onExito() }
             }, { error ->
                 _mensajeError.postValue(error)

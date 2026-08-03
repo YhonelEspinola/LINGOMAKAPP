@@ -1,14 +1,19 @@
 package com.lingomak.lingomakapp.data.repository
 
 import android.content.Context
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.map
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.lingomak.lingomakapp.data.local.AppDatabase
 import com.lingomak.lingomakapp.data.local.entity.MaquinariaEntity
 import com.lingomak.lingomakapp.data.local.entity.RegistroUsoMaquinariaEntity
 import com.lingomak.lingomakapp.data.local.entity.SolicitudMantenimientoEntity
+import com.lingomak.lingomakapp.data.local.entity.SuministroEntity
 import com.lingomak.lingomakapp.data.model.MaquinariaModel
 import com.lingomak.lingomakapp.data.model.RegistroUsoMaquinariaModel
 import com.lingomak.lingomakapp.data.model.SolicitudMantenimientoModel
+import com.lingomak.lingomakapp.data.model.SuministroModel
 import com.lingomak.lingomakapp.utils.DateUtils
 import com.lingomak.lingomakapp.data.worker.SincronizacionMaquinariaWorker
 import com.lingomak.lingomakapp.data.worker.SincronizacionRegistroUsoMaquinariaWorker
@@ -27,58 +32,112 @@ class RegistroUsoMaquinariaRepository(context: Context) {
     private val registroUsoDao = database.registroUsoMaquinariaDao()
     private val maquinariaDao = database.maquinariaDao()
     private val solicitudDao = database.solicitudMantenimientoDao()
+    private val suministroDao = database.suministroDao()
+    private val categoriaDao = database.categoriaDao()
     private val appContext = context.applicationContext
 
     suspend fun registrarUsoMaquinaria(
-        uidMaquinaria: String,
-        uidOperario: String,
-        nombreOperario: String,
-        correoOperario: String,
-        horasUso: Int,
-        observacion: String,
+        registroUsoModel: RegistroUsoMaquinariaModel,
+        suministroModel: SuministroModel?,
+        esEdicion: Boolean,
+        horometroFinalOriginal: Double? = null,
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {
         try {
-            val maqEntity = maquinariaDao.obtenerPorUid(uidMaquinaria)
+            val maqEntity = maquinariaDao.obtenerPorUid(registroUsoModel.uidMaquinaria)
                 ?: throw Exception("No se encontró la maquinaria localmente")
 
-            val horometroAnterior = maqEntity.horometroActual
-            val horometroFinal = horometroAnterior + horasUso
+            // 6.1 Validación de horómetros
+            if (registroUsoModel.horometroFinal <= registroUsoModel.horometroAnterior) {
+                throw Exception("El horómetro final debe ser mayor al anterior")
+            }
+
+            val horometroFinal = registroUsoModel.horometroFinal
             val horasDesdeUltimoMantenimiento = horometroFinal - maqEntity.horometroUltimoMantenimiento
             val horasRestantes = maqEntity.intervaloMantenimientoHoras - horasDesdeUltimoMantenimiento
 
-            val registroUso = RegistroUsoMaquinariaEntity(
-                uid = UUID.randomUUID().toString(),
-                uidMaquinaria = maqEntity.uid,
-                codigoMaquinaria = maqEntity.codigoMaquinaria,
-                nombreMaquinaria = maqEntity.nombre,
-                tipoMaquinaria = maqEntity.tipo,
-                uidOperario = uidOperario,
-                nombreOperario = nombreOperario,
-                correoOperario = correoOperario,
-                fechaUso = DateUtils.obtenerFechaActual(),
-                horometroAnterior = horometroAnterior,
-                horasUso = horasUso,
-                horometroFinal = horometroFinal,
-                observacion = observacion,
-                fechaRegistro = DateUtils.obtenerFechaActual(),
-                estadoSync = "PENDIENTE_CREAR",
-                timestampLocal = System.currentTimeMillis()
-            )
-
-            val maqActualizada = maqEntity.copy(
-                horometroActual = horometroFinal,
-                fechaActualizacion = DateUtils.obtenerFechaActual(),
-                estadoSync = "PENDIENTE_ACTUALIZAR",
-                timestampLocal = System.currentTimeMillis()
-            )
-
-            var solicitudEntity: SolicitudMantenimientoEntity? = null
-
-            if (horasRestantes <= 20) {
-                val solicitudExistente = solicitudDao.obtenerPendientePorMaquinaria(uidMaquinaria)
+            // Fix 3.8: Manejo de autoría vs modificación
+            val user = FirebaseAuth.getInstance().currentUser
+            val registroUsoEntity = if (esEdicion) {
+                val existente = registroUsoDao.obtenerPorUid(registroUsoModel.uid) 
+                    ?: throw Exception("No se encontró el registro original")
                 
+                RegistroUsoMaquinariaEntity(
+                    uid = existente.uid,
+                    uidMaquinaria = existente.uidMaquinaria,
+                    codigoMaquinaria = existente.codigoMaquinaria,
+                    nombreMaquinaria = existente.nombreMaquinaria,
+                    tipoMaquinaria = existente.tipoMaquinaria,
+                    uidOperario = existente.uidOperario, // Preservar original
+                    nombreOperario = existente.nombreOperario, // Preservar original
+                    correoOperario = existente.correoOperario, // Preservar original
+                    fechaUso = registroUsoModel.fechaUso,
+                    horometroAnterior = registroUsoModel.horometroAnterior,
+                    horasUso = registroUsoModel.horasUso,
+                    horometroFinal = registroUsoModel.horometroFinal,
+                    trabajoRealizado = registroUsoModel.trabajoRealizado,
+                    fechaRegistro = existente.fechaRegistro, // Preservar original
+                    tipoMovimiento = registroUsoModel.tipoMovimiento,
+                    obra = registroUsoModel.obra,
+                    contratista = registroUsoModel.contratista,
+                    ubicacion = registroUsoModel.ubicacion,
+                    modificadoPorUid = user?.uid,
+                    modificadoPorNombre = user?.displayName ?: "Usuario",
+                    fechaUltimaModificacion = DateUtils.obtenerFechaActual(),
+                    estadoSync = "PENDIENTE_ACTUALIZAR",
+                    timestampLocal = System.currentTimeMillis()
+                )
+            } else {
+                RegistroUsoMaquinariaEntity(
+                    uid = UUID.randomUUID().toString(),
+                    uidMaquinaria = registroUsoModel.uidMaquinaria,
+                    codigoMaquinaria = registroUsoModel.codigoMaquinaria,
+                    nombreMaquinaria = registroUsoModel.nombreMaquinaria,
+                    tipoMaquinaria = registroUsoModel.tipoMaquinaria,
+                    uidOperario = user?.uid ?: "",
+                    nombreOperario = user?.displayName ?: "Operario",
+                    correoOperario = user?.email ?: "",
+                    fechaUso = registroUsoModel.fechaUso,
+                    horometroAnterior = registroUsoModel.horometroAnterior,
+                    horasUso = registroUsoModel.horasUso,
+                    horometroFinal = registroUsoModel.horometroFinal,
+                    trabajoRealizado = registroUsoModel.trabajoRealizado,
+                    fechaRegistro = DateUtils.obtenerFechaActual(),
+                    tipoMovimiento = registroUsoModel.tipoMovimiento,
+                    obra = registroUsoModel.obra,
+                    contratista = registroUsoModel.contratista,
+                    ubicacion = registroUsoModel.ubicacion,
+                    modificadoPorUid = null,
+                    modificadoPorNombre = null,
+                    fechaUltimaModificacion = null,
+                    estadoSync = "PENDIENTE_CREAR",
+                    timestampLocal = System.currentTimeMillis()
+                )
+            }
+
+            // 6.3 Actualización condicional del horómetro de la máquina
+            var maqActualizada: MaquinariaEntity? = null
+            if (!esEdicion) {
+                maqActualizada = maqEntity.copy(
+                    horometroActual = horometroFinal,
+                    fechaActualizacion = DateUtils.obtenerFechaActual(),
+                    estadoSync = "PENDIENTE_ACTUALIZAR",
+                    timestampLocal = System.currentTimeMillis()
+                )
+            } else if (horometroFinalOriginal != null && maqEntity.horometroActual == horometroFinalOriginal) {
+                maqActualizada = maqEntity.copy(
+                    horometroActual = horometroFinal,
+                    fechaActualizacion = DateUtils.obtenerFechaActual(),
+                    estadoSync = "PENDIENTE_ACTUALIZAR",
+                    timestampLocal = System.currentTimeMillis()
+                )
+            }
+
+            // 6.2 Alertas de mantenimiento
+            var solicitudEntity: SolicitudMantenimientoEntity? = null
+            if (horasRestantes <= 20) {
+                val solicitudExistente = solicitudDao.obtenerPendientePorMaquinaria(maqEntity.uid)
                 if (solicitudExistente == null) {
                     solicitudEntity = SolicitudMantenimientoEntity(
                         uid = UUID.randomUUID().toString(),
@@ -86,15 +145,15 @@ class RegistroUsoMaquinariaRepository(context: Context) {
                         codigoMaquinaria = maqEntity.codigoMaquinaria,
                         nombreMaquinaria = maqEntity.nombre,
                         tipoMaquinaria = maqEntity.tipo,
-                        uidOperario = uidOperario,
-                        nombreOperario = nombreOperario,
-                        correoOperario = correoOperario,
-                        horometroActual = horometroFinal,
-                        horometroUltimoMantenimiento = maqEntity.horometroUltimoMantenimiento,
-                        intervaloMantenimientoHoras = 250,
-                        horasDesdeUltimoMantenimiento = horasDesdeUltimoMantenimiento,
-                        horasRestantes = horasRestantes,
-                        motivo = obtenerMotivoSolicitud(horasRestantes),
+                        uidOperario = registroUsoEntity.uidOperario,
+                        nombreOperario = registroUsoEntity.nombreOperario,
+                        correoOperario = registroUsoEntity.correoOperario,
+                        horometroActual = horometroFinal.toInt(),
+                        horometroUltimoMantenimiento = maqEntity.horometroUltimoMantenimiento.toInt(),
+                        intervaloMantenimientoHoras = maqEntity.intervaloMantenimientoHoras,
+                        horasDesdeUltimoMantenimiento = horasDesdeUltimoMantenimiento.toInt(),
+                        horasRestantes = horasRestantes.toInt(),
+                        motivo = obtenerMotivoSolicitud(horasRestantes.toInt()),
                         estadoSolicitud = "PENDIENTE_APROBACION",
                         origen = "HOROMETRO_OPERARIO",
                         fechaSugerida = DateUtils.obtenerFechaActual(),
@@ -104,10 +163,10 @@ class RegistroUsoMaquinariaRepository(context: Context) {
                     )
                 } else {
                     solicitudEntity = solicitudExistente.copy(
-                        horometroActual = horometroFinal,
-                        horasDesdeUltimoMantenimiento = horasDesdeUltimoMantenimiento,
-                        horasRestantes = horasRestantes,
-                        motivo = obtenerMotivoSolicitud(horasRestantes),
+                        horometroActual = horometroFinal.toInt(),
+                        horasDesdeUltimoMantenimiento = horasDesdeUltimoMantenimiento.toInt(),
+                        horasRestantes = horasRestantes.toInt(),
+                        motivo = obtenerMotivoSolicitud(horasRestantes.toInt()),
                         fechaSugerida = DateUtils.obtenerFechaActual(),
                         estadoSync = "PENDIENTE_ACTUALIZAR",
                         timestampLocal = System.currentTimeMillis()
@@ -115,10 +174,47 @@ class RegistroUsoMaquinariaRepository(context: Context) {
                 }
             }
 
-            registroUsoDao.registrarUsoMaquinariaLocal(registroUso, maqActualizada, solicitudEntity)
+            // 6. Repostaje (Suministro)
+            var suministroEntity: SuministroEntity? = null
+            var suministroUidAEliminar: String? = null
+
+            if (suministroModel != null) {
+                if (suministroModel.tipoCarga == "Completa" && maqEntity.capacidadTanqueGls != null) {
+                    if (suministroModel.galonesCombustible > maqEntity.capacidadTanqueGls) {
+                        throw Exception("Los galones de combustible superan la capacidad del tanque (${maqEntity.capacidadTanqueGls} Gls)")
+                    }
+                }
+
+                suministroEntity = SuministroEntity(
+                    uid = if (suministroModel.uid.isBlank()) UUID.randomUUID().toString() else suministroModel.uid,
+                    uidMaquinaria = maqEntity.uid,
+                    fecha = suministroModel.fecha,
+                    horometroSuministro = suministroModel.horometroSuministro,
+                    tipoCarga = suministroModel.tipoCarga,
+                    tipoCombustible = suministroModel.tipoCombustible,
+                    galonesCombustible = suministroModel.galonesCombustible,
+                    galonesAceite = suministroModel.galonesAceite,
+                    uidRegistroUso = registroUsoEntity.uid,
+                    estadoSync = "PENDIENTE_CREAR",
+                    timestampLocal = System.currentTimeMillis()
+                )
+            } else if (esEdicion) {
+                val existente = suministroDao.obtenerPorRegistroUso(registroUsoEntity.uid)
+                if (existente != null) {
+                    suministroUidAEliminar = existente.uid
+                }
+            }
+
+            registroUsoDao.registrarUsoMaquinariaLocal(
+                registroUsoEntity,
+                maqActualizada,
+                solicitudEntity,
+                suministroEntity,
+                suministroUidAEliminar
+            )
 
             SincronizacionRegistroUsoMaquinariaWorker.encolar(appContext)
-            SincronizacionMaquinariaWorker.encolar(appContext)
+            if (maqActualizada != null) SincronizacionMaquinariaWorker.encolar(appContext)
 
             onSuccess()
         } catch (e: Exception) {
@@ -126,36 +222,44 @@ class RegistroUsoMaquinariaRepository(context: Context) {
         }
     }
 
+    suspend fun obtenerSuministroAsociado(uidRegistroUso: String): SuministroModel? {
+        return suministroDao.obtenerPorRegistroUso(uidRegistroUso)?.aModel()
+    }
+
+    fun obtenerTiposCombustible(): LiveData<List<String>> {
+        return categoriaDao.obtenerActivasPorTipoObservable("COMBUSTIBLE").map { lista ->
+            lista.map { it.nombre }
+        }
+    }
+
+    suspend fun obtenerTodosLosRegistros(): List<RegistroUsoMaquinariaModel> {
+        return registroUsoDao.obtenerTodos().map { it.aModel() }
+    }
+
+    suspend fun obtenerTodasLasMaquinarias(): List<MaquinariaModel> {
+        return maquinariaDao.obtenerTodas().map { it.aModel() }
+    }
+
+    suspend fun obtenerTodosLosSuministros(): List<SuministroModel> {
+        return suministroDao.obtenerTodos().map { it.aModel() }
+    }
+
     // ===================================================================
     // SINCRONIZACIÓN CON FIRESTORE
     // ===================================================================
 
     suspend fun sincronizarPendientesConFirestore() {
-        // 1. Sincronizar Registros de Uso
         val pendientesUso = registroUsoDao.obtenerPendientesDeSincronizar()
         for (entity in pendientesUso) {
             try {
-                // Los registros de uso suelen ser inmutables (solo creación), pero validamos por si acaso
                 db.collection(coleccionRegistrosUso).document(entity.uid).set(entity.aModel()).await()
                 registroUsoDao.marcarComoSincronizado(entity.uid)
             } catch (e: Exception) { /* Reintento */ }
         }
 
-        // 2. Sincronizar Solicitudes (creadas/actualizadas en este flujo)
         val pendientesSolicitud = solicitudDao.obtenerPendientesDeSincronizar()
         for (entity in pendientesSolicitud) {
             try {
-                val docRemoto = db.collection(coleccionSolicitudes).document(entity.uid).get().await()
-                val fechaRemotaStr = docRemoto.getString("fechaActualizacion") ?: docRemoto.getString("fechaRegistro") ?: ""
-                // Lógica simplificada de timestamp para solicitudes
-                val format = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
-                val timestampRemoto = try { format.parse(fechaRemotaStr)?.time ?: 0L } catch(e: Exception) { 0L }
-
-                if (docRemoto.exists() && timestampRemoto > entity.timestampLocal) {
-                    solicitudDao.marcarComoSincronizado(entity.uid)
-                    continue
-                }
-
                 db.collection(coleccionSolicitudes).document(entity.uid).set(entity.aModel()).await()
                 solicitudDao.marcarComoSincronizado(entity.uid)
             } catch (e: Exception) { /* Reintento */ }
@@ -163,8 +267,6 @@ class RegistroUsoMaquinariaRepository(context: Context) {
     }
 
     suspend fun descargarCambiosDeFirestore() {
-        // En este módulo, el operario raramente necesita descargar el histórico de usos.
-        // Pero podríamos descargar las solicitudes pendientes para que la UI local sepa si hay una activa.
         try {
             val snapshot = db.collection(coleccionSolicitudes)
                 .whereEqualTo("estadoSolicitud", "PENDIENTE_APROBACION")
@@ -200,7 +302,22 @@ class RegistroUsoMaquinariaRepository(context: Context) {
         nombreMaquinaria = nombreMaquinaria, tipoMaquinaria = tipoMaquinaria,
         uidOperario = uidOperario, nombreOperario = nombreOperario, correoOperario = correoOperario,
         fechaUso = fechaUso, horometroAnterior = horometroAnterior, horasUso = horasUso,
-        horometroFinal = horometroFinal, observacion = observacion, fechaRegistro = fechaRegistro
+        horometroFinal = horometroFinal, trabajoRealizado = trabajoRealizado, fechaRegistro = fechaRegistro,
+        tipoMovimiento = tipoMovimiento, obra = obra, contratista = contratista, ubicacion = ubicacion,
+        modificadoPorUid = modificadoPorUid, modificadoPorNombre = modificadoPorNombre,
+        fechaUltimaModificacion = fechaUltimaModificacion
+    )
+
+    private fun RegistroUsoMaquinariaModel.aEntity(estadoSync: String, timestampLocal: Long) = RegistroUsoMaquinariaEntity(
+        uid = uid, uidMaquinaria = uidMaquinaria, codigoMaquinaria = codigoMaquinaria,
+        nombreMaquinaria = nombreMaquinaria, tipoMaquinaria = tipoMaquinaria,
+        uidOperario = uidOperario, nombreOperario = nombreOperario, correoOperario = correoOperario,
+        fechaUso = fechaUso, horometroAnterior = horometroAnterior, horasUso = horasUso,
+        horometroFinal = horometroFinal, trabajoRealizado = trabajoRealizado, fechaRegistro = fechaRegistro,
+        tipoMovimiento = tipoMovimiento, obra = obra, contratista = contratista, ubicacion = ubicacion,
+        modificadoPorUid = modificadoPorUid, modificadoPorNombre = modificadoPorNombre,
+        fechaUltimaModificacion = fechaUltimaModificacion,
+        estadoSync = estadoSync, timestampLocal = timestampLocal
     )
 
     private fun SolicitudMantenimientoEntity.aModel() = SolicitudMantenimientoModel(
@@ -227,6 +344,21 @@ class RegistroUsoMaquinariaRepository(context: Context) {
         fechaSugerida = fechaSugerida, fechaRegistro = fechaRegistro,
         revisadoPor = revisadoPor, fechaRevision = fechaRevision,
         motivoRechazo = motivoRechazo, uidMantenimientoGenerado = uidMantenimientoGenerado,
+        estadoSync = estadoSync, timestampLocal = timestampLocal
+    )
+
+    private fun SuministroEntity.aModel() = SuministroModel(
+        uid = uid, uidMaquinaria = uidMaquinaria, fecha = fecha,
+        horometroSuministro = horometroSuministro, tipoCarga = tipoCarga,
+        tipoCombustible = tipoCombustible, galonesCombustible = galonesCombustible,
+        galonesAceite = galonesAceite, uidRegistroUso = uidRegistroUso
+    )
+
+    private fun SuministroModel.aEntity(estadoSync: String, timestampLocal: Long) = SuministroEntity(
+        uid = uid, uidMaquinaria = uidMaquinaria, fecha = fecha,
+        horometroSuministro = horometroSuministro, tipoCarga = tipoCarga,
+        tipoCombustible = tipoCombustible, galonesCombustible = galonesCombustible,
+        galonesAceite = galonesAceite, uidRegistroUso = uidRegistroUso,
         estadoSync = estadoSync, timestampLocal = timestampLocal
     )
 }

@@ -97,6 +97,48 @@ class UsuariosFragment : Fragment() {
     }
 
     private fun configurarEventos(){
+        // Toggle Filtros Colapsable
+        binding.btnToggleFiltros.setOnClickListener {
+            val currentlyVisible = binding.layoutFiltrosExpandible.visibility == View.VISIBLE
+            val nextVisibility = if (currentlyVisible) View.GONE else View.VISIBLE
+            binding.layoutFiltrosExpandible.visibility = nextVisibility
+
+            // Animación del chevron
+            binding.ivChevronFiltros.animate()
+                .rotation(if (currentlyVisible) 0f else 180f)
+                .setDuration(200)
+                .start()
+        }
+
+        // Filtro por Rol
+        binding.chipGroupRol.setOnCheckedStateChangeListener { _, checkedIds ->
+            val selection = when (checkedIds.firstOrNull()) {
+                com.lingomak.lingomakapp.R.id.chipRolAdmin -> "ADMIN"
+                com.lingomak.lingomakapp.R.id.chipRolOperario -> "OPERARIO"
+                else -> "TODOS"
+            }
+            viewModel.filtrarPorRol(selection)
+        }
+
+        // Filtro por Estado
+        binding.chipGroupEstado.setOnCheckedStateChangeListener { _, checkedIds ->
+            val selection = when (checkedIds.firstOrNull()) {
+                com.lingomak.lingomakapp.R.id.chipEstadoActivo -> com.lingomak.lingomakapp.utils.Constants.ESTADO_ACTIVO
+                com.lingomak.lingomakapp.R.id.chipEstadoInactivo -> com.lingomak.lingomakapp.utils.Constants.ESTADO_INACTIVO
+                else -> "TODOS"
+            }
+            viewModel.filtrarPorEstado(selection)
+        }
+
+        // Búsqueda
+        binding.etBuscarUsuarios.addTextChangedListener(object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                viewModel.buscarUsuario(s.toString())
+            }
+            override fun afterTextChanged(s: android.text.Editable?) {}
+        })
+
         binding.fabAgregarUsuario.setOnClickListener {
             parentFragmentManager.beginTransaction()
                 .replace(

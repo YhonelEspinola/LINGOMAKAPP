@@ -19,6 +19,8 @@ class MovimientosGlobalViewModel(application: Application) : AndroidViewModel(ap
 
     private val _filtroTipo = MutableLiveData<String?>(null)
     private val _filtroTexto = MutableLiveData<String>("")
+    private val _filtroUsuario = MutableLiveData<String>("TODOS")
+    private val _filtroRepuesto = MutableLiveData<String>("TODOS")
     private val _rango = MutableLiveData<String>("MES") // DIA, SEMANA, MES, ANIO, PERSONALIZADO
     val rango: LiveData<String> get() = _rango
 
@@ -59,6 +61,8 @@ class MovimientosGlobalViewModel(application: Application) : AndroidViewModel(ap
             val repuestos = todosLosRepuestos.value ?: emptyList()
             val tipo = _filtroTipo.value
             val texto = _filtroTexto.value?.lowercase(Locale.getDefault()) ?: ""
+            val userFiltro = _filtroUsuario.value ?: "TODOS"
+            val repuestoFiltro = _filtroRepuesto.value ?: "TODOS"
             val rangoActivo = _rango.value ?: "MES"
 
             val repuestosMap = repuestos.associateBy { it.uid }
@@ -72,6 +76,9 @@ class MovimientosGlobalViewModel(application: Application) : AndroidViewModel(ap
                         repuesto?.nombre?.lowercase(Locale.getDefault())?.contains(textoMinuscula) == true ||
                         repuesto?.codigoInterno?.lowercase(Locale.getDefault())?.contains(textoMinuscula) == true
                 
+                val matchUsuario = userFiltro == "TODOS" || mov.nombreRegistradoPor == userFiltro
+                val matchRepuesto = repuestoFiltro == "TODOS" || repuesto?.nombre == repuestoFiltro
+
                 val matchRango = when(rangoActivo) {
                     "PERSONALIZADO" -> {
                         val inicio = _fechaInicio.value ?: 0L
@@ -92,7 +99,7 @@ class MovimientosGlobalViewModel(application: Application) : AndroidViewModel(ap
                     }
                 }
 
-                matchTipo && matchTexto && matchRango
+                matchTipo && matchTexto && matchUsuario && matchRepuesto && matchRango
             }.map { mov ->
                 val nombre = repuestosMap[mov.repuestoUid]?.nombre ?: "Desconocido"
                 Pair(mov, nombre)
@@ -107,6 +114,8 @@ class MovimientosGlobalViewModel(application: Application) : AndroidViewModel(ap
         addSource(_rango) { update() }
         addSource(_fechaInicio) { update() }
         addSource(_fechaFin) { update() }
+        addSource(_filtroUsuario) { update() }
+        addSource(_filtroRepuesto) { update() }
     }
 
     val resumenGlobal: LiveData<ResumenGlobal> = MutableLiveData()
@@ -151,6 +160,14 @@ class MovimientosGlobalViewModel(application: Application) : AndroidViewModel(ap
 
     fun filtrarPorTexto(texto: String) {
         _filtroTexto.value = texto
+    }
+
+    fun filtrarPorUsuario(usuario: String) {
+        _filtroUsuario.value = usuario
+    }
+
+    fun filtrarPorRepuesto(repuesto: String) {
+        _filtroRepuesto.value = repuesto
     }
 
     fun setRangoFechas(inicio: Long, fin: Long) {

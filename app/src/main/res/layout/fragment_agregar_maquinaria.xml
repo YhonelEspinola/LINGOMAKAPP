@@ -73,12 +73,13 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent">
 
-                        <ImageView
+                        <com.google.android.material.imageview.ShapeableImageView
                             android:id="@+id/imgVistaPreviaMaquinaria"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:scaleType="centerCrop"
-                            android:visibility="gone"/>
+                            android:visibility="gone"
+                            app:shapeAppearanceOverlay="@style/ShapeAppearance.MaterialComponents.SmallComponent" />
 
                         <LinearLayout
                             android:id="@+id/layoutPlaceholderMaquinaria"
@@ -120,40 +121,55 @@
                     android:textStyle="bold"
                     android:textSize="14sp" />
 
-                <EditText
-                    android:id="@+id/etNombreMaquinaria"
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
-                    android:layout_height="55dp"
+                    android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:background="@drawable/bg_edit_text"
-                    android:hint="Nombre de maquinaria"
-                    android:padding="12dp"
-                    android:singleLine="true"
-                    android:textSize="14sp" />
+                    android:hint="Nombre de maquinaria">
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etNombreMaquinaria"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="text"
+                        android:textSize="14sp" />
+                </com.google.android.material.textfield.TextInputLayout>
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
                     android:orientation="horizontal">
-                    <Spinner
-                        android:id="@+id/spTipoMaquinaria"
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                         android:layout_width="0dp"
-                        android:layout_height="55dp"
+                        android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:background="@drawable/bg_edit_text"
-                        android:padding="12dp"/>
+                        android:hint="Tipo">
+                        <AutoCompleteTextView
+                            android:id="@+id/spTipoMaquinaria"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="none"
+                            android:textSize="14sp" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
                     <View android:layout_width="12dp" android:layout_height="1dp"/>
-                    <EditText
-                        android:id="@+id/etMarcaMaquinaria"
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                         android:layout_width="0dp"
-                        android:layout_height="55dp"
+                        android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:background="@drawable/bg_edit_text"
-                        android:hint="Marca"
-                        android:padding="12dp"
-                        android:singleLine="true"
-                        android:textSize="14sp" />
+                        android:hint="Marca">
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etMarcaMaquinaria"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="text"
+                            android:textSize="14sp" />
+                    </com.google.android.material.textfield.TextInputLayout>
                 </LinearLayout>
 
                 <LinearLayout
@@ -161,40 +177,51 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
                     android:orientation="horizontal">
-                    <EditText
-                        android:id="@+id/etModeloMaquinaria"
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                         android:layout_width="0dp"
-                        android:layout_height="55dp"
+                        android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:background="@drawable/bg_edit_text"
-                        android:hint="Modelo"
-                        android:padding="12dp"
-                        android:singleLine="true"
-                        android:textSize="14sp" />
+                        android:hint="Modelo">
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etModeloMaquinaria"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="text"
+                            android:textSize="14sp" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
                     <View android:layout_width="12dp" android:layout_height="1dp"/>
-                    <EditText
-                        android:id="@+id/etAnioMaquinaria"
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                         android:layout_width="0dp"
-                        android:layout_height="55dp"
+                        android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:background="@drawable/bg_edit_text"
-                        android:hint="Año"
-                        android:inputType="number"
-                        android:padding="12dp"
-                        android:singleLine="true"
-                        android:textSize="14sp" />
+                        android:hint="Año">
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etAnioMaquinaria"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="number"
+                            android:textSize="14sp" />
+                    </com.google.android.material.textfield.TextInputLayout>
                 </LinearLayout>
 
-                <EditText
-                    android:id="@+id/etPlacaSerie"
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
-                    android:layout_height="55dp"
+                    android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:background="@drawable/bg_edit_text"
-                    android:hint="Placa o número de serie"
-                    android:padding="12dp"
-                    android:singleLine="true"
-                    android:textSize="14sp" />
+                    android:hint="Placa o número de serie">
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etPlacaSerie"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="text"
+                        android:textSize="14sp" />
+                </com.google.android.material.textfield.TextInputLayout>
 
                 <TextView
                     android:layout_width="match_parent"
@@ -205,78 +232,114 @@
                     android:textStyle="bold"
                     android:textSize="14sp" />
 
-                <Spinner
-                    android:id="@+id/spEstadoMaquinaria"
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                     android:layout_width="match_parent"
-                    android:layout_height="55dp"
+                    android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:background="@drawable/bg_edit_text"
-                    android:padding="12dp" />
+                    android:hint="Estado">
+                    <AutoCompleteTextView
+                        android:id="@+id/spEstadoMaquinaria"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="none"
+                        android:textSize="14sp" />
+                </com.google.android.material.textfield.TextInputLayout>
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
                     android:orientation="horizontal">
-                    <EditText
-                        android:id="@+id/etHorometroActual"
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                         android:layout_width="0dp"
-                        android:layout_height="55dp"
+                        android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:background="@drawable/bg_edit_text"
-                        android:hint="Horómetro Actual"
-                        android:inputType="number"
-                        android:padding="12dp"
-                        android:singleLine="true"
-                        android:textSize="14sp" />
+                        android:hint="H. Actual">
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etHorometroActual"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="numberDecimal"
+                            android:textSize="14sp" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
                     <View android:layout_width="12dp" android:layout_height="1dp"/>
-                    <EditText
-                        android:id="@+id/etHorometroUltimoMantenimiento"
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                         android:layout_width="0dp"
-                        android:layout_height="55dp"
+                        android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:background="@drawable/bg_edit_text"
-                        android:hint="Último Mant."
-                        android:inputType="number"
-                        android:padding="12dp"
-                        android:singleLine="true"
-                        android:textSize="14sp" />
+                        android:hint="H. Último Mant.">
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etHorometroUltimoMantenimiento"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="numberDecimal"
+                            android:textSize="14sp" />
+                    </com.google.android.material.textfield.TextInputLayout>
                 </LinearLayout>
 
-                <EditText
-                    android:id="@+id/etUbicacionActual"
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
-                    android:layout_height="55dp"
+                    android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:background="@drawable/bg_edit_text"
-                    android:hint="Ubicación actual"
-                    android:padding="12dp"
-                    android:singleLine="true"
-                    android:textSize="14sp" />
+                    android:hint="Capacidad Tanque (Gls)">
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etCapacidadTanque"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="numberDecimal"
+                        android:textSize="14sp" />
+                </com.google.android.material.textfield.TextInputLayout>
 
-                <EditText
-                    android:id="@+id/etIntervaloMantenimiento"
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
-                    android:layout_height="55dp"
+                    android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:background="@drawable/bg_edit_text"
-                    android:hint="Intervalo de mantenimiento (horas). Def: 250"
-                    android:inputType="number"
-                    android:padding="12dp"
-                    android:singleLine="true"
-                    android:textSize="14sp" />
+                    android:hint="Ubicación actual">
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etUbicacionActual"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="text"
+                        android:textSize="14sp" />
+                </com.google.android.material.textfield.TextInputLayout>
 
-                <EditText
-                    android:id="@+id/etObservacionesMaquinaria"
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
-                    android:layout_height="100dp"
+                    android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:background="@drawable/bg_edit_text"
-                    android:gravity="top"
-                    android:hint="Observaciones adicionales"
-                    android:inputType="textMultiLine"
-                    android:padding="12dp"
-                    android:textSize="14sp" />
+                    android:hint="Intervalo mantenimiento (horas)">
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etIntervaloMantenimiento"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="number"
+                        android:textSize="14sp" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:hint="Observaciones adicionales">
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etObservacionesMaquinaria"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:minLines="3"
+                        android:gravity="top"
+                        android:inputType="textMultiLine"
+                        android:textSize="14sp" />
+                </com.google.android.material.textfield.TextInputLayout>
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnGuardarMaquinaria"

@@ -71,14 +71,8 @@ class InventarioFragment : Fragment() {
         viewModel.listarRepuestos()
 
         configurarEventos()
-        validarAccesoAdmin()
 
         return binding.root
-    }
-
-    private fun validarAccesoAdmin() {
-        val isAdmin = requireActivity() is DashboardAdminActivity
-        binding.btnExportarCsv.visibility = if (isAdmin) View.VISIBLE else View.GONE
     }
 
     private fun configurarRecyclerView() {
@@ -131,11 +125,13 @@ class InventarioFragment : Fragment() {
         listaCategoriasFiltro = listOf("Todas las categorías") + categorias
         val spinnerAdapter = ArrayAdapter(
             requireContext(),
-            android.R.layout.simple_spinner_item,
+            android.R.layout.simple_dropdown_item_1line,
             listaCategoriasFiltro
         )
-        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding.spinnerCategoria.adapter = spinnerAdapter
+        binding.spFiltroCategoria.setAdapter(spinnerAdapter)
+        if (binding.spFiltroCategoria.text.isEmpty()) {
+            binding.spFiltroCategoria.setText(listaCategoriasFiltro[0], false)
+        }
     }
 
     private fun observarViewModel() {
@@ -158,35 +154,28 @@ class InventarioFragment : Fragment() {
 
     private fun configurarEventos() {
 
-        // Búsqueda por nombre o código interno (se filtra en cada cambio de texto).
-        binding.etBuscar.addTextChangedListener(
-            onTextChanged = { texto, _, _, _ ->
-                viewModel.buscarRepuesto(texto?.toString() ?: "")
-            }
-        )
+        // Toggle Filtros Colapsable
+        binding.btnToggleFiltros.setOnClickListener {
+            val currentlyVisible = binding.layoutFiltrosExpandible.visibility == View.VISIBLE
+            val nextVisibility = if (currentlyVisible) View.GONE else View.VISIBLE
+            binding.layoutFiltrosExpandible.visibility = nextVisibility
+            
+            // Animación del chevron
+            binding.ivChevronFiltros.animate()
+                .rotation(if (currentlyVisible) 0f else 180f)
+                .setDuration(200)
+                .start()
+        }
 
-        // Filtro por categoría (Spinner).
-        binding.spinnerCategoria.onItemSelectedListener = object :
-            android.widget.AdapterView.OnItemSelectedListener {
+        // Filtro por categoría (Exposed Dropdown).
+        binding.spFiltroCategoria.setOnItemClickListener { parent, _, position, _ ->
+            if (listaCategoriasFiltro.isEmpty()) return@setOnItemClickListener
+            val categoriaSeleccionada = listaCategoriasFiltro[position]
 
-            override fun onItemSelected(
-                parent: android.widget.AdapterView<*>?,
-                view: View?,
-                position: Int,
-                id: Long
-            ) {
-                if (listaCategoriasFiltro.isEmpty()) return
-                val categoriaSeleccionada = listaCategoriasFiltro[position]
-
-                if (categoriaSeleccionada == "Todas las categorías") {
-                    viewModel.filtrarPorCategoria(null)
-                } else {
-                    viewModel.filtrarPorCategoria(categoriaSeleccionada)
-                }
-            }
-
-            override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {
-                // No se requiere acción.
+            if (categoriaSeleccionada == "Todas las categorías") {
+                viewModel.filtrarPorCategoria(null)
+            } else {
+                viewModel.filtrarPorCategoria(categoriaSeleccionada)
             }
         }
 
@@ -218,22 +207,6 @@ class InventarioFragment : Fragment() {
 
         binding.chipInactivos.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) viewModel.filtrarPorEstado("INACTIVO")
-        }
-
-        // Botón para ir a la pantalla de Agregar Repuesto.
-        binding.fabAgregarRepuesto.setOnClickListener {
-            parentFragmentManager.beginTransaction()
-                .replace(
-                    (requireView().parent as ViewGroup).id,
-                    AgregarRepuestoFragment()
-                )
-                .addToBackStack(null)
-                .commit()
-        }
-
-        binding.btnExportarCsv.setOnClickListener {
-            val data = viewModel.repuestos.value ?: emptyList()
-            CsvExporter.exportInventario(requireContext(), data, createDocumentLauncher)
         }
     }
 

@@ -13,6 +13,12 @@ interface MaquinariaDao {
     @Query("SELECT * FROM maquinarias ORDER BY nombre ASC")
     fun obtenerTodasObservable(): LiveData<List<MaquinariaEntity>>
 
+    @Query("SELECT * FROM maquinarias ORDER BY nombre ASC")
+    suspend fun obtenerTodas(): List<MaquinariaEntity>
+
+    @Query("SELECT * FROM maquinarias WHERE estado = 'OPERATIVA' ORDER BY nombre ASC")
+    fun obtenerActivasObservable(): LiveData<List<MaquinariaEntity>>
+
     @Query("SELECT * FROM maquinarias WHERE uid = :uid LIMIT 1")
     suspend fun obtenerPorUid(uid: String): MaquinariaEntity?
 

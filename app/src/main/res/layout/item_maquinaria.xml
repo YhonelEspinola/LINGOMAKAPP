@@ -19,7 +19,7 @@
         android:orientation="horizontal"
         android:padding="12dp">
 
-        <ImageView
+        <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/imgMaquinaria"
             android:layout_width="100dp"
             android:layout_height="100dp"
@@ -27,7 +27,7 @@
             android:background="@color/background"
             android:scaleType="centerCrop"
             app:shapeAppearanceOverlay="@style/ShapeAppearance.MaterialComponents.SmallComponent"
-            android:src="@drawable/ic_maquinaria_placeholder"/>
+            android:src="@drawable/bg_image_placeholder"/>
 
         <LinearLayout
             android:layout_width="0dp"

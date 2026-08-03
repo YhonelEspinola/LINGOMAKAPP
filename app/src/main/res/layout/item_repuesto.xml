@@ -46,7 +46,7 @@
                     android:layout_height="match_parent"
                     android:background="@color/background"
                     android:scaleType="centerCrop"
-                    android:src="@android:drawable/ic_menu_gallery"
+                    android:src="@drawable/bg_image_placeholder"
                     app:shapeAppearanceOverlay="@style/ShapeAppearance.MaterialComponents.SmallComponent" />
 
                 <!-- Overlay para Inactivo -->

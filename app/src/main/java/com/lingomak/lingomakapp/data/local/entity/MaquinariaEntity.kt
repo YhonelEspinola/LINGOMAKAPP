@@ -14,8 +14,9 @@ data class MaquinariaEntity(
     val placaSerie: String,
     val anio: Int,
     val estado: String,
-    val horometroActual: Int,
-    val horometroUltimoMantenimiento: Int,
+    val horometroActual: Double,
+    val horometroUltimoMantenimiento: Double,
+    val capacidadTanqueGls: Double? = null,
     val intervaloMantenimientoHoras: Int = 250,
     val ubicacionActual: String,
     val imagenUrl: String,
@@ -27,4 +28,26 @@ data class MaquinariaEntity(
     // Campos para sincronización
     val estadoSync: String = "SINCRONIZADO",
     val timestampLocal: Long = System.currentTimeMillis()
-)
+) {
+    fun aModel() = com.lingomak.lingomakapp.data.model.MaquinariaModel(
+        uid = uid,
+        codigoMaquinaria = codigoMaquinaria,
+        nombre = nombre,
+        tipo = tipo,
+        marca = marca,
+        modelo = modelo,
+        placaSerie = placaSerie,
+        anio = anio,
+        estado = estado,
+        horometroActual = horometroActual,
+        horometroUltimoMantenimiento = horometroUltimoMantenimiento,
+        capacidadTanqueGls = capacidadTanqueGls,
+        intervaloMantenimientoHoras = intervaloMantenimientoHoras,
+        ubicacionActual = ubicacionActual,
+        imagenUrl = imagenUrl,
+        observaciones = observaciones,
+        fechaRegistro = fechaRegistro,
+        fechaActualizacion = fechaActualizacion,
+        registradoPor = registradoPor
+    )
+}

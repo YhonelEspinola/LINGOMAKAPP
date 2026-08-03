@@ -3,6 +3,7 @@ package com.lingomak.lingomakapp.ui.mantenimiento
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -14,16 +15,12 @@ import com.lingomak.lingomakapp.utils.DateUtils
 import java.util.*
 
 class MantenimientoPagerAdapter(
-    private val isOperario: Boolean,
     private val onMantenimientoClick: (MantenimientoModel) -> Unit,
-    private val onEditarClick: (MantenimientoModel) -> Unit,
-    private val onCambiarEstadoClick: (MantenimientoModel) -> Unit,
-    private val onCancelarClick: (MantenimientoModel) -> Unit,
-    private val onFinalizarClick: (MantenimientoModel) -> Unit,
     private val onHistoryFiltersChanged: (List<MantenimientoModel>) -> Unit
 ) : RecyclerView.Adapter<MantenimientoPagerAdapter.PageViewHolder>() {
 
     private var allMantenimientos: List<MantenimientoModel> = emptyList()
+    private var allUsuarios: List<com.lingomak.lingomakapp.data.model.UserModel> = emptyList()
     private var searchQuery: String = ""
     
     // Page states
@@ -32,6 +29,7 @@ class MantenimientoPagerAdapter(
     
     private var filterTipo1: String = "TODOS"
     private var filterEstado1: String = "TODOS"
+    private var filterUsuario1: String = "TODOS"
     var historyFechaInicio: Long = 0L
     var historyFechaFin: Long = Long.MAX_VALUE
     
@@ -43,6 +41,11 @@ class MantenimientoPagerAdapter(
 
     fun updateData(newList: List<MantenimientoModel>) {
         allMantenimientos = newList
+        notifyDataSetChanged()
+    }
+
+    fun updateUsuarios(newList: List<com.lingomak.lingomakapp.data.model.UserModel>) {
+        allUsuarios = newList
         notifyDataSetChanged()
     }
 
@@ -60,18 +63,17 @@ class MantenimientoPagerAdapter(
         holder.bind(position)
     }
 
+    override fun getItemViewType(position: Int): Int {
+        return position
+    }
+
     override fun getItemCount(): Int = 2
 
     inner class PageViewHolder(val binding: ItemMantenimientoPageBinding) : RecyclerView.ViewHolder(binding.root) {
         
         private val adapter = MantenimientoAdapter(
             listaMantenimientos = emptyList(),
-            isOperario = isOperario,
-            onMantenimientoClick = onMantenimientoClick,
-            onEditarClick = onEditarClick,
-            onCambiarEstadoClick = onCambiarEstadoClick,
-            onCancelarClick = onCancelarClick,
-            onFinalizarClick = onFinalizarClick
+            onMantenimientoClick = onMantenimientoClick
         )
 
         init {
@@ -120,27 +122,30 @@ class MantenimientoPagerAdapter(
         }
 
         private fun setupChips(position: Int) {
+            binding.chipGroupTipo.removeAllViews()
             binding.chipGroupEstado.removeAllViews()
             
-            val chipGroupTipo = binding.chipGroupTipo
-            chipGroupTipo.setOnCheckedStateChangeListener { _, checkedIds ->
-                val selection = when (checkedIds.firstOrNull()) {
-                    R.id.chipTipoPreventivo -> "PREVENTIVO"
-                    R.id.chipTipoCorrectivo -> "CORRECTIVO"
-                    else -> "TODOS"
-                }
+            // Setup Tipo Chips
+            val tipos = listOf("TODOS", "PREVENTIVO", "CORRECTIVO")
+            val currentTipo = if (position == 0) filterTipo0 else filterTipo1
+            
+            tipos.forEach { tipo ->
+                val chip = createChip(tipo, tipo)
+                if (currentTipo == tipo) chip.isChecked = true
+                binding.chipGroupTipo.addView(chip)
+            }
+
+            binding.chipGroupTipo.setOnCheckedStateChangeListener { group, checkedIds ->
+                val chipId = checkedIds.firstOrNull()
+                val selection = if (chipId != null) {
+                    group.findViewById<Chip>(chipId).tag as String
+                } else "TODOS"
+                
                 if (position == 0) filterTipo0 = selection else filterTipo1 = selection
                 applyFilters(position)
             }
 
-            // Restore selection
-            val currentTipo = if (position == 0) filterTipo0 else filterTipo1
-            when (currentTipo) {
-                "PREVENTIVO" -> binding.chipTipoPreventivo.isChecked = true
-                "CORRECTIVO" -> binding.chipTipoCorrectivo.isChecked = true
-                else -> binding.chipTipoTodos.isChecked = true
-            }
-
+            // Setup Estado Chips
             val states = if (position == 0) listOf("PENDIENTE", "EN_PROCESO", "VENCIDO") 
                          else listOf("FINALIZADO", "CANCELADO")
             
@@ -157,11 +162,10 @@ class MantenimientoPagerAdapter(
                 binding.chipGroupEstado.addView(chip)
             }
 
-            binding.chipGroupEstado.setOnCheckedStateChangeListener { _, checkedIds ->
+            binding.chipGroupEstado.setOnCheckedStateChangeListener { group, checkedIds ->
                 val chipId = checkedIds.firstOrNull()
                 val selection = if (chipId != null) {
-                    val chip = binding.chipGroupEstado.findViewById<Chip>(chipId)
-                    chip.tag as String
+                    group.findViewById<Chip>(chipId).tag as String
                 } else "TODOS"
                 
                 if (position == 0) filterEstado0 = selection else filterEstado1 = selection
@@ -184,6 +188,17 @@ class MantenimientoPagerAdapter(
         }
 
         private fun setupPage1() {
+            // User Dropdown (Fix 6.1)
+            binding.tilFiltroUsuario.visibility = View.VISIBLE
+            val usuarios = listOf("TODOS") + allUsuarios.map { it.nombre }.sorted()
+            val adapterUser = ArrayAdapter(itemView.context, android.R.layout.simple_dropdown_item_1line, usuarios)
+            binding.spFiltroUsuario.setAdapter(adapterUser)
+            binding.spFiltroUsuario.setText(filterUsuario1, false)
+            binding.spFiltroUsuario.setOnItemClickListener { parent, _, position, _ ->
+                filterUsuario1 = parent.getItemAtPosition(position) as String
+                applyFilters(1)
+            }
+
             binding.selectorFechas.onRangoSeleccionado = { inicio, fin, etiqueta ->
                 historyFechaInicio = inicio
                 historyFechaFin = fin
@@ -209,6 +224,10 @@ class MantenimientoPagerAdapter(
             
             if (currentEstado != "TODOS") {
                 filtered = filtered.filter { it.estado == currentEstado }
+            }
+
+            if (position == 1 && filterUsuario1 != "TODOS") {
+                filtered = filtered.filter { it.responsable == filterUsuario1 || it.resolutorNombre == filterUsuario1 }
             }
 
             if (searchQuery.isNotEmpty()) {

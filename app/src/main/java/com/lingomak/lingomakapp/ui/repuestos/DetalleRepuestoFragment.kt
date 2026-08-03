@@ -27,6 +27,7 @@ import com.lingomak.lingomakapp.utils.ImageOptimizer
 import com.lingomak.lingomakapp.R
 import com.lingomak.lingomakapp.data.model.RepuestoModel
 import com.lingomak.lingomakapp.databinding.FragmentDetalleRepuestoBinding
+import com.lingomak.lingomakapp.ui.repuestos.InventarioContainerFragment
 import java.io.FileOutputStream
 import java.io.IOException
 
@@ -93,6 +94,15 @@ class DetalleRepuestoFragment : Fragment() {
         binding.tvProveedorContacto.text = repuesto.proveedorContacto.ifEmpty { "No especificado" }
         binding.tvEstado.text = repuesto.estado
 
+        if (repuesto.modificadoPorUid != null) {
+            binding.separatorAuditoria.visibility = View.VISIBLE
+            binding.tvAuditoria.visibility = View.VISIBLE
+            binding.tvAuditoria.text = "Última modificación: ${repuesto.fechaUltimaModificacion} — por ${repuesto.modificadoPorNombre}"
+        } else {
+            binding.separatorAuditoria.visibility = View.GONE
+            binding.tvAuditoria.visibility = View.GONE
+        }
+
         val colorEstado = if (repuesto.estado == "ACTIVO") R.color.success else R.color.danger
         binding.tvEstado.setTextColor(requireContext().getColor(colorEstado))
 
@@ -104,16 +114,16 @@ class DetalleRepuestoFragment : Fragment() {
                 // mientras se descarga la de 1024px
                 .thumbnail(Glide.with(this).load(repuesto.imagenUrl).override(300))
                 .error(Glide.with(this).load(repuesto.imagenUrl))
-                .placeholder(android.R.drawable.ic_menu_gallery)
+                .placeholder(R.drawable.bg_image_placeholder)
                 .into(binding.ivImagenRepuesto)
         } else {
-            binding.ivImagenRepuesto.setImageResource(android.R.drawable.ic_menu_gallery)
+            binding.ivImagenRepuesto.setImageResource(R.drawable.bg_image_placeholder)
         }
 
         if (repuesto.codigoQR.isNotEmpty()) {
-            Glide.with(this).load(repuesto.codigoQR).placeholder(android.R.drawable.ic_menu_gallery).error(android.R.drawable.ic_menu_gallery).into(binding.ivCodigoQR)
+            Glide.with(this).load(repuesto.codigoQR).placeholder(R.drawable.bg_image_placeholder).error(R.drawable.bg_image_placeholder).into(binding.ivCodigoQR)
         } else {
-            binding.ivCodigoQR.setImageResource(android.R.drawable.ic_menu_gallery)
+            binding.ivCodigoQR.setImageResource(R.drawable.bg_image_placeholder)
         }
 
         if (origen == "ALERTA") {
@@ -136,24 +146,12 @@ class DetalleRepuestoFragment : Fragment() {
         if (requireActivity() is com.lingomak.lingomakapp.ui.dashboard.DashboardOperarioActivity) {
             binding.btnEditar.visibility = View.GONE
             binding.btnCambiarEstado.visibility = View.GONE
-            binding.btnVerMovimientos.visibility = View.GONE
         }
 
         binding.ivBotonRegresar.setOnClickListener { parentFragmentManager.popBackStack() }
         
         binding.btnImprimirQR.setOnClickListener {
             imprimirQR()
-        }
-
-        binding.btnVerMovimientos.setOnClickListener {
-            val fragment = HistorialRepuestoFragment()
-            val bundle = Bundle().apply {
-                putString("repuestoUid", uidRepuesto)
-                putString("nombreRepuesto", repuestoActual?.nombre)
-                putInt("stockActual", repuestoActual?.stockActual ?: 0)
-            }
-            fragment.arguments = bundle
-            parentFragmentManager.beginTransaction().replace((requireView().parent as ViewGroup).id, fragment).addToBackStack(null).commit()
         }
 
         binding.btnEditar.setOnClickListener {

@@ -52,6 +52,11 @@ data class RepuestoEntity(
     val registradoPor: String = "",
     val actualizadoPor: String = "",
 
+    // Auditoría detallada
+    val modificadoPorUid: String? = null,
+    val modificadoPorNombre: String? = null,
+    val fechaUltimaModificacion: String? = null,
+
     // ----- Control de sincronización (NO existen en RepuestoModel/Firestore) -----
     val estadoSync: String = "SINCRONIZADO",
     val timestampLocal: Long = System.currentTimeMillis()

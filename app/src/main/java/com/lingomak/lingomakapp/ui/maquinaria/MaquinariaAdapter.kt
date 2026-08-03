@@ -35,11 +35,11 @@ class MaquinariaAdapter(
                 Glide.with(binding.root.context)
                     .load(maquinaria.imagenUrl)
                     .centerCrop()
-                    .placeholder(R.drawable.ic_maquinaria_placeholder)
-                    .error(R.drawable.ic_maquinaria_placeholder)
+                    .placeholder(R.drawable.bg_image_placeholder)
+                    .error(R.drawable.bg_image_placeholder)
                     .into(binding.imgMaquinaria)
             }else{
-                binding.imgMaquinaria.setImageResource(R.drawable.ic_maquinaria_placeholder)
+                binding.imgMaquinaria.setImageResource(R.drawable.bg_image_placeholder)
             }
 
             aplicarEstado(maquinaria.estado)
@@ -52,30 +52,28 @@ class MaquinariaAdapter(
         private fun aplicarEstado(estado: String) {
             when(estado){
                 "OPERATIVA" -> {
-                    binding.tvEstadoMaquinaria.text = "🟢 OPERATIVA"
+                    binding.tvEstadoMaquinaria.text = "OPERATIVA"
                     binding.tvEstadoMaquinaria.setTextColor(Color.rgb(22, 101, 52))
                     binding.tvEstadoMaquinaria.setBackgroundResource(R.drawable.bg_chip_estado_operativa)
                 }
 
                 "EN_MANTENIMIENTO" -> {
-                    binding.tvEstadoMaquinaria.text = "🟠 EN MANTENIMIENTO"
-                binding.tvEstadoMaquinaria.setTextColor(Color.rgb(180, 83, 9))
-                        binding.tvEstadoMaquinaria.setBackgroundResource(R.drawable.bg_chip_estado_pendiente)
+                    binding.tvEstadoMaquinaria.text = "EN MANTENIMIENTO"
+                    binding.tvEstadoMaquinaria.setTextColor(Color.rgb(180, 83, 9))
+                    binding.tvEstadoMaquinaria.setBackgroundResource(R.drawable.bg_chip_estado_pendiente)
                 }
 
                 "INACTIVA" -> {
-                binding.tvEstadoMaquinaria.text = "🔴 INACTIVA"
-                binding.tvEstadoMaquinaria.setTextColor(Color.rgb(185, 28, 28))
-                binding.tvEstadoMaquinaria.setBackgroundResource(R.drawable.bg_chip_estado_inactiva)
+                    binding.tvEstadoMaquinaria.text = "INACTIVA"
+                    binding.tvEstadoMaquinaria.setTextColor(Color.rgb(185, 28, 28))
+                    binding.tvEstadoMaquinaria.setBackgroundResource(R.drawable.bg_chip_estado_inactiva)
                 }
                 else ->{
                     binding.tvEstadoMaquinaria.text = estado
-                    binding.tvEstadoMaquinaria.setTextColor(R.drawable.bg_chip_estado_inactiva)
+                    binding.tvEstadoMaquinaria.setBackgroundResource(R.drawable.bg_chip_estado_inactiva)
                 }
             }
-
         }
-
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MaquinariaViewHolder {

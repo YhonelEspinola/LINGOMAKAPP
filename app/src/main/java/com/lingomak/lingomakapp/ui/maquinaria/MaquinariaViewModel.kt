@@ -16,16 +16,30 @@ class MaquinariaViewModel(application: Application) : AndroidViewModel(applicati
 
     private val repository = MaquinariaRepository(application)
     private val configRepository = ConfiguracionRepository(application)
+    private val userRepo = com.lingomak.lingomakapp.data.repository.UserRepository(application)
+    private val suministroRepo = com.lingomak.lingomakapp.data.repository.SuministroRepository(application)
 
     val categorias: LiveData<List<CategoriaModel>> = configRepository.obtenerCategoriasPorTipoObservable("MAQUINARIA", true)
 
     private val _mensajeError = MutableLiveData<String>()
     val mensajeError: LiveData<String> get() = _mensajeError
 
+    private val _consumoPromedio = MutableLiveData<Double?>()
+    val consumoPromedio: LiveData<Double?> get() = _consumoPromedio
+
     val listaMaquinarias: LiveData<List<MaquinariaModel>> = repository.obtenerMaquinariasObservable()
+    val maquinariasActivas: LiveData<List<MaquinariaModel>> = repository.obtenerMaquinariasActivasObservable()
+    val operariosActivos: LiveData<List<com.lingomak.lingomakapp.data.model.UserModel>> = userRepo.obtenerOperariosActivosObservable()
 
     fun obtenerMaquinariaPorUid(uid: String): LiveData<MaquinariaModel?> {
         return repository.obtenerMaquinariaPorUidObservable(uid)
+    }
+
+    fun cargarConsumoPromedio(uidMaquinaria: String) {
+        viewModelScope.launch {
+            val consumo = suministroRepo.calcularConsumoGlsHora(uidMaquinaria)
+            _consumoPromedio.postValue(consumo)
+        }
     }
 
     fun listarMaquinarias(){

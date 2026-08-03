@@ -44,6 +44,18 @@ class DetalleMaquinariaFragment : Fragment() {
                     pintarDatos(it)
                 }
             }
+            
+            viewModel.consumoPromedio.observe(viewLifecycleOwner) { consumo ->
+                if (consumo != null) {
+                    binding.tvConsumoPromedio.text = "%.2f Gls/h".format(consumo)
+                    binding.tvConsumoPromedio.setTextColor(requireContext().getColor(R.color.text_primary))
+                } else {
+                    binding.tvConsumoPromedio.text = "Sin datos suficientes"
+                    binding.tvConsumoPromedio.setTextColor(requireContext().getColor(R.color.text_secondary))
+                }
+            }
+            
+            viewModel.cargarConsumoPromedio(uid)
         }
     }
 
@@ -52,11 +64,11 @@ class DetalleMaquinariaFragment : Fragment() {
             Glide.with(this)
                 .load(maquinaria.imagenUrl)
                 .centerCrop()
-                .placeholder(R.drawable.ic_maquinaria_placeholder)
-                .error(R.drawable.ic_maquinaria_placeholder)
+                .placeholder(R.drawable.bg_image_placeholder)
+                .error(R.drawable.bg_image_placeholder)
                 .into(binding.imgDetalleMaquinaria)
         } else {
-            binding.imgDetalleMaquinaria.setImageResource(R.drawable.ic_maquinaria_placeholder)
+            binding.imgDetalleMaquinaria.setImageResource(R.drawable.bg_image_placeholder)
         }
 
         binding.tvNombreDetalleMaquinaria.text = maquinaria.nombre

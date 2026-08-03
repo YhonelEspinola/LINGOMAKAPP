@@ -67,13 +67,17 @@ class AgregarMaquinariaFragment : Fragment() {
 
         val adapter = ArrayAdapter(
             requireContext(),
-            android.R.layout.simple_spinner_dropdown_item,
+            android.R.layout.simple_dropdown_item_1line,
             estados
         )
-        binding.spEstadoMaquinaria.adapter = adapter
+        binding.spEstadoMaquinaria.setAdapter(adapter)
     }
 
     private fun configurarEventos(){
+        binding.etHorometroActual.filters = arrayOf(com.lingomak.lingomakapp.utils.DecimalDigitsInputFilter(2))
+        binding.etHorometroUltimoMantenimiento.filters = arrayOf(com.lingomak.lingomakapp.utils.DecimalDigitsInputFilter(2))
+        binding.etCapacidadTanque.filters = arrayOf(com.lingomak.lingomakapp.utils.DecimalDigitsInputFilter(2))
+
         binding.cardSubirImagenMaquinaria.setOnClickListener {
             seleccionadarImagenLauncher.launch("image/*")
         }
@@ -97,26 +101,28 @@ class AgregarMaquinariaFragment : Fragment() {
         listaCategorias = listOf("Seleccione un tipo") + categorias
         val adapter = ArrayAdapter(
             requireContext(),
-            android.R.layout.simple_spinner_dropdown_item,
+            android.R.layout.simple_dropdown_item_1line,
             listaCategorias
         )
-        binding.spTipoMaquinaria.adapter = adapter
+        binding.spTipoMaquinaria.setAdapter(adapter)
     }
 
     private fun validarFormulario(){
         val codigo = generarCodigoMaquinaria(binding.etNombreMaquinaria.text.toString().trim())
         val nombre = binding.etNombreMaquinaria.text.toString().trim()
-        val tipo = binding.spTipoMaquinaria.selectedItem.toString()
+        val tipo = binding.spTipoMaquinaria.text.toString()
         val marca = binding.etMarcaMaquinaria.text.toString().trim()
         val modelo = binding.etModeloMaquinaria.text.toString().trim()
         val placaSerie = binding.etPlacaSerie.text.toString().trim()
         val anioTexto = binding.etAnioMaquinaria.text.toString().trim()
-        val estado = binding.spEstadoMaquinaria.selectedItem?.toString() ?: ""
+        val estado = binding.spEstadoMaquinaria.text.toString()
         val horometroActualTexto = binding.etHorometroActual.text.toString().trim()
         val horometroUltimoTexto = binding.etHorometroUltimoMantenimiento.text.toString().trim()
         val ubicacion = binding.etUbicacionActual.text.toString().trim()
         val intervaloTexto = binding.etIntervaloMantenimiento.text.toString().trim()
         val observaciones = binding.etObservacionesMaquinaria.text.toString().trim()
+        
+        val capacidadTanqueTexto = binding.etCapacidadTanque.text.toString().trim()
 
 
         if (
@@ -133,7 +139,7 @@ class AgregarMaquinariaFragment : Fragment() {
             return
         }
 
-        if (tipo == "Seleccione un tipo") {
+        if (tipo == "Seleccione un tipo" || tipo.isEmpty()) {
             Toast.makeText(
                 requireContext(),
                 "Seleccione un tipo de maquinaria",
@@ -144,21 +150,12 @@ class AgregarMaquinariaFragment : Fragment() {
             return
         }
 
-        if (marca == "Seleccione una marca") {
-            Toast.makeText(
-                requireContext(),
-                "Seleccione una marca",
-                Toast.LENGTH_SHORT
-            ).show()
-
-            mostrarCargando(false)
-            return
-        }
-
         val anio = anioTexto.toIntOrNull()
-        val horometroActual = horometroActualTexto.toIntOrNull()
-        val horometroUltimo = horometroUltimoTexto.toIntOrNull() ?: 0
+        val horometroActual = horometroActualTexto.toDoubleOrNull()
+        val horometroUltimo = horometroUltimoTexto.toDoubleOrNull() ?: 0.0
         val intervaloMantenimiento = intervaloTexto.toIntOrNull() ?: 250
+        
+        val capacidadTanque = capacidadTanqueTexto.toDoubleOrNull()
 
         if (anio == null || anio <= 0) {
             Toast.makeText(requireContext(), "Ingrese un año válido", Toast.LENGTH_SHORT).show()
@@ -190,7 +187,8 @@ class AgregarMaquinariaFragment : Fragment() {
             horometroUltimo = horometroUltimo,
             ubicacion = ubicacion,
             intervalo = intervaloMantenimiento,
-            observaciones = observaciones
+            observaciones = observaciones,
+            capacidadTanque = capacidadTanque
         )
     }
 
@@ -203,11 +201,12 @@ class AgregarMaquinariaFragment : Fragment() {
         placaSerie: String,
         anio: Int,
         estado: String,
-        horometroActual: Int,
-        horometroUltimo: Int,
+        horometroActual: Double,
+        horometroUltimo: Double,
         ubicacion: String,
         intervalo: Int,
-        observaciones: String
+        observaciones: String,
+        capacidadTanque: Double?
     ){
         val uid = UUID.randomUUID().toString()
         val fechaActual = obtenerFechaActual()
@@ -237,7 +236,8 @@ class AgregarMaquinariaFragment : Fragment() {
                         observaciones = observaciones,
                         imagenUrl = imagenUrl,
                         fechaActual = fechaActual,
-                        registradoPor = registradoPor
+                        registradoPor = registradoPor,
+                        capacidadTanque = capacidadTanque
                     )
                 }
             )
@@ -259,7 +259,8 @@ class AgregarMaquinariaFragment : Fragment() {
                 observaciones = observaciones,
                 imagenUrl = "",
                 fechaActual = fechaActual,
-                registradoPor = registradoPor
+                registradoPor = registradoPor,
+                capacidadTanque = capacidadTanque
             )
         }
     }
@@ -274,14 +275,15 @@ class AgregarMaquinariaFragment : Fragment() {
         placaSerie: String,
         anio: Int,
         estado: String,
-        horometroActual: Int,
-        horometroUltimo: Int,
+        horometroActual: Double,
+        horometroUltimo: Double,
         ubicacion: String,
         intervalo: Int,
         observaciones: String,
         imagenUrl: String,
         fechaActual: String,
-        registradoPor: String
+        registradoPor: String,
+        capacidadTanque: Double?
     ) {
         val maquinaria = MaquinariaModel(
             uid = uid,
@@ -295,6 +297,7 @@ class AgregarMaquinariaFragment : Fragment() {
             estado = estado,
             horometroActual = horometroActual,
             horometroUltimoMantenimiento = horometroUltimo,
+            capacidadTanqueGls = capacidadTanque,
             intervaloMantenimientoHoras = intervalo,
             ubicacionActual = ubicacion,
             imagenUrl = imagenUrl,

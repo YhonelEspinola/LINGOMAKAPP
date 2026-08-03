@@ -16,16 +16,20 @@ class ConfiguracionViewModel(application: Application) : AndroidViewModel(applic
 
     private val _categoriasRepuestoCrudo = repository.obtenerCategoriasPorTipoObservable("REPUESTO", false)
     private val _categoriasMaquinariaCrudo = repository.obtenerCategoriasPorTipoObservable("MAQUINARIA", false)
+    private val _categoriasCombustibleCrudo = repository.obtenerCategoriasPorTipoObservable("COMBUSTIBLE", false)
 
     private var queryRepuesto = ""
     private var queryMaquinaria = ""
+    private var queryCombustible = ""
 
     val categoriasRepuesto = MediatorLiveData<List<CategoriaModel>>()
     val categoriasMaquinaria = MediatorLiveData<List<CategoriaModel>>()
+    val categoriasCombustible = MediatorLiveData<List<CategoriaModel>>()
 
     init {
         categoriasRepuesto.addSource(_categoriasRepuestoCrudo) { filterRepuestos() }
         categoriasMaquinaria.addSource(_categoriasMaquinariaCrudo) { filterMaquinaria() }
+        categoriasCombustible.addSource(_categoriasCombustibleCrudo) { filterCombustible() }
         
         viewModelScope.launch {
             repository.descargarCategoriasDeFirestore()
@@ -42,6 +46,11 @@ class ConfiguracionViewModel(application: Application) : AndroidViewModel(applic
         filterMaquinaria()
     }
 
+    fun buscarCombustible(q: String) {
+        queryCombustible = q
+        filterCombustible()
+    }
+
     private fun filterRepuestos() {
         val list = _categoriasRepuestoCrudo.value ?: emptyList()
         categoriasRepuesto.value = if (queryRepuesto.isBlank()) list 
@@ -52,6 +61,12 @@ class ConfiguracionViewModel(application: Application) : AndroidViewModel(applic
         val list = _categoriasMaquinariaCrudo.value ?: emptyList()
         categoriasMaquinaria.value = if (queryMaquinaria.isBlank()) list 
                                      else list.filter { it.nombre.contains(queryMaquinaria, true) }
+    }
+
+    private fun filterCombustible() {
+        val list = _categoriasCombustibleCrudo.value ?: emptyList()
+        categoriasCombustible.value = if (queryCombustible.isBlank()) list 
+                                      else list.filter { it.nombre.contains(queryCombustible, true) }
     }
 
     private val _error = MutableLiveData<String>()

@@ -180,6 +180,10 @@ class SolicitudesMantenimientoFragment : Fragment() {
                 "fechaSugerida",
                 solicitud.fechaSugerida
             )
+
+            // Fix 4.5: Pasar datos para reprogramación si aplica
+            putString("origenSolicitud", solicitud.origen)
+            putString("uidMantenimientoOriginal", solicitud.uidMantenimientoGenerado)
         }
 
         fragment.arguments = bundle

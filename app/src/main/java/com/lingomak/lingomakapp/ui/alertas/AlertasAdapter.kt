@@ -1,10 +1,11 @@
 package com.lingomak.lingomakapp.ui.alertas
 
-import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
+import com.lingomak.lingomakapp.R
 import com.lingomak.lingomakapp.data.model.AlertaModel
 import com.lingomak.lingomakapp.databinding.ItemAlertaBinding
 
@@ -17,10 +18,7 @@ class AlertasAdapter(
         private val binding: ItemAlertaBinding
     ) : RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(alerta: AlertaModel,mostrarCategoria: Boolean) {
-
-            binding.tvIconoAlerta.text =
-                if (alerta.icono.isNotEmpty()) alerta.icono else "⚠"
+        fun bind(alerta: AlertaModel, mostrarCategoria: Boolean) {
 
             binding.tvTituloAlerta.text = alerta.titulo
             binding.tvMensajeAlerta.text = alerta.mensaje
@@ -34,9 +32,9 @@ class AlertasAdapter(
                 if (mostrarCategoria) View.VISIBLE else View.GONE
 
             binding.tvCategoriaAlerta.text = when (alerta.categoria) {
-                "MANTENIMIENTO" -> "🔧 MANTENIMIENTO"
-                "INVENTARIO" -> "📦 INVENTARIO"
-                "MOVIMIENTOS" -> "📈 MOVIMIENTOS"
+                "MANTENIMIENTO" -> "MANTENIMIENTO"
+                "INVENTARIO" -> "INVENTARIO"
+                "MOVIMIENTOS" -> "MOVIMIENTOS"
                 else -> alerta.categoria
             }
             aplicarEstilos(alerta.tipo)
@@ -49,95 +47,45 @@ class AlertasAdapter(
         }
 
         private fun aplicarEstilos(tipo: String) {
+            val context = binding.root.context
+            val colorText = when (tipo) {
+                "VENCIDO", "STOCK_AGOTADO" -> R.color.danger
+                "STOCK_CRITICO", "STOCK_BAJO", "PROXIMO" -> R.color.warning
+                "EN_PROCESO", "SOLICITUD_MANTENIMIENTO" -> R.color.primary
+                "ALTO_CONSUMO" -> R.color.brand_yellow
+                else -> R.color.text_secondary
+            }
+
+            binding.tvTituloAlerta.setTextColor(ContextCompat.getColor(context, colorText))
+            binding.tvPrioridadAlerta.setTextColor(ContextCompat.getColor(context, colorText))
 
             when (tipo) {
-
                 "ACTIVIDAD_OPERARIO" -> {
-                    binding.tvIconoAlerta.text = "👤"
-                    binding.tvTituloAlerta.setTextColor(Color.rgb(107, 114, 128))
-                    binding.tvPrioridadAlerta.setTextColor(Color.rgb(107, 114, 128))
+                    binding.ivIconoAlerta.setImageResource(R.drawable.person)
                 }
-
                 "VENCIDO" -> {
-                    binding.tvIconoAlerta.text = "🚨"
-
-                    binding.tvTituloAlerta.setTextColor(
-                        Color.rgb(185, 28, 28)
-                    )
-
-                    binding.tvPrioridadAlerta.setTextColor(
-                        Color.rgb(185, 28, 28)
-                    )
+                    binding.ivIconoAlerta.setImageResource(R.drawable.alert)
                 }
-
                 "PROXIMO" -> {
-                    binding.tvIconoAlerta.text = "⏳"
-
-                    binding.tvTituloAlerta.setTextColor(
-                        Color.rgb(180, 83, 9)
-                    )
-
-                    binding.tvPrioridadAlerta.setTextColor(
-                        Color.rgb(180, 83, 9)
-                    )
+                    binding.ivIconoAlerta.setImageResource(R.drawable.ic_notification)
                 }
-
                 "EN_PROCESO" -> {
-                    binding.tvIconoAlerta.text = "🛠"
-
-                    binding.tvTituloAlerta.setTextColor(
-                        Color.rgb(37, 99, 235)
-                    )
-
-                    binding.tvPrioridadAlerta.setTextColor(
-                        Color.rgb(37, 99, 235)
-                    )
+                    binding.ivIconoAlerta.setImageResource(R.drawable.maintenance)
                 }
-
-                "STOCK_AGOTADO" -> {
-                    binding.tvIconoAlerta.text = "📦"
-                    binding.tvTituloAlerta.setTextColor(Color.rgb(185, 28, 28))
-                    binding.tvPrioridadAlerta.setTextColor(Color.rgb(185, 28, 28))
+                "STOCK_AGOTADO", "STOCK_CRITICO", "STOCK_BAJO" -> {
+                    binding.ivIconoAlerta.setImageResource(R.drawable.inventario)
                 }
-
-                "STOCK_CRITICO" -> {
-                    binding.tvIconoAlerta.text = "📦"
-                    binding.tvTituloAlerta.setTextColor(Color.rgb(234, 88, 12))
-                    binding.tvPrioridadAlerta.setTextColor(Color.rgb(234, 88, 12))
-                }
-
-                "STOCK_BAJO" -> {
-                    binding.tvIconoAlerta.text = "📦"
-                    binding.tvTituloAlerta.setTextColor(Color.rgb(180, 83, 9))
-                    binding.tvPrioridadAlerta.setTextColor(Color.rgb(180, 83, 9))
-                }
-
                 "ALTO_CONSUMO" -> {
-                    binding.tvIconoAlerta.text = "📈"
-                    binding.tvTituloAlerta.setTextColor(Color.rgb(124, 58, 237))
-                    binding.tvPrioridadAlerta.setTextColor(Color.rgb(124, 58, 237))
+                    binding.ivIconoAlerta.setImageResource(R.drawable.ic_analytics)
                 }
-
                 "SIN_ROTACION" -> {
-                    binding.tvIconoAlerta.text = "📦"
-                    binding.tvTituloAlerta.setTextColor(Color.rgb(75, 85, 99))
-                    binding.tvPrioridadAlerta.setTextColor(Color.rgb(75, 85, 99))
+                    binding.ivIconoAlerta.setImageResource(R.drawable.inventario)
                 }
-
                 "SOLICITUD_MANTENIMIENTO" -> {
-                    binding.tvIconoAlerta.text = "📋"
-
-                    binding.tvTituloAlerta.setTextColor(
-                        Color.rgb(37, 99, 235)
-                    )
-
-                    binding.tvPrioridadAlerta.setTextColor(
-                        Color.rgb(37, 99, 235)
-                    )
+                    binding.ivIconoAlerta.setImageResource(R.drawable.report)
                 }
-
                 else -> {
-                    binding.tvIconoAlerta.text = "⚠"
+                    binding.ivIconoAlerta.setImageResource(R.drawable.alert)
                 }
             }
         }

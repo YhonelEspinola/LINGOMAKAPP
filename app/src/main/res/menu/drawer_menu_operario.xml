@@ -9,11 +9,11 @@
         <item
             android:id="@+id/nav_op_inventario"
             android:icon="@drawable/inventario"
-            android:title="Inventario" />
+            android:title="Consultar Inventario" />
         <item
             android:id="@+id/nav_op_maquinaria"
             android:icon="@drawable/machine"
-            android:title="Maquinaria" />
+            android:title="Registrar Hrs. Máquina" />
         <item
             android:id="@+id/nav_op_qr"
             android:icon="@drawable/qr"

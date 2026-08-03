@@ -188,7 +188,7 @@
                     android:layout_width="48dp"
                     android:layout_height="48dp"
                     android:src="@drawable/ic_analytics"
-                    app:tint="@color/primary_light" />
+                    app:tint="@color/fixed_white" />
 
                 <LinearLayout
                     android:layout_width="wrap_content"
@@ -200,7 +200,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="VER ESTADÍSTICAS"
-                        android:textColor="@color/white"
+                        android:textColor="@color/fixed_white"
                         android:textSize="16sp"
                         android:textStyle="bold" />
 
@@ -208,7 +208,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="GENERALES"
-                        android:textColor="@color/white"
+                        android:textColor="@color/fixed_white"
                         android:textSize="16sp"
                         android:textStyle="bold" />
                 </LinearLayout>

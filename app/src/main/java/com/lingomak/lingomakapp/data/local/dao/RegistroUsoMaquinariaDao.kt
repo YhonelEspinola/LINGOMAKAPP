@@ -9,6 +9,7 @@ import androidx.room.Transaction
 import com.lingomak.lingomakapp.data.local.entity.MaquinariaEntity
 import com.lingomak.lingomakapp.data.local.entity.RegistroUsoMaquinariaEntity
 import com.lingomak.lingomakapp.data.local.entity.SolicitudMantenimientoEntity
+import com.lingomak.lingomakapp.data.local.entity.SuministroEntity
 
 @Dao
 interface RegistroUsoMaquinariaDao {
@@ -21,19 +22,41 @@ interface RegistroUsoMaquinariaDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertarOActualizarSolicitud(solicitud: SolicitudMantenimientoEntity)
+    
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertarOActualizarSuministro(suministro: SuministroEntity)
+
+    @Query("DELETE FROM suministros WHERE uid = :suministroUid")
+    suspend fun eliminarSuministroLocal(suministroUid: String)
 
     @Transaction
     suspend fun registrarUsoMaquinariaLocal(
         registro: RegistroUsoMaquinariaEntity,
-        maquinaria: MaquinariaEntity,
-        solicitud: SolicitudMantenimientoEntity?
+        maquinaria: MaquinariaEntity?,
+        solicitud: SolicitudMantenimientoEntity?,
+        suministro: SuministroEntity?,
+        suministroUidAEliminar: String? = null
     ) {
         insertarOActualizar(registro)
-        actualizarMaquinaria(maquinaria)
+        if (maquinaria != null) {
+            actualizarMaquinaria(maquinaria)
+        }
         if (solicitud != null) {
             insertarOActualizarSolicitud(solicitud)
         }
+        if (suministro != null) {
+            insertarOActualizarSuministro(suministro)
+        }
+        if (suministroUidAEliminar != null) {
+            eliminarSuministroLocal(suministroUidAEliminar)
+        }
     }
+
+    @Query("SELECT * FROM registros_uso_maquinaria ORDER BY timestampLocal DESC")
+    suspend fun obtenerTodos(): List<RegistroUsoMaquinariaEntity>
+
+    @Query("SELECT * FROM registros_uso_maquinaria WHERE uid = :uid LIMIT 1")
+    suspend fun obtenerPorUid(uid: String): RegistroUsoMaquinariaEntity?
 
     @Query("SELECT * FROM registros_uso_maquinaria WHERE estadoSync != 'SINCRONIZADO'")
     suspend fun obtenerPendientesDeSincronizar(): List<RegistroUsoMaquinariaEntity>

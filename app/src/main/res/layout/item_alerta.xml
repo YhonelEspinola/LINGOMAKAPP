@@ -22,7 +22,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="CATEGORÍA"
-            android:textColor="#7F0000"
+            android:textColor="@color/primary"
             android:textSize="10sp"
             android:textStyle="bold"
             android:paddingHorizontal="16dp"
@@ -35,15 +35,14 @@
             android:orientation="horizontal"
             android:padding="16dp">
 
-            <TextView
-                android:id="@+id/tvIconoAlerta"
+            <ImageView
+                android:id="@+id/ivIconoAlerta"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:gravity="center"
-                android:text="⚠"
-                android:textSize="22sp"
-                android:textColor="@color/text_primary"
-                android:background="@color/background" />
+                android:padding="10dp"
+                android:src="@drawable/alert"
+                app:tint="@color/alert_warning_text"
+                android:background="@drawable/bg_alerta_icono" />
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -87,7 +86,7 @@
                     android:text="SEVERIDAD: CRÍTICA"
                     android:textSize="11sp"
                     android:textStyle="bold"
-                    android:textColor="#B91C1C"
+                    android:textColor="@color/danger"
                     android:layout_marginTop="4dp" />
 
                 <com.google.android.material.button.MaterialButton
@@ -95,10 +94,10 @@
                     android:layout_width="wrap_content"
                     android:layout_height="48dp"
                     android:layout_marginTop="16dp"
-                    android:text="GESTIONAR"
+                    android:text="TOMAR ACCIÓN"
                     android:textSize="12sp"
                     android:textStyle="bold"
-                    android:textColor="@color/white"
+                    android:textColor="@color/fixed_white"
                     app:cornerRadius="8dp"
                     app:elevation="0dp"
                     app:backgroundTint="@color/primary" />

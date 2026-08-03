@@ -30,8 +30,8 @@
             android:layout_marginTop="20dp"
             android:scaleType="centerCrop"
             android:background="@color/background"
-            android:src="@drawable/ic_maquinaria_placeholder"
-            app:shapeAppearanceOverlay="@style/ShapeAppearance.MaterialComponents.MediumComponent"
+            android:src="@drawable/bg_image_placeholder"
+            app:shapeAppearanceOverlay="@style/ShapeAppearance.MaterialComponents.SmallComponent"
             app:strokeWidth="1dp"
             app:strokeColor="@color/border"
             android:padding="2dp" />
@@ -135,6 +135,16 @@
 
                 <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#EEEEEE" android:layout_marginVertical="16dp"/>
 
+                <!-- Rendimiento -->
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="RENDIMIENTO (ÚLTIMOS 30 DÍAS)" android:textSize="11sp" android:textStyle="bold" android:textColor="@color/text_secondary"/>
+
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:orientation="horizontal" android:gravity="center_vertical">
+                    <ImageView android:layout_width="16dp" android:layout_height="16dp" android:src="@drawable/inventario" app:tint="@color/primary"/>
+                    <TextView android:id="@+id/tvConsumoPromedio" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginStart="8dp" android:text="Calculando..." android:textColor="@color/text_primary" android:textSize="15sp" android:textStyle="bold"/>
+                </LinearLayout>
+
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#EEEEEE" android:layout_marginVertical="16dp"/>
+
                 <!-- Ubicación y Notas -->
                 <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="UBICACIÓN Y NOTAS" android:textSize="11sp" android:textStyle="bold" android:textColor="@color/text_secondary"/>
 
@@ -153,7 +163,7 @@
             android:layout_height="56dp"
             android:layout_marginTop="24dp"
             android:text="EDITAR MAQUINARIA"
-            android:textColor="@color/white"
+            android:textColor="@color/fixed_white"
             android:textStyle="bold"
             app:cornerRadius="12dp"
             app:backgroundTint="@color/primary" />

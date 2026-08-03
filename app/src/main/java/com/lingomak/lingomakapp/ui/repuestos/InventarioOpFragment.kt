@@ -47,10 +47,6 @@ class InventarioOpFragment : Fragment() {
     }
 
     private fun setupUI() {
-        // Ocultar el FAB ya que el operador no agrega repuestos
-        binding.fabAgregarRepuesto.visibility = View.GONE
-        binding.btnExportarCsv.visibility = View.GONE
-
         adapter = RepuestosOpAdapter(emptyList()) { repuesto ->
             // El operario solo consulta el detalle (puedes reutilizar el de admin o crear DetalleRepuestoOpFragment)
             val fragment = DetalleRepuestoFragment()
@@ -82,16 +78,26 @@ class InventarioOpFragment : Fragment() {
             viewModel.buscarRepuesto(it?.toString() ?: "")
         }
 
+        // Toggle Filtros Colapsable
+        binding.btnToggleFiltros.setOnClickListener {
+            val currentlyVisible = binding.layoutFiltrosExpandible.visibility == View.VISIBLE
+            val nextVisibility = if (currentlyVisible) View.GONE else View.VISIBLE
+            binding.layoutFiltrosExpandible.visibility = nextVisibility
+            
+            // Animación del chevron
+            binding.ivChevronFiltros.animate()
+                .rotation(if (currentlyVisible) 0f else 180f)
+                .setDuration(200)
+                .start()
+        }
+
         // Categorías
-        val spinnerAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, categorias)
-        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding.spinnerCategoria.adapter = spinnerAdapter
-        binding.spinnerCategoria.onItemSelectedListener = object : android.widget.AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(p0: android.widget.AdapterView<*>?, p1: View?, position: Int, p3: Long) {
-                val cat = categorias[position]
-                viewModel.filtrarPorCategoria(if (cat == "Todas las categorías") null else cat)
-            }
-            override fun onNothingSelected(p0: android.widget.AdapterView<*>?) {}
+        val spinnerAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, categorias)
+        binding.spFiltroCategoria.setAdapter(spinnerAdapter)
+        binding.spFiltroCategoria.setText(categorias[0], false)
+        binding.spFiltroCategoria.setOnItemClickListener { _, _, position, _ ->
+            val cat = categorias[position]
+            viewModel.filtrarPorCategoria(if (cat == "Todas las categorías") null else cat)
         }
 
         // Filtros de Criticidad
@@ -106,17 +112,6 @@ class InventarioOpFragment : Fragment() {
         }
         binding.chipSinStock.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) viewModel.filtrarPorCriticidad(InventarioOpViewModel.NivelCriticidad.SIN_STOCK)
-        }
-
-        // Filtros de Estado
-        binding.chipTodosEstado.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) viewModel.filtrarPorEstado(null)
-        }
-        binding.chipActivos.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) viewModel.filtrarPorEstado("ACTIVO")
-        }
-        binding.chipInactivos.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) viewModel.filtrarPorEstado("INACTIVO")
         }
     }
 

@@ -13,7 +13,8 @@ import com.lingomak.lingomakapp.data.local.entity.RepuestoEntity
 import com.lingomak.lingomakapp.data.model.RepuestoModel
 import com.lingomak.lingomakapp.data.worker.SincronizacionRepuestosWorker
 import java.io.ByteArrayOutputStream
-import java.util.Date
+import java.text.SimpleDateFormat
+import java.util.*
 
 /**
  * Repositorio de Repuestos, OFFLINE-FIRST.
@@ -88,7 +89,18 @@ class RepuestoRepository(context: Context) {
         onFailure: (Exception) -> Unit
     ) {
         try {
-            val entity = repuesto.aEntity(
+            val user = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
+            val auditado = if (!esNuevo) {
+                repuesto.copy(
+                    modificadoPorUid = user?.uid,
+                    modificadoPorNombre = user?.displayName ?: "Usuario",
+                    fechaUltimaModificacion = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+                )
+            } else {
+                repuesto
+            }
+
+            val entity = auditado.aEntity(
                 estadoSync = if (esNuevo) "PENDIENTE_CREAR" else "PENDIENTE_ACTUALIZAR",
                 timestampLocal = System.currentTimeMillis(),
                 imagenLocalPath = imagenLocalPath,
@@ -96,9 +108,7 @@ class RepuestoRepository(context: Context) {
             )
 
             repuestoDao.insertarOActualizar(entity)
-
             SincronizacionRepuestosWorker.encolar(appContext)
-
             onSuccess()
         } catch (exception: Exception) {
             onFailure(exception)
@@ -117,6 +127,7 @@ class RepuestoRepository(context: Context) {
         onFailure: (Exception) -> Unit
     ) {
         try {
+            val user = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
             val actual = repuestoDao.obtenerPorUid(uid)
                 ?: throw IllegalStateException("Repuesto no encontrado localmente: $uid")
 
@@ -124,14 +135,15 @@ class RepuestoRepository(context: Context) {
                 estado = nuevoEstado,
                 actualizadoPor = actualizadoPor,
                 fechaActualizacion = System.currentTimeMillis(),
+                modificadoPorUid = user?.uid,
+                modificadoPorNombre = user?.displayName ?: "Usuario",
+                fechaUltimaModificacion = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date()),
                 estadoSync = if (actual.estadoSync == "SINCRONIZADO") "PENDIENTE_ACTUALIZAR" else actual.estadoSync,
                 timestampLocal = System.currentTimeMillis()
             )
 
             repuestoDao.insertarOActualizar(actualizado)
-
             SincronizacionRepuestosWorker.encolar(appContext)
-
             onSuccess()
         } catch (exception: Exception) {
             onFailure(exception)
@@ -379,6 +391,9 @@ private fun RepuestoModel.aEntity(estadoSync: String, timestampLocal: Long, imag
         fechaActualizacion = fechaActualizacion?.time,
         registradoPor = registradoPor,
         actualizadoPor = actualizadoPor,
+        modificadoPorUid = modificadoPorUid,
+        modificadoPorNombre = modificadoPorNombre,
+        fechaUltimaModificacion = fechaUltimaModificacion,
         estadoSync = estadoSync,
         timestampLocal = timestampLocal
     )
@@ -404,6 +419,9 @@ private fun RepuestoEntity.aModel(): RepuestoModel {
         fechaRegistro = fechaRegistro?.let { Date(it) },
         fechaActualizacion = fechaActualizacion?.let { Date(it) },
         registradoPor = registradoPor,
-        actualizadoPor = actualizadoPor
+        actualizadoPor = actualizadoPor,
+        modificadoPorUid = modificadoPorUid,
+        modificadoPorNombre = modificadoPorNombre,
+        fechaUltimaModificacion = fechaUltimaModificacion
     )
 }

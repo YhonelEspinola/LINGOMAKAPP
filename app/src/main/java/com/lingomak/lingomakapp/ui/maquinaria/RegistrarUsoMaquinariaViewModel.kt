@@ -5,6 +5,8 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.lingomak.lingomakapp.data.model.RegistroUsoMaquinariaModel
+import com.lingomak.lingomakapp.data.model.SuministroModel
 import com.lingomak.lingomakapp.data.repository.RegistroUsoMaquinariaRepository
 import kotlinx.coroutines.launch
 
@@ -21,27 +23,36 @@ class RegistrarUsoMaquinariaViewModel(application: Application) : AndroidViewMod
     private val _cargando = MutableLiveData<Boolean>()
     val cargando: LiveData<Boolean> get() = _cargando
 
-    fun registrarUsoMaquinaria(
-        uidMaquinaria: String,
-        uidOperario: String,
-        nombreOperario: String,
-        correoOperario: String,
-        horasUso: Int,
-        observacion: String
-    ) {
+    private val _suministroExistente = MutableLiveData<SuministroModel?>()
+    val suministroExistente: LiveData<SuministroModel?> get() = _suministroExistente
 
-        if (uidMaquinaria.isEmpty()) {
+    val tiposCombustible: LiveData<List<String>> = repository.obtenerTiposCombustible()
+
+    fun cargarSuministroAsociado(uidRegistroUso: String) {
+        viewModelScope.launch {
+            val suministro = repository.obtenerSuministroAsociado(uidRegistroUso)
+            _suministroExistente.postValue(suministro)
+        }
+    }
+
+    fun registrarUsoMaquinaria(
+        registroUso: RegistroUsoMaquinariaModel,
+        suministro: SuministroModel?,
+        esEdicion: Boolean,
+        horometroFinalOriginal: Double? = null
+    ) {
+        if (registroUso.uidMaquinaria.isEmpty()) {
             _mensajeError.value = "Seleccione una maquinaria"
             return
         }
 
-        if (horasUso <= 0) {
-            _mensajeError.value = "Las horas de uso deben ser mayor a 0"
+        if (registroUso.horometroFinal <= registroUso.horometroAnterior) {
+            _mensajeError.value = "El horómetro final debe ser mayor al anterior"
             return
         }
 
-        if (horasUso > 24) {
-            _mensajeError.value = "No puede registrar más de 24 horas en un día"
+        if (registroUso.trabajoRealizado.isEmpty()) {
+            _mensajeError.value = "Describe el trabajo realizado"
             return
         }
 
@@ -49,12 +60,10 @@ class RegistrarUsoMaquinariaViewModel(application: Application) : AndroidViewMod
 
         viewModelScope.launch {
             repository.registrarUsoMaquinaria(
-                uidMaquinaria = uidMaquinaria,
-                uidOperario = uidOperario,
-                nombreOperario = nombreOperario,
-                correoOperario = correoOperario,
-                horasUso = horasUso,
-                observacion = observacion,
+                registroUsoModel = registroUso,
+                suministroModel = suministro,
+                esEdicion = esEdicion,
+                horometroFinalOriginal = horometroFinalOriginal,
                 onSuccess = {
                     _cargando.postValue(false)
                     _registroExitoso.postValue(true)

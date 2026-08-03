@@ -19,70 +19,138 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <EditText
-        android:id="@+id/etBuscar"
-        android:layout_width="0dp"
-        android:layout_height="50dp"
-        android:layout_marginHorizontal="16dp"
-        android:layout_marginTop="8dp"
-        android:background="@drawable/bg_edit_text"
-        android:hint="Buscar por nombre o código"
-        android:paddingHorizontal="16dp"
-        android:textSize="14sp"
-        android:inputType="text"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvFiltroActual" />
-
-    <com.google.android.material.chip.ChipGroup
-        android:id="@+id/chipGroupTipo"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/etBuscar"
-        app:selectionRequired="true"
-        app:singleSelection="true">
-
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chipTodos"
-            style="@style/Widget.MaterialComponents.Chip.Choice"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:checked="true"
-            android:text="Todos"
-            app:chipBackgroundColor="@color/selector_chip_choice"
-            app:chipStrokeWidth="0dp"
-            android:textColor="@color/selector_chip_text" />
-
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chipEntradas"
-            style="@style/Widget.MaterialComponents.Chip.Choice"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Entradas"
-            app:chipBackgroundColor="@color/selector_chip_choice"
-            app:chipStrokeWidth="0dp"
-            android:textColor="@color/selector_chip_text" />
-
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chipSalidas"
-            style="@style/Widget.MaterialComponents.Chip.Choice"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Salidas"
-            app:chipBackgroundColor="@color/selector_chip_choice"
-            app:chipStrokeWidth="0dp"
-            android:textColor="@color/selector_chip_text" />
-
-    </com.google.android.material.chip.ChipGroup>
-
-    <com.lingomak.lingomakapp.ui.custom.SelectorFechasView
-        android:id="@+id/selectorFechas"
+    <!-- Encabezado de Filtros Colapsable -->
+    <LinearLayout
+        android:id="@+id/btnToggleFiltros"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/chipGroupTipo" />
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingVertical="12dp"
+        android:paddingHorizontal="16dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="?attr/selectableItemBackground"
+        app:layout_constraintTop_toBottomOf="@id/tvFiltroActual">
+
+        <TextView
+            android:id="@+id/tvFiltrosLabel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="FILTROS Y RANGO"
+            android:textColor="@color/text_secondary"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.1" />
+
+        <ImageView
+            android:id="@+id/ivChevronFiltros"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@drawable/ic_chevron_down"
+            app:tint="@color/text_secondary" />
+    </LinearLayout>
+
+    <View
+        android:id="@+id/dividerFiltros"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginHorizontal="16dp"
+        android:background="@color/border"
+        app:layout_constraintTop_toBottomOf="@id/btnToggleFiltros" />
+
+    <!-- Contenedor Colapsable de Filtros -->
+    <LinearLayout
+        android:id="@+id/layoutFiltrosExpandible"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone"
+        android:paddingHorizontal="16dp"
+        app:layout_constraintTop_toBottomOf="@id/dividerFiltros">
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/chipGroupTipo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_gravity="center_horizontal"
+            app:selectionRequired="true"
+            app:singleSelection="true">
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipTodos"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:text="Todos"
+                app:chipBackgroundColor="@color/selector_chip_choice"
+                app:chipStrokeWidth="0dp"
+                android:textColor="@color/selector_chip_text" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipEntradas"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Entradas"
+                app:chipBackgroundColor="@color/selector_chip_choice"
+                app:chipStrokeWidth="0dp"
+                android:textColor="@color/selector_chip_text" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipSalidas"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Salidas"
+                app:chipBackgroundColor="@color/selector_chip_choice"
+                app:chipStrokeWidth="0dp"
+                android:textColor="@color/selector_chip_text" />
+
+        </com.google.android.material.chip.ChipGroup>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilFiltroUsuario"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:hint="Filtrar por Usuario">
+
+            <AutoCompleteTextView
+                android:id="@+id/spFiltroUsuario"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="none"
+                android:textSize="13sp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilFiltroRepuesto"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:hint="Filtrar por Repuesto">
+
+            <AutoCompleteTextView
+                android:id="@+id/spFiltroRepuesto"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="none"
+                android:textSize="13sp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.lingomak.lingomakapp.ui.custom.SelectorFechasView
+            android:id="@+id/selectorFechas"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:paddingBottom="8dp" />
+    </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvMovimientos"
@@ -91,8 +159,8 @@
         android:layout_marginTop="8dp"
         android:clipToPadding="false"
         android:paddingBottom="8dp"
-        app:layout_constraintBottom_toTopOf="@id/btnRegistrar"
-        app:layout_constraintTop_toBottomOf="@id/selectorFechas"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/layoutFiltrosExpandible"
         tools:listitem="@layout/item_movimiento_global" />
 
     <com.google.android.material.button.MaterialButton
@@ -100,7 +168,7 @@
         android:layout_width="44dp"
         android:layout_height="44dp"
         android:layout_marginEnd="16dp"
-        android:layout_marginBottom="12dp"
+        android:layout_marginBottom="16dp"
         android:padding="0dp"
         android:insetLeft="0dp"
         android:insetTop="0dp"
@@ -112,28 +180,11 @@
         app:iconSize="24dp"
         app:iconTint="@color/primary"
         app:backgroundTint="@color/white"
-        app:strokeColor="#DDDDDD"
+        app:strokeColor="@color/fixed_white"
         app:strokeWidth="1dp"
         app:cornerRadius="22dp"
         android:visibility="gone"
-        app:layout_constraintBottom_toTopOf="@id/btnRegistrar"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnRegistrar"
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:layout_margin="16dp"
-        android:text="REGISTRAR"
-        android:textColor="@color/white"
-        android:textStyle="bold"
-        app:cornerRadius="12dp"
-        app:backgroundTint="@color/primary"
-        app:icon="@drawable/qr"
-        app:iconGravity="textStart"
-        app:iconPadding="8dp"
-        app:iconSize="20dp"
-        app:iconTint="@color/white"
-        app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

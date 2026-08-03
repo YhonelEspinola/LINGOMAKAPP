@@ -14,7 +14,7 @@ interface MantenimientoDao {
     @Query("SELECT * FROM mantenimientos")
     suspend fun obtenerTodos(): List<MantenimientoEntity>
 
-    @Query("SELECT * FROM mantenimientos WHERE responsableUid = :userUid OR responsableUid = 'TODOS' ORDER BY fechaRegistro DESC")
+    @Query("SELECT * FROM mantenimientos WHERE (responsableUid = :userUid OR responsableUid = 'TODOS') AND estado != 'CANCELADO' ORDER BY fechaRegistro DESC")
     fun obtenerAsignadosObservable(userUid: String): LiveData<List<MantenimientoEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -37,6 +37,9 @@ interface MantenimientoDao {
 
     @Query("UPDATE mantenimientos SET estado = :nuevoEstado, actualizadoPor = :actualizadoPor, fechaActualizacion = :fechaActualizacion, estadoSync = 'PENDIENTE_ACTUALIZAR', timestampLocal = :timestamp WHERE uid = :uid")
     suspend fun cambiarEstadoLocal(uid: String, nuevoEstado: String, actualizadoPor: String, fechaActualizacion: String, timestamp: Long)
+
+    @Query("UPDATE mantenimientos SET estado = :nuevoEstado, actualizadoPor = :actualizadoPor, fechaActualizacion = :fechaActualizacion, modificadoPorUid = :modificadoPorUid, modificadoPorNombre = :modificadoPorNombre, fechaUltimaModificacion = :fechaUltimaModificacion, estadoSync = 'PENDIENTE_ACTUALIZAR', timestampLocal = :timestamp WHERE uid = :uid")
+    suspend fun cambiarEstadoLocalConAuditoria(uid: String, nuevoEstado: String, actualizadoPor: String, fechaActualizacion: String, modificadoPorUid: String?, modificadoPorNombre: String?, fechaUltimaModificacion: String?, timestamp: Long)
 
     @Query("DELETE FROM mantenimientos WHERE estadoSync = 'SINCRONIZADO'")
     suspend fun eliminarSincronizados()

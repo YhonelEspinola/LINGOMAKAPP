@@ -5,6 +5,8 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.lingomak.lingomakapp.data.local.dao.*
 import com.lingomak.lingomakapp.data.local.entity.*
 
@@ -14,39 +16,173 @@ import com.lingomak.lingomakapp.data.local.entity.*
  * mediante LiveData. La sincronización con la red ocurre en segundo
  * plano.
  */
-  @Database(
-      entities = [
-          RepuestoEntity::class,
-          MovimientoEntity::class,
-          ContadorEntity::class,
-          MaquinariaEntity::class,
-          MantenimientoEntity::class,
-          RegistroUsoMaquinariaEntity::class,
-          SolicitudMantenimientoEntity::class,
-          UserEntity::class,
-          AlertaEntity::class,
-          CategoriaEntity::class
-      ],
-      version = 19,
-      exportSchema = false
-  )
-  @TypeConverters(Converters::class)
-  abstract class AppDatabase : RoomDatabase() {
-  
-      abstract fun repuestoDao(): RepuestoDao
-      abstract fun movimientoDao(): MovimientoDao
-      abstract fun maquinariaDao(): MaquinariaDao
-      abstract fun mantenimientoDao(): MantenimientoDao
-      abstract fun contadorDao(): ContadorDao
-      abstract fun registroUsoMaquinariaDao(): RegistroUsoMaquinariaDao
-      abstract fun solicitudMantenimientoDao(): SolicitudMantenimientoDao
-      abstract fun userDao(): UserDao
-      abstract fun alertaDao(): AlertaDao
-      abstract fun categoriaDao(): CategoriaDao
+@Database(
+    entities = [
+        RepuestoEntity::class,
+        MovimientoEntity::class,
+        ContadorEntity::class,
+        MaquinariaEntity::class,
+        MantenimientoEntity::class,
+        RegistroUsoMaquinariaEntity::class,
+        SolicitudMantenimientoEntity::class,
+        UserEntity::class,
+        AlertaEntity::class,
+        CategoriaEntity::class,
+        SuministroEntity::class
+    ],
+    version = 26,
+    exportSchema = false
+)
+@TypeConverters(Converters::class)
+abstract class AppDatabase : RoomDatabase() {
+
+    abstract fun repuestoDao(): RepuestoDao
+    abstract fun movimientoDao(): MovimientoDao
+    abstract fun maquinariaDao(): MaquinariaDao
+    abstract fun mantenimientoDao(): MantenimientoDao
+    abstract fun contadorDao(): ContadorDao
+    abstract fun registroUsoMaquinariaDao(): RegistroUsoMaquinariaDao
+    abstract fun solicitudMantenimientoDao(): SolicitudMantenimientoDao
+    abstract fun suministroDao(): SuministroDao
+    abstract fun userDao(): UserDao
+    abstract fun alertaDao(): AlertaDao
+    abstract fun categoriaDao(): CategoriaDao
 
     companion object {
         @Volatile
         private var INSTANCE: AppDatabase? = null
+
+        private val MIGRATION_19_20 = object : Migration(19, 20) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE maquinarias ADD COLUMN capacidadTanqueGls REAL DEFAULT NULL")
+            }
+        }
+
+        private val MIGRATION_20_21 = object : Migration(20, 21) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Migración de horómetros Int a Double en maquinarias
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS `maquinarias_new` (
+                        `uid` TEXT NOT NULL, `codigoMaquinaria` TEXT NOT NULL, `nombre` TEXT NOT NULL, 
+                        `tipo` TEXT NOT NULL, `marca` TEXT NOT NULL, `modelo` TEXT NOT NULL, 
+                        `placaSerie` TEXT NOT NULL, `anio` INTEGER NOT NULL, `estado` TEXT NOT NULL, 
+                        `horometroActual` REAL NOT NULL, `horometroUltimoMantenimiento` REAL NOT NULL, 
+                        `capacidadTanqueGls` REAL, `intervaloMantenimientoHoras` INTEGER NOT NULL, 
+                        `ubicacionActual` TEXT NOT NULL, `imagenUrl` TEXT NOT NULL, 
+                        `observaciones` TEXT NOT NULL, `fechaRegistro` TEXT NOT NULL, 
+                        `fechaActualizacion` TEXT NOT NULL, `registradoPor` TEXT NOT NULL, 
+                        `estadoSync` TEXT NOT NULL, `timestampLocal` INTEGER NOT NULL, 
+                        PRIMARY KEY(`uid`)
+                    )
+                """.trimIndent())
+                
+                db.execSQL("""
+                    INSERT INTO maquinarias_new (
+                        uid, codigoMaquinaria, nombre, tipo, marca, modelo, placaSerie, anio, estado, 
+                        horometroActual, horometroUltimoMantenimiento, capacidadTanqueGls, 
+                        intervaloMantenimientoHoras, ubicacionActual, imagenUrl, observaciones, 
+                        fechaRegistro, fechaActualizacion, registradoPor, estadoSync, timestampLocal
+                    )
+                    SELECT 
+                        uid, codigoMaquinaria, nombre, tipo, marca, modelo, placaSerie, anio, estado, 
+                        CAST(horometroActual AS REAL), CAST(horometroUltimoMantenimiento AS REAL), capacidadTanqueGls, 
+                        intervaloMantenimientoHoras, ubicacionActual, imagenUrl, observaciones, 
+                        fechaRegistro, fechaActualizacion, registradoPor, estadoSync, timestampLocal
+                    FROM maquinarias
+                """.trimIndent())
+                
+                db.execSQL("DROP TABLE maquinarias")
+                db.execSQL("ALTER TABLE maquinarias_new RENAME TO maquinarias")
+            }
+        }
+
+        private val MIGRATION_21_22 = object : Migration(21, 22) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Migración de registros_uso_maquinaria: rename observacion -> trabajoRealizado, nuevos campos, horómetros Double
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS `registros_uso_maquinaria_new` (
+                        `uid` TEXT NOT NULL, `uidMaquinaria` TEXT NOT NULL, `codigoMaquinaria` TEXT NOT NULL, 
+                        `nombreMaquinaria` TEXT NOT NULL, `tipoMaquinaria` TEXT NOT NULL, 
+                        `uidOperario` TEXT NOT NULL, `nombreOperario` TEXT NOT NULL, 
+                        `correoOperario` TEXT NOT NULL, `fechaUso` TEXT NOT NULL, 
+                        `horometroAnterior` REAL NOT NULL, `horasUso` REAL NOT NULL, 
+                        `horometroFinal` REAL NOT NULL, `trabajoRealizado` TEXT NOT NULL, 
+                        `fechaRegistro` TEXT NOT NULL, `tipoMovimiento` TEXT NOT NULL DEFAULT 'Trabajo', 
+                        `obra` TEXT, `contratista` TEXT, `ubicacion` TEXT, 
+                        `estadoSync` TEXT NOT NULL, `timestampLocal` INTEGER NOT NULL, 
+                        PRIMARY KEY(`uid`)
+                    )
+                """.trimIndent())
+
+                db.execSQL("""
+                    INSERT INTO registros_uso_maquinaria_new (
+                        uid, uidMaquinaria, codigoMaquinaria, nombreMaquinaria, tipoMaquinaria, 
+                        uidOperario, nombreOperario, correoOperario, fechaUso, 
+                        horometroAnterior, horasUso, horometroFinal, trabajoRealizado, 
+                        fechaRegistro, estadoSync, timestampLocal
+                    )
+                    SELECT 
+                        uid, uidMaquinaria, codigoMaquinaria, nombreMaquinaria, tipoMaquinaria, 
+                        uidOperario, nombreOperario, correoOperario, fechaUso, 
+                        CAST(horometroAnterior AS REAL), CAST(horasUso AS REAL), CAST(horometroFinal AS REAL), 
+                        observacion, fechaRegistro, estadoSync, timestampLocal
+                    FROM registros_uso_maquinaria
+                """.trimIndent())
+
+                db.execSQL("DROP TABLE registros_uso_maquinaria")
+                db.execSQL("ALTER TABLE registros_uso_maquinaria_new RENAME TO registros_uso_maquinaria")
+            }
+        }
+
+        private val MIGRATION_22_23 = object : Migration(22, 23) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("DROP TABLE IF EXISTS `suministros`")
+                db.execSQL("""
+                    CREATE TABLE `suministros` (
+                        `uid` TEXT NOT NULL, `uidMaquinaria` TEXT NOT NULL, `fecha` TEXT NOT NULL, 
+                        `horometroSuministro` REAL NOT NULL, `tipoCarga` TEXT NOT NULL, 
+                        `tipoCombustible` TEXT NOT NULL, `galonesCombustible` REAL NOT NULL, 
+                        `galonesAceite` REAL NOT NULL, `uidRegistroUso` TEXT, 
+                        `estadoSync` TEXT NOT NULL, `timestampLocal` INTEGER NOT NULL, 
+                        PRIMARY KEY(`uid`)
+                    )
+                """.trimIndent())
+            }
+        }
+
+        private val MIGRATION_23_24 = object : Migration(23, 24) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                val now = System.currentTimeMillis()
+                db.execSQL("""
+                    INSERT INTO categorias (uid, nombre, tipo, estado, fechaRegistro, estadoSync, timestampLocal)
+                    VALUES 
+                    ('diesel-initial', 'Diesel', 'COMBUSTIBLE', 'ACTIVO', $now, 'SINCRONIZADO', $now),
+                    ('gasolina-initial', 'Gasolina', 'COMBUSTIBLE', 'ACTIVO', $now, 'SINCRONIZADO', $now)
+                """.trimIndent())
+            }
+        }
+
+        private val MIGRATION_24_25 = object : Migration(24, 25) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE registros_uso_maquinaria ADD COLUMN modificadoPorUid TEXT")
+                db.execSQL("ALTER TABLE registros_uso_maquinaria ADD COLUMN modificadoPorNombre TEXT")
+                db.execSQL("ALTER TABLE registros_uso_maquinaria ADD COLUMN fechaUltimaModificacion TEXT")
+            }
+        }
+
+        private val MIGRATION_25_26 = object : Migration(25, 26) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Auditoría detallada para repuestos
+                db.execSQL("ALTER TABLE repuestos ADD COLUMN modificadoPorUid TEXT")
+                db.execSQL("ALTER TABLE repuestos ADD COLUMN modificadoPorNombre TEXT")
+                db.execSQL("ALTER TABLE repuestos ADD COLUMN fechaUltimaModificacion TEXT")
+                
+                // Auditoría detallada para mantenimientos
+                db.execSQL("ALTER TABLE mantenimientos ADD COLUMN modificadoPorUid TEXT")
+                db.execSQL("ALTER TABLE mantenimientos ADD COLUMN modificadoPorNombre TEXT")
+                db.execSQL("ALTER TABLE mantenimientos ADD COLUMN fechaUltimaModificacion TEXT")
+            }
+        }
 
         /**
          * Obtiene el Singleton de la base de datos.
@@ -58,7 +194,19 @@ import com.lingomak.lingomakapp.data.local.entity.*
                     AppDatabase::class.java,
                     "lingomak_database"
                 )
-                    .fallbackToDestructiveMigration()
+                    .addMigrations(MIGRATION_19_20, MIGRATION_20_21, MIGRATION_21_22, MIGRATION_22_23, MIGRATION_23_24, MIGRATION_24_25, MIGRATION_25_26)
+                    .addCallback(object : RoomDatabase.Callback() {
+                        override fun onCreate(db: SupportSQLiteDatabase) {
+                            super.onCreate(db)
+                            val now = System.currentTimeMillis()
+                            db.execSQL("""
+                                INSERT INTO categorias (uid, nombre, tipo, estado, fechaRegistro, estadoSync, timestampLocal)
+                                VALUES 
+                                ('diesel-initial', 'Diesel', 'COMBUSTIBLE', 'ACTIVO', $now, 'SINCRONIZADO', $now),
+                                ('gasolina-initial', 'Gasolina', 'COMBUSTIBLE', 'ACTIVO', $now, 'SINCRONIZADO', $now)
+                            """.trimIndent())
+                        }
+                    })
                     .build()
                 INSTANCE = instance
                 instance

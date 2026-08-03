@@ -14,11 +14,22 @@ data class RegistroUsoMaquinariaEntity(
     val nombreOperario: String,
     val correoOperario: String,
     val fechaUso: String,
-    val horometroAnterior: Int,
-    val horasUso: Int,
-    val horometroFinal: Int,
-    val observacion: String,
+    val horometroAnterior: Double,
+    val horasUso: Double,
+    val horometroFinal: Double,
+    val trabajoRealizado: String,
     val fechaRegistro: String,
+    
+    // Nuevos campos
+    val tipoMovimiento: String = "Trabajo",
+    val obra: String? = null,
+    val contratista: String? = null,
+    val ubicacion: String? = null,
+
+    // Auditoría
+    val modificadoPorUid: String? = null,
+    val modificadoPorNombre: String? = null,
+    val fechaUltimaModificacion: String? = null,
     
     // Control de sincronización
     val estadoSync: String = "SINCRONIZADO",

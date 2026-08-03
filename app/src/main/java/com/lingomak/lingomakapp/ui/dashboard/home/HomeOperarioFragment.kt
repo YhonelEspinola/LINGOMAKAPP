@@ -103,8 +103,8 @@ class HomeOperarioFragment : Fragment() {
                         putString("codigoMaquinaria", maquinaria.codigoMaquinaria)
                         putString("nombreMaquinaria", maquinaria.nombre)
                         putString("tipoMaquinaria", maquinaria.tipo)
-                        putInt("horometroActual", maquinaria.horometroActual)
-                        putInt("horometroUltimoMantenimiento", maquinaria.horometroUltimoMantenimiento)
+                        putDouble("horometroActual", maquinaria.horometroActual)
+                        putDouble("horometroUltimoMantenimiento", maquinaria.horometroUltimoMantenimiento)
                         putInt("intervaloMantenimientoHoras", maquinaria.intervaloMantenimientoHoras)
                     }
                     fragment.arguments = bundle

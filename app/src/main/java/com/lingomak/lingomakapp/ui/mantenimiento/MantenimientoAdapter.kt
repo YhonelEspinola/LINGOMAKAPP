@@ -11,13 +11,7 @@ import com.lingomak.lingomakapp.R
 
 class MantenimientoAdapter(
     private var listaMantenimientos: List<MantenimientoModel>,
-    private val isOperario: Boolean = false,
-    private val onMantenimientoClick: (MantenimientoModel) -> Unit,
-    private val onEditarClick: (MantenimientoModel) -> Unit,
-    private val onCambiarEstadoClick : (MantenimientoModel) -> Unit,
-    private val onCancelarClick: (MantenimientoModel) -> Unit,
-    private val onFinalizarClick : (MantenimientoModel) -> Unit
-
+    private val onMantenimientoClick: (MantenimientoModel) -> Unit
 ) : RecyclerView.Adapter<MantenimientoAdapter.MantenimientoViewHolder>() {
 
     inner class MantenimientoViewHolder(
@@ -29,51 +23,13 @@ class MantenimientoAdapter(
             binding.tvCodigoMantenimiento.text = mantenimiento.codigoMantenimiento
             binding.tvDescripcionMantenimiento.text = mantenimiento.descripcion
             binding.tvMaquinariaMantenimiento.text = mantenimiento.nombreMaquinaria
-            binding.tvFechaProgramada.text = "📅 ${mantenimiento.fechaProgramada}"
-            binding.tvHorometroMantenimiento.text = "⏱ ${mantenimiento.horometroProgramado} h"
-            binding.tvResponsableMantenimiento.text = "👤 ${mantenimiento.responsable}"
+            binding.tvFechaProgramada.text = mantenimiento.fechaProgramada
+            binding.tvHorometroMantenimiento.text = "${mantenimiento.horometroProgramado} h"
+            binding.tvResponsableMantenimiento.text = mantenimiento.responsable
+            binding.tvPrioridadMantenimiento.text = "Prioridad: ${mantenimiento.prioridad}"
             
             aplicarColorTipo(mantenimiento.tipoMantenimiento)
             aplicarColorEstado(mantenimiento.estado)
-
-            binding.btnOpciones.setOnClickListener {
-                val popupMenu = PopupMenu(binding.root.context, binding.btnOpciones)
-                popupMenu.menuInflater.inflate(R.menu.menu_mantenimiento_item, popupMenu.menu)
-
-                if (isOperario) {
-                    popupMenu.menu.findItem(R.id.opcion_editar).isVisible = false
-                    popupMenu.menu.findItem(R.id.opcion_cancelar).isVisible = false
-                }
-
-                when (mantenimiento.estado) {
-                    "PENDIENTE", "VENCIDO", "CANCELADO" -> {
-                        popupMenu.menu.findItem(R.id.opcion_finalizar).isVisible = false
-                    }
-                    "EN_PROCESO" -> {
-                        popupMenu.menu.findItem(R.id.opcion_editar).isVisible = false
-                        popupMenu.menu.findItem(R.id.opcion_cambiar_estado).isVisible = false
-                        popupMenu.menu.findItem(R.id.opcion_cancelar).isVisible = false
-                    }
-                    "FINALIZADO" -> {
-                        popupMenu.menu.findItem(R.id.opcion_editar).isVisible = false
-                        popupMenu.menu.findItem(R.id.opcion_cambiar_estado).isVisible = false
-                        popupMenu.menu.findItem(R.id.opcion_cancelar).isVisible = false
-                        popupMenu.menu.findItem(R.id.opcion_finalizar).isVisible = false
-                    }
-                }
-
-                popupMenu.setOnMenuItemClickListener { item ->
-                    when (item.itemId) {
-                        R.id.opcion_ver_detalle -> { onMantenimientoClick(mantenimiento); true }
-                        R.id.opcion_editar -> { onEditarClick(mantenimiento); true }
-                        R.id.opcion_cambiar_estado -> { onCambiarEstadoClick(mantenimiento); true }
-                        R.id.opcion_cancelar -> { onCancelarClick(mantenimiento); true }
-                        R.id.opcion_finalizar -> { onFinalizarClick(mantenimiento); true }
-                        else -> false
-                    }
-                }
-                popupMenu.show()
-            }
 
             binding.root.setOnClickListener {
                 onMantenimientoClick(mantenimiento)

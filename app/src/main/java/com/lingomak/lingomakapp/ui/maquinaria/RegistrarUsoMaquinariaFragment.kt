@@ -7,11 +7,18 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.google.firebase.auth.FirebaseAuth
+import com.lingomak.lingomakapp.R
+import com.lingomak.lingomakapp.data.model.RegistroUsoMaquinariaModel
+import com.lingomak.lingomakapp.data.model.SuministroModel
 import com.lingomak.lingomakapp.databinding.FragmentRegistrarUsoMaquinariaBinding
+import com.lingomak.lingomakapp.utils.DateUtils
+import java.util.UUID
 
 class RegistrarUsoMaquinariaFragment : Fragment() {
 
@@ -20,14 +27,22 @@ class RegistrarUsoMaquinariaFragment : Fragment() {
 
     private val viewModel: RegistrarUsoMaquinariaViewModel by viewModels()
 
+    // Datos Maquinaria
     private var uidMaquinaria = ""
     private var codigoMaquinaria = ""
     private var nombreMaquinaria = ""
     private var tipoMaquinaria = ""
-
-    private var horometroActual = 0
-    private var horometroUltimoMantenimiento = 0
+    private var horometroActualMaquina = 0.0
+    private var horometroUltimoMantenimiento = 0.0
     private var intervaloMantenimientoHoras = 250
+    private var capacidadTanqueGls: Double? = null
+
+    // Datos Edición (si aplica)
+    private var esEdicion = false
+    private var uidRegistroUso = ""
+    private var horometroAnteriorTramo = 0.0
+    private var horometroFinalOriginal = 0.0
+    private var uidSuministroOriginal: String? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -36,163 +51,264 @@ class RegistrarUsoMaquinariaFragment : Fragment() {
     ): View {
         _binding = FragmentRegistrarUsoMaquinariaBinding.inflate(inflater, container, false)
 
-        cargarDatos()
+        cargarArgumentos()
+        configurarSpinners()
+        configurarColapsables()
         configurarEventos()
         observarViewModel()
-        calcularVistaPrevia()
+        
+        if (esEdicion) {
+            cargarDatosEdicion()
+        } else {
+            binding.tvHorometroActual.text = "$horometroActualMaquina h"
+        }
 
         return binding.root
     }
 
-    private fun cargarDatos() {
-        uidMaquinaria = arguments?.getString("uidMaquinaria") ?: ""
-        codigoMaquinaria = arguments?.getString("codigoMaquinaria") ?: ""
-        nombreMaquinaria = arguments?.getString("nombreMaquinaria") ?: ""
-        tipoMaquinaria = arguments?.getString("tipoMaquinaria") ?: ""
+    private fun cargarArgumentos() {
+        val args = arguments ?: return
+        uidMaquinaria = args.getString("uidMaquinaria") ?: ""
+        codigoMaquinaria = args.getString("codigoMaquinaria") ?: ""
+        nombreMaquinaria = args.getString("nombreMaquinaria") ?: ""
+        tipoMaquinaria = args.getString("tipoMaquinaria") ?: ""
+        
+        horometroActualMaquina = args.getDouble("horometroActual", 0.0)
+        horometroUltimoMantenimiento = args.getDouble("horometroUltimoMantenimiento", 0.0)
+        intervaloMantenimientoHoras = args.getInt("intervaloMantenimientoHoras", 250)
+        
+        if (args.containsKey("capacidadTanqueGls")) {
+            capacidadTanqueGls = args.getDouble("capacidadTanqueGls")
+        }
 
-        horometroActual = arguments?.getInt("horometroActual") ?: 0
-        horometroUltimoMantenimiento =
-            arguments?.getInt("horometroUltimoMantenimiento") ?: 0
-        intervaloMantenimientoHoras =
-            arguments?.getInt("intervaloMantenimientoHoras") ?: 250
+        uidRegistroUso = args.getString("uidRegistroUso") ?: ""
+        esEdicion = uidRegistroUso.isNotEmpty()
 
         binding.tvNombreMaquinaria.text = nombreMaquinaria
         binding.tvCodigoMaquinaria.text = "Código: $codigoMaquinaria"
         binding.tvTipoMaquinaria.text = "Tipo: $tipoMaquinaria"
-        binding.tvHorometroActual.text = "Horómetro actual: $horometroActual h"
-        binding.tvUltimoMantenimiento.text =
-            "Último mantenimiento: $horometroUltimoMantenimiento h"
-        binding.tvIntervaloMantenimiento.text =
-            "Intervalo: cada $intervaloMantenimientoHoras h"
+        binding.tvUltimoMantenimiento.text = "$horometroUltimoMantenimiento h"
+        binding.tvIntervaloMantenimiento.text = "Frecuencia: cada $intervaloMantenimientoHoras h"
+        
+        if (esEdicion) {
+            binding.tvTituloFormulario.text = "Editar Actividad"
+            binding.btnGuardarUso.text = "ACTUALIZAR REGISTRO"
+        }
+    }
+
+    private fun configurarSpinners() {
+        val tiposMov = listOf("Trabajo", "Traslado")
+        binding.spTipoMovimiento.setAdapter(ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, tiposMov))
+
+        val tiposCarga = listOf("Parcial", "Completa")
+        binding.spTipoCarga.setAdapter(ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, tiposCarga))
+    }
+
+    private fun configurarColapsables() {
+        binding.layoutHeaderRepostaje.setOnClickListener {
+            val visible = binding.layoutContentRepostaje.visibility == View.VISIBLE
+            binding.layoutContentRepostaje.visibility = if (visible) View.GONE else View.VISIBLE
+            binding.ivChevronRepostaje.rotation = if (visible) 0f else 180f
+        }
+
+        binding.layoutHeaderProyecto.setOnClickListener {
+            val visible = binding.layoutContentProyecto.visibility == View.VISIBLE
+            binding.layoutContentProyecto.visibility = if (visible) View.GONE else View.VISIBLE
+            binding.ivChevronProyecto.rotation = if (visible) 0f else 180f
+        }
     }
 
     private fun configurarEventos() {
-        binding.etHorasUso.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+        binding.etHorometroFinal.filters = arrayOf(com.lingomak.lingomakapp.utils.DecimalDigitsInputFilter(2))
+        binding.etGalonesCombustible.filters = arrayOf(com.lingomak.lingomakapp.utils.DecimalDigitsInputFilter(2))
+        binding.etGalonesAceite.filters = arrayOf(com.lingomak.lingomakapp.utils.DecimalDigitsInputFilter(2))
 
+        val watcher = object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 calcularVistaPrevia()
             }
-
             override fun afterTextChanged(s: Editable?) {}
-        })
+        }
+
+        binding.etHorometroFinal.addTextChangedListener(watcher)
+        binding.etGalonesCombustible.addTextChangedListener(watcher)
 
         binding.btnGuardarUso.setOnClickListener {
-            validarYRegistrarUso()
+            validarYGuardar()
+        }
+    }
+
+    private fun cargarDatosEdicion() {
+        val args = arguments ?: return
+        horometroAnteriorTramo = args.getDouble("horometroAnterior", 0.0)
+        horometroFinalOriginal = args.getDouble("horometroFinal", 0.0)
+        
+        binding.tvHorometroActual.text = "$horometroAnteriorTramo h"
+        binding.etHorometroFinal.setText(horometroFinalOriginal.toString())
+        binding.etTrabajoRealizado.setText(args.getString("trabajoRealizado"))
+        
+        val tipoMov = args.getString("tipoMovimiento") ?: "Trabajo"
+        binding.spTipoMovimiento.setText(tipoMov, false)
+
+        binding.etObra.setText(args.getString("obra"))
+        binding.etContratista.setText(args.getString("contratista"))
+        binding.etUbicacion.setText(args.getString("ubicacion"))
+
+        viewModel.cargarSuministroAsociado(uidRegistroUso)
+    }
+
+    private fun observarViewModel() {
+        viewModel.cargando.observe(viewLifecycleOwner) { binding.progressUsoMaquinaria.visibility = if (it) View.VISIBLE else View.GONE }
+        
+        viewModel.mensajeError.observe(viewLifecycleOwner) { Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show() }
+
+        viewModel.registroExitoso.observe(viewLifecycleOwner) { if (it) { 
+            Toast.makeText(requireContext(), "Registro guardado correctamente", Toast.LENGTH_SHORT).show()
+            parentFragmentManager.popBackStack()
+        }}
+
+        viewModel.tiposCombustible.observe(viewLifecycleOwner) { tipos ->
+            val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, tipos)
+            binding.spTipoCombustible.setAdapter(adapter)
+            
+            viewModel.suministroExistente.value?.let { s ->
+                binding.spTipoCombustible.setText(s.tipoCombustible, false)
+            }
+        }
+
+        viewModel.suministroExistente.observe(viewLifecycleOwner) { suministro ->
+            if (suministro != null) {
+                uidSuministroOriginal = suministro.uid
+                binding.layoutContentRepostaje.visibility = View.VISIBLE
+                binding.ivChevronRepostaje.rotation = 180f
+                
+                binding.etGalonesCombustible.setText(suministro.galonesCombustible.toString())
+                binding.etGalonesAceite.setText(suministro.galonesAceite.toString())
+                
+                binding.spTipoCarga.setText(suministro.tipoCarga, false)
+                
+                val tipos = viewModel.tiposCombustible.value
+                if (tipos != null) {
+                    binding.spTipoCombustible.setText(suministro.tipoCombustible, false)
+                }
+            }
         }
     }
 
     private fun calcularVistaPrevia() {
-        val horasUso =
-            binding.etHorasUso.text.toString().trim().toIntOrNull()
+        val horometroAnterior = if (esEdicion) horometroAnteriorTramo else horometroActualMaquina
+        val horometroFinal = binding.etHorometroFinal.text.toString().toDoubleOrNull() ?: 0.0
+        
+        val horasUso = if (horometroFinal > horometroAnterior) horometroFinal - horometroAnterior else 0.0
+        binding.tvHorasCalculadas.text = "%.1f h".format(horasUso)
 
-        if (horasUso == null || horasUso <= 0) {
-            binding.tvNuevoHorometro.text = "Nuevo horómetro: --"
-            binding.tvHorasRestantes.text = "Horas restantes: --"
-            binding.tvMensajeMantenimiento.text =
-                "Ingrese las horas trabajadas para calcular el estado del mantenimiento."
-            binding.tvMensajeMantenimiento.setTextColor(Color.rgb(107, 114, 128))
-            return
+        if (horometroFinal > 0) {
+            val horasDesdeUltimo = horometroFinal - horometroUltimoMantenimiento
+            val horasRestantes = intervaloMantenimientoHoras - horasDesdeUltimo
+            binding.tvHorasRestantes.text = "%.1f h".format(horasRestantes)
+
+            when {
+                horasRestantes <= 0 -> {
+                    binding.tvMensajeMantenimiento.text = "🔴 Se superó el límite. Se enviará solicitud de mantenimiento."
+                    binding.tvMensajeMantenimiento.setTextColor(Color.RED)
+                }
+                horasRestantes <= 20 -> {
+                    binding.tvMensajeMantenimiento.text = "🟡 Próxima a mantenimiento (faltan %.1f h)".format(horasRestantes)
+                    binding.tvMensajeMantenimiento.setTextColor(Color.parseColor("#FFA500"))
+                }
+                else -> {
+                    binding.tvMensajeMantenimiento.text = "🟢 Maquinaria en estado normal."
+                    binding.tvMensajeMantenimiento.setTextColor(Color.parseColor("#2E7D32"))
+                }
+            }
         }
 
-        val nuevoHorometro =
-            horometroActual + horasUso
-
-        val horasDesdeUltimo =
-            nuevoHorometro - horometroUltimoMantenimiento
-
-        val horasRestantes =
-            intervaloMantenimientoHoras - horasDesdeUltimo
-
-        binding.tvNuevoHorometro.text =
-            "Nuevo horómetro: $nuevoHorometro h"
-
-        binding.tvHorasRestantes.text =
-            "Horas restantes: $horasRestantes h"
-
-        when {
-            horasRestantes <= 0 -> {
-                binding.tvMensajeMantenimiento.text =
-                    "🔴 Con este registro se superará el límite de mantenimiento. Se enviará una solicitud al administrador."
-                binding.tvMensajeMantenimiento.setTextColor(Color.rgb(185, 28, 28))
+        val combustible = binding.etGalonesCombustible.text.toString().toDoubleOrNull() ?: 0.0
+        if (capacidadTanqueGls != null && capacidadTanqueGls!! > 0) {
+            val porc = (combustible / capacidadTanqueGls!!) * 100
+            binding.tvPorcentajeTanque.text = "%.0f%%".format(porc)
+            if (porc > 100 && binding.spTipoCarga.text.toString() == "Completa") {
+                binding.tvPorcentajeTanque.setTextColor(Color.RED)
+            } else {
+                binding.tvPorcentajeTanque.setTextColor(Color.GRAY)
             }
-
-            horasRestantes <= 20 -> {
-                binding.tvMensajeMantenimiento.text =
-                    "🔴 La maquinaria quedará muy cerca del mantenimiento. Se enviará una solicitud al administrador."
-                binding.tvMensajeMantenimiento.setTextColor(Color.rgb(185, 28, 28))
-            }
-
-            horasRestantes <= 50 -> {
-                binding.tvMensajeMantenimiento.text =
-                    "🟡 Atención: la maquinaria se está acercando al mantenimiento preventivo."
-                binding.tvMensajeMantenimiento.setTextColor(Color.rgb(180, 83, 9))
-            }
-
-            else -> {
-                binding.tvMensajeMantenimiento.text =
-                    "🟢 La maquinaria aún se encuentra dentro del rango normal de uso."
-                binding.tvMensajeMantenimiento.setTextColor(Color.rgb(22, 101, 52))
+        } else {
+            binding.tvPorcentajeTanque.text = "N/A"
+            if (combustible > 0) {
+                binding.tvMensajeMantenimiento.text = "Aviso: Capacidad del tanque no configurada."
+                binding.tvMensajeMantenimiento.setTextColor(Color.GRAY)
             }
         }
     }
 
-    private fun validarYRegistrarUso() {
-        val horasTexto = binding.etHorasUso.text.toString().trim()
-        val observacion = binding.etObservacion.text.toString().trim()
-
-        val horasUso = horasTexto.toIntOrNull()
-
-        if (uidMaquinaria.isEmpty()) {
-            Toast.makeText(requireContext(), "No se encontró la maquinaria", Toast.LENGTH_SHORT).show()
+    private fun validarYGuardar() {
+        val horometroAnterior = if (esEdicion) horometroAnteriorTramo else horometroActualMaquina
+        val horometroFinal = binding.etHorometroFinal.text.toString().toDoubleOrNull()
+        val trabajo = binding.etTrabajoRealizado.text.toString().trim()
+        
+        if (horometroFinal == null || horometroFinal <= horometroAnterior) {
+            Toast.makeText(requireContext(), "El horómetro final debe ser mayor a $horometroAnterior", Toast.LENGTH_SHORT).show()
             return
         }
 
-        if (horasUso == null || horasUso <= 0) {
-            Toast.makeText(requireContext(), "Ingrese horas válidas", Toast.LENGTH_SHORT).show()
+        if (trabajo.isEmpty()) {
+            Toast.makeText(requireContext(), "El trabajo realizado es obligatorio", Toast.LENGTH_SHORT).show()
             return
         }
 
-        if (horasUso > 24) {
-            Toast.makeText(requireContext(), "No puede registrar más de 24 horas por día", Toast.LENGTH_SHORT).show()
+        val galonesComb = binding.etGalonesCombustible.text.toString().toDoubleOrNull() ?: 0.0
+        val galonesAceite = binding.etGalonesAceite.text.toString().toDoubleOrNull() ?: 0.0
+        val tipoCarga = binding.spTipoCarga.text.toString()
+        
+        if (tipoCarga == "Completa" && capacidadTanqueGls != null && galonesComb > capacidadTanqueGls!!) {
+            Toast.makeText(requireContext(), "El combustible excede la capacidad del tanque (${capacidadTanqueGls} Gls)", Toast.LENGTH_SHORT).show()
             return
         }
 
-        val usuarioActual = FirebaseAuth.getInstance().currentUser
+        val user = FirebaseAuth.getInstance().currentUser
+        val registroUso = RegistroUsoMaquinariaModel(
+            uid = if (esEdicion) uidRegistroUso else "",
+            uidMaquinaria = uidMaquinaria,
+            codigoMaquinaria = codigoMaquinaria,
+            nombreMaquinaria = nombreMaquinaria,
+            tipoMaquinaria = tipoMaquinaria,
+            uidOperario = user?.uid ?: "",
+            nombreOperario = user?.displayName ?: "Operario",
+            correoOperario = user?.email ?: "",
+            fechaUso = DateUtils.obtenerFechaActual(),
+            horometroAnterior = horometroAnterior,
+            horometroFinal = horometroFinal,
+            horasUso = horometroFinal - horometroAnterior,
+            trabajoRealizado = trabajo,
+            fechaRegistro = if (esEdicion) (arguments?.getString("fechaRegistro") ?: DateUtils.obtenerFechaActual()) else DateUtils.obtenerFechaActual(),
+            tipoMovimiento = binding.spTipoMovimiento.text.toString(),
+            obra = binding.etObra.text.toString().trim().takeIf { it.isNotEmpty() },
+            contratista = binding.etContratista.text.toString().trim().takeIf { it.isNotEmpty() },
+            ubicacion = binding.etUbicacion.text.toString().trim().takeIf { it.isNotEmpty() }
+        )
+
+        var suministro: SuministroModel? = null
+        if (galonesComb > 0 || galonesAceite > 0) {
+            suministro = SuministroModel(
+                uid = uidSuministroOriginal ?: "",
+                uidMaquinaria = uidMaquinaria,
+                fecha = DateUtils.obtenerFechaActual(),
+                horometroSuministro = horometroFinal,
+                tipoCarga = tipoCarga,
+                tipoCombustible = binding.spTipoCombustible.text.toString().ifEmpty { "Diesel" },
+                galonesCombustible = galonesComb,
+                galonesAceite = galonesAceite,
+                uidRegistroUso = if (esEdicion) uidRegistroUso else ""
+            )
+        }
 
         viewModel.registrarUsoMaquinaria(
-            uidMaquinaria = uidMaquinaria,
-            uidOperario = usuarioActual?.uid ?: "",
-            nombreOperario = usuarioActual?.displayName ?: "",
-            correoOperario = usuarioActual?.email ?: "",
-            horasUso = horasUso,
-            observacion = observacion
+            registroUso = registroUso,
+            suministro = suministro,
+            esEdicion = esEdicion,
+            horometroFinalOriginal = if (esEdicion) horometroFinalOriginal else null
         )
-    }
-
-    private fun observarViewModel() {
-        viewModel.cargando.observe(viewLifecycleOwner) { cargando ->
-            binding.progressUsoMaquinaria.visibility =
-                if (cargando) View.VISIBLE else View.GONE
-
-            binding.btnGuardarUso.isEnabled = !cargando
-        }
-
-        viewModel.registroExitoso.observe(viewLifecycleOwner) { exitoso ->
-            if (exitoso) {
-                Toast.makeText(
-                    requireContext(),
-                    "Uso de maquinaria registrado correctamente",
-                    Toast.LENGTH_SHORT
-                ).show()
-
-                parentFragmentManager.popBackStack()
-            }
-        }
-
-        viewModel.mensajeError.observe(viewLifecycleOwner) { mensaje ->
-            Toast.makeText(requireContext(), mensaje, Toast.LENGTH_SHORT).show()
-        }
     }
 
     override fun onDestroyView() {

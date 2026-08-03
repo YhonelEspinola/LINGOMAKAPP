@@ -24,6 +24,7 @@ import com.bumptech.glide.Glide
 import com.lingomak.lingomakapp.data.model.RepuestoModel
 import com.lingomak.lingomakapp.databinding.FragmentEditarRepuestoBinding
 import com.yalantis.ucrop.UCrop
+import com.lingomak.lingomakapp.R
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
@@ -190,11 +191,11 @@ class EditarRepuestoFragment : Fragment() {
         if (index >= 0) binding.spinnerCategoria.setSelection(index)
 
         if (repuesto.imagenUrl.isNotEmpty()) {
-            Glide.with(this).load(repuesto.imagenUrl).placeholder(android.R.drawable.ic_menu_gallery).into(binding.ivFotoRepuesto)
+            Glide.with(this).load(repuesto.imagenUrl).placeholder(R.drawable.bg_image_placeholder).into(binding.ivFotoRepuesto)
         }
 
         if (repuesto.codigoQR.isNotEmpty()) {
-            Glide.with(this).load(repuesto.codigoQR).placeholder(android.R.drawable.ic_menu_gallery).into(binding.ivCodigoQR)
+            Glide.with(this).load(repuesto.codigoQR).placeholder(R.drawable.bg_image_placeholder).into(binding.ivCodigoQR)
         }
     }
 

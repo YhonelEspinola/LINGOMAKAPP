@@ -29,6 +29,11 @@ data class MantenimientoEntity(
     val actualizadoPor: String,
     val prioridad: String,
     val resolutorNombre: String = "",
+
+    // Auditoría detallada
+    val modificadoPorUid: String? = null,
+    val modificadoPorNombre: String? = null,
+    val fechaUltimaModificacion: String? = null,
     
     // Imágenes y rutas locales
     val imagenesReporte: List<String> = emptyList(),

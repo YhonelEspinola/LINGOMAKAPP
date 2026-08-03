@@ -57,12 +57,7 @@ class MantenimientoFragment : Fragment() {
         val isAdmin = requireActivity() is DashboardAdminActivity
         
         pagerAdapter = MantenimientoPagerAdapter(
-            isOperario = !isAdmin,
             onMantenimientoClick = { abrirDetalleMantenimiento(it) },
-            onEditarClick = { abrirEditarMantenimiento(it) },
-            onCambiarEstadoClick = { mostrarDialogoCambiarEstado(it) },
-            onCancelarClick = { mostrarDialogoCancelarMantenimiento(it) },
-            onFinalizarClick = { abrirFinalizarMantenimiento(it) },
             onHistoryFiltersChanged = { list -> historyVisibleList = list }
         )
         
@@ -90,6 +85,11 @@ class MantenimientoFragment : Fragment() {
     private fun observarViewModel() {
         viewModel.listaMantenimientos.observe(viewLifecycleOwner) { lista ->
             pagerAdapter.updateData(lista)
+        }
+
+        val userRepo = com.lingomak.lingomakapp.data.repository.UserRepository(requireContext())
+        userRepo.obtenerUsuariosObservable().observe(viewLifecycleOwner) { lista ->
+            pagerAdapter.updateUsuarios(lista)
         }
 
         viewModel.mensajeError.observe(viewLifecycleOwner) { error ->
@@ -151,60 +151,6 @@ class MantenimientoFragment : Fragment() {
             }
             override fun afterTextChanged(s: Editable?) {}
         })
-    }
-
-    private fun mostrarDialogoCambiarEstado(mantenimiento: MantenimientoModel) {
-        val estados = arrayOf("PENDIENTE", "EN_PROCESO", "CANCELADO")
-        AlertDialog.Builder(requireContext())
-            .setTitle("Cambiar estado")
-            .setItems(estados) { _, which ->
-                val nuevoEstado = estados[which]
-                if (nuevoEstado == "EN_PROCESO") {
-                    viewModel.iniciarMantenimiento(mantenimiento.uid, mantenimiento.uidMaquinaria) {
-                        Toast.makeText(requireContext(), "Mantenimiento iniciado", Toast.LENGTH_SHORT).show()
-                    }
-                } else {
-                    viewModel.cambiarEstadoMantenimiento(mantenimiento.uid, nuevoEstado) {
-                        Toast.makeText(requireContext(), "Estado actualizado", Toast.LENGTH_SHORT).show()
-                    }
-                }
-            }
-            .show()
-    }
-
-    private fun abrirEditarMantenimiento(mantenimiento: MantenimientoModel) {
-        val fragment = EditarMantenimientoFragment()
-        val bundle = Bundle()
-        bundle.putString("uid", mantenimiento.uid)
-        fragment.arguments = bundle
-        parentFragmentManager.beginTransaction()
-            .replace(R.id.fragmentContainerAdmin, fragment)
-            .addToBackStack(null)
-            .commit()
-    }
-
-    private fun mostrarDialogoCancelarMantenimiento(mantenimiento: MantenimientoModel) {
-        AlertDialog.Builder(requireContext())
-            .setTitle("Cancelar Mantenimiento")
-            .setMessage("¿Estás seguro de cancelar el mantenimiento ${mantenimiento.codigoMantenimiento}?")
-            .setPositiveButton("Sí, cancelar") { _, _ ->
-                viewModel.cambiarEstadoMantenimiento(mantenimiento.uid, "CANCELADO") {
-                    Toast.makeText(requireContext(), "Mantenimiento cancelado", Toast.LENGTH_SHORT).show()
-                }
-            }
-            .setNegativeButton("No", null)
-            .show()
-    }
-
-    private fun abrirFinalizarMantenimiento(mantenimiento: MantenimientoModel) {
-        val fragment = FinalizarMantenimientoFragment()
-        val bundle = Bundle()
-        bundle.putString("uid", mantenimiento.uid)
-        fragment.arguments = bundle
-        parentFragmentManager.beginTransaction()
-            .replace(R.id.fragmentContainerAdmin, fragment)
-            .addToBackStack(null)
-            .commit()
     }
 
     override fun onDestroyView() {

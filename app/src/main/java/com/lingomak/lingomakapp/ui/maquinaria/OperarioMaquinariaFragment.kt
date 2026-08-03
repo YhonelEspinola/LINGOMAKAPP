@@ -75,9 +75,6 @@ class OperarioMaquinariaFragment : Fragment() {
                 maquinaria.estado == "OPERATIVA"
             }
 
-            binding.tvTotalOperativas.text =
-                "${listaOperativas.size} disponibles"
-
             adapter.actualizarLista(listaOperativas)
 
             binding.tvSinMaquinariaOperativa.visibility =
@@ -118,9 +115,8 @@ class OperarioMaquinariaFragment : Fragment() {
             putString("codigoMaquinaria", maquinaria.codigoMaquinaria)
             putString("nombreMaquinaria", maquinaria.nombre)
             putString("tipoMaquinaria", maquinaria.tipo)
-            putInt("horometroActual", maquinaria.horometroActual)
-
-            putInt("horometroUltimoMantenimiento", maquinaria.horometroUltimoMantenimiento)
+            putDouble("horometroActual", maquinaria.horometroActual)
+            putDouble("horometroUltimoMantenimiento", maquinaria.horometroUltimoMantenimiento)
             putInt("intervaloMantenimientoHoras", maquinaria.intervaloMantenimientoHoras)
         }
 

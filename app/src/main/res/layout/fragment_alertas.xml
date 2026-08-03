@@ -171,25 +171,37 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Todas"
-                    android:checked="true" />
+                    android:checked="true"
+                    app:chipBackgroundColor="@color/selector_chip_choice"
+                    app:chipStrokeWidth="0dp"
+                    android:textColor="@color/selector_chip_text" />
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chipMantenimiento"
                     style="@style/Widget.MaterialComponents.Chip.Choice"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Mantenimiento" />
+                    android:text="Mantenimiento"
+                    app:chipBackgroundColor="@color/selector_chip_choice"
+                    app:chipStrokeWidth="0dp"
+                    android:textColor="@color/selector_chip_text" />
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chipStock"
                     style="@style/Widget.MaterialComponents.Chip.Choice"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Stock" />
+                    android:text="Stock"
+                    app:chipBackgroundColor="@color/selector_chip_choice"
+                    app:chipStrokeWidth="0dp"
+                    android:textColor="@color/selector_chip_text" />
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chipMovimientos"
                     style="@style/Widget.MaterialComponents.Chip.Choice"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Movimientos" />
+                    android:text="Movimientos"
+                    app:chipBackgroundColor="@color/selector_chip_choice"
+                    app:chipStrokeWidth="0dp"
+                    android:textColor="@color/selector_chip_text" />
             </com.google.android.material.chip.ChipGroup>
         </HorizontalScrollView>
 

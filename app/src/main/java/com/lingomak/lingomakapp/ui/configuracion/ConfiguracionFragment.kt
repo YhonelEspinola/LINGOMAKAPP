@@ -23,11 +23,11 @@ class ConfiguracionFragment : Fragment() {
 
     private lateinit var adapterRepuesto: CategoriaAdapter
     private lateinit var adapterMaquinaria: CategoriaAdapter
-
-    private var isManualChange = false
+    private lateinit var adapterCombustible: CategoriaAdapter
 
     private var repuestosExpanded = false
     private var maquinariaExpanded = false
+    private var combustibleExpanded = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -54,7 +54,6 @@ class ConfiguracionFragment : Fragment() {
         binding.switchDarkMode.setOnCheckedChangeListener { _, isChecked ->
             actualizarIconoTema(isChecked)
             themeManager.setDarkMode(requireContext(), isChecked)
-            // La actividad se recreará sola por setDefaultNightMode
         }
     }
 
@@ -81,14 +80,20 @@ class ConfiguracionFragment : Fragment() {
         }
         binding.rvCategoriasMaquinaria.layoutManager = LinearLayoutManager(requireContext())
         binding.rvCategoriasMaquinaria.adapter = adapterMaquinaria
+
+        adapterCombustible = CategoriaAdapter(emptyList()) { categoria ->
+            mostrarDialogoEliminar(categoria)
+        }
+        binding.rvCategoriasCombustible.layoutManager = LinearLayoutManager(requireContext())
+        binding.rvCategoriasCombustible.adapter = adapterCombustible
         
-        // Forzar que el NestedScrollView permita scroll a los RV internos
         binding.rvCategoriasRepuesto.isNestedScrollingEnabled = false
         binding.rvCategoriasMaquinaria.isNestedScrollingEnabled = false
+        binding.rvCategoriasCombustible.isNestedScrollingEnabled = false
 
-        // Inicializar flechas en estado colapsado (-180 grados o según tu lógica de toggle)
         binding.ivChevronRepuestos.rotation = -180f
         binding.ivChevronMaquinaria.rotation = -180f
+        binding.ivChevronCombustible.rotation = -180f
     }
 
     private fun setupEventos() {
@@ -97,6 +102,9 @@ class ConfiguracionFragment : Fragment() {
         }
         binding.btnAgregarCatMaquinaria.setOnClickListener {
             mostrarDialogoAgregar("MAQUINARIA")
+        }
+        binding.btnAgregarCatCombustible.setOnClickListener {
+            mostrarDialogoAgregar("COMBUSTIBLE")
         }
 
         binding.btnToggleRepuestos.setOnClickListener {
@@ -109,12 +117,21 @@ class ConfiguracionFragment : Fragment() {
             toggleSection(binding.layoutExpandibleMaquinaria, binding.ivChevronMaquinaria, maquinariaExpanded)
         }
 
+        binding.btnToggleCombustible.setOnClickListener {
+            combustibleExpanded = !combustibleExpanded
+            toggleSection(binding.layoutExpandibleCombustible, binding.ivChevronCombustible, combustibleExpanded)
+        }
+
         binding.etBuscarRepuestos.addTextChangedListener {
             viewModel.buscarRepuesto(it?.toString() ?: "")
         }
 
         binding.etBuscarMaquinaria.addTextChangedListener {
             viewModel.buscarMaquinaria(it?.toString() ?: "")
+        }
+
+        binding.etBuscarCombustible.addTextChangedListener {
+            viewModel.buscarCombustible(it?.toString() ?: "")
         }
     }
 
@@ -129,6 +146,9 @@ class ConfiguracionFragment : Fragment() {
         }
         viewModel.categoriasMaquinaria.observe(viewLifecycleOwner) {
             adapterMaquinaria.actualizarLista(it)
+        }
+        viewModel.categoriasCombustible.observe(viewLifecycleOwner) {
+            adapterCombustible.actualizarLista(it)
         }
 
         viewModel.error.observe(viewLifecycleOwner) { msg ->
@@ -145,7 +165,7 @@ class ConfiguracionFragment : Fragment() {
 
     private fun mostrarDialogoAgregar(tipo: String) {
         val input = EditText(requireContext())
-        input.hint = "Ej: Filtros Hidráulicos"
+        input.hint = "Ej: Diesel"
         val padding = (16 * resources.displayMetrics.density).toInt()
         val container = android.widget.FrameLayout(requireContext())
         val params = android.widget.FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)

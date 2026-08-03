@@ -34,11 +34,9 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
             android:visibility="gone"
-            app:cardCornerRadius="8dp"
+            app:cardCornerRadius="14dp"
             app:cardElevation="0dp"
-            app:cardBackgroundColor="#FFF8E1"
-            app:strokeColor="#FFC400"
-            app:strokeWidth="1dp">
+            app:cardBackgroundColor="@color/alert_warning_bg">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -50,24 +48,26 @@
                     android:id="@+id/tvTituloAlerta"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="⚠ ALERTA DE GESTIÓN"
+                    android:text="⚠ Acción recomendada"
                     android:textStyle="bold"
-                    android:textSize="14sp"
-                    android:textColor="@color/primary" />
+                    android:textSize="16sp"
+                    android:textColor="@color/alert_warning_text" />
 
                 <TextView
                     android:id="@+id/tvTipoAlerta"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
+                    android:layout_marginTop="8dp"
                     android:textStyle="bold"
+                    android:text="Incidencia detectada"
                     android:textColor="@color/text_primary" />
 
                 <TextView
                     android:id="@+id/tvMensajeAlerta"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
+                    android:layout_marginTop="6dp"
+                    android:text="Descripción de la alerta."
                     android:textColor="@color/text_secondary" />
 
             </LinearLayout>
@@ -108,7 +108,7 @@
                     android:textSize="16sp"
                     android:textStyle="bold"/>
 
-                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/background" android:layout_marginVertical="12dp"/>
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/border" android:layout_marginVertical="12dp"/>
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -128,7 +128,7 @@
                     android:textSize="15sp"
                     android:textStyle="bold"/>
 
-                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/background" android:layout_marginVertical="12dp"/>
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/border" android:layout_marginVertical="12dp"/>
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -170,7 +170,7 @@
                         android:textSize="13sp"/>
                 </LinearLayout>
 
-                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/background" android:layout_marginVertical="12dp"/>
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/border" android:layout_marginVertical="12dp"/>
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -189,29 +189,41 @@
                     android:textColor="@color/text_primary"
                     android:textSize="15sp"/>
 
-                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/background" android:layout_marginVertical="12dp"/>
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/border" android:layout_marginVertical="12dp"/>
 
                 <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
                     <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="FECHA" android:textSize="11sp" android:textStyle="bold" android:textColor="@color/text_secondary"/>
-                        <TextView android:id="@+id/tvFechaDetalle" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="15/07/2026" android:textColor="@color/text_primary" android:textSize="15sp"/>
+                        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginTop="2dp">
+                            <ImageView android:layout_width="14dp" android:layout_height="14dp" android:src="@android:drawable/ic_menu_today" app:tint="@color/text_secondary"/>
+                            <TextView android:id="@+id/tvFechaDetalle" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="6dp" android:text="15/07/2026" android:textColor="@color/text_primary" android:textSize="15sp"/>
+                        </LinearLayout>
                     </LinearLayout>
                     <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="HORÓMETRO" android:textSize="11sp" android:textStyle="bold" android:textColor="@color/text_secondary"/>
-                        <TextView android:id="@+id/tvHorometroDetalle" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="3500 h" android:textColor="@color/text_primary" android:textSize="15sp"/>
+                        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginTop="2dp">
+                            <ImageView android:layout_width="14dp" android:layout_height="14dp" android:src="@android:drawable/ic_menu_recent_history" app:tint="@color/text_secondary"/>
+                            <TextView android:id="@+id/tvHorometroDetalle" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="6dp" android:text="3500 h" android:textColor="@color/text_primary" android:textSize="15sp"/>
+                        </LinearLayout>
                     </LinearLayout>
                 </LinearLayout>
 
-                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/background" android:layout_marginVertical="12dp"/>
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/border" android:layout_marginVertical="12dp"/>
 
                 <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
                     <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="ASIGNADO A:" android:textSize="11sp" android:textStyle="bold" android:textColor="@color/text_secondary"/>
-                        <TextView android:id="@+id/tvResponsableDetalle" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Juan Perez" android:textColor="@color/text_primary" android:textSize="15sp"/>
+                        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginTop="2dp">
+                            <ImageView android:layout_width="14dp" android:layout_height="14dp" android:src="@drawable/person" app:tint="@color/text_secondary"/>
+                            <TextView android:id="@+id/tvResponsableDetalle" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="6dp" android:text="Juan Perez" android:textColor="@color/text_primary" android:textSize="15sp"/>
+                        </LinearLayout>
                     </LinearLayout>
                     <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="PRIORIDAD" android:textSize="11sp" android:textStyle="bold" android:textColor="@color/text_secondary"/>
-                        <TextView android:id="@+id/tvPrioridadDetalle" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="ALTA" android:textColor="@color/text_primary" android:textSize="15sp"/>
+                        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginTop="2dp">
+                            <ImageView android:layout_width="14dp" android:layout_height="14dp" android:src="@drawable/alert" app:tint="@color/text_secondary"/>
+                            <TextView android:id="@+id/tvPrioridadDetalle" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="6dp" android:text="ALTA" android:textColor="@color/text_primary" android:textSize="15sp"/>
+                        </LinearLayout>
                     </LinearLayout>
                 </LinearLayout>
 
@@ -237,7 +249,7 @@
                     android:textSize="15sp"
                     android:visibility="gone"/>
 
-                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/background" android:layout_marginVertical="12dp"/>
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/border" android:layout_marginVertical="12dp"/>
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -255,7 +267,7 @@
                     android:textColor="@color/text_primary"
                     android:textSize="15sp"/>
 
-                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/background" android:layout_marginVertical="12dp"/>
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/border" android:layout_marginVertical="12dp"/>
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -277,7 +289,7 @@
                     android:textStyle="bold"
                     android:textSize="12sp"/>
 
-                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/background" android:layout_marginVertical="12dp"/>
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/border" android:layout_marginVertical="12dp"/>
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -294,6 +306,9 @@
                     android:text="Sin observaciones"
                     android:textColor="@color/text_primary"
                     android:textSize="14sp"/>
+
+                <View android:id="@+id/separatorAuditoria" android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/border" android:layout_marginVertical="12dp" android:visibility="gone"/>
+                <TextView android:id="@+id/tvAuditoria" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Última modificación: ..." android:textColor="@color/text_secondary" android:textSize="12sp" android:textStyle="italic" android:visibility="gone" />
 
                 <!-- SECCIÓN DE IMÁGENES -->
                 <TextView
@@ -348,6 +363,7 @@
             android:layout_marginTop="24dp"
             android:textAllCaps="true"
             android:textStyle="bold"
+            android:textColor="@color/fixed_white"
             app:cornerRadius="12dp"
             app:backgroundTint="@color/primary"
             app:elevation="0dp"/>
@@ -360,13 +376,13 @@
             android:text="GENERAR REPORTE CON IA"
             android:textAllCaps="true"
             android:textStyle="bold"
-            android:textColor="@color/white"
+            android:textColor="@color/fixed_white"
             android:visibility="gone"
             app:backgroundTint="@color/secondary"
             app:cornerRadius="12dp"
             app:icon="@drawable/report"
             app:iconGravity="textStart"
-            app:iconTint="@color/white" />
+            app:iconTint="@color/fixed_white" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnCambiarEstado"
@@ -377,7 +393,32 @@
             android:layout_marginTop="12dp"
             android:textAllCaps="true"
             android:textColor="@color/primary"
-            app:strokeColor="#7F0000"
+            app:strokeColor="@color/primary"
+            app:strokeWidth="1dp"
+            app:cornerRadius="12dp"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnCancelarMantenimiento"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="CANCELAR MANTENIMIENTO"
+            android:layout_marginTop="4dp"
+            android:textColor="@color/danger"
+            android:visibility="gone"
+            app:cornerRadius="12dp"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSolicitarReprogramacion"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="SOLICITAR REPROGRAMACIÓN"
+            android:layout_marginTop="12dp"
+            android:textAllCaps="true"
+            android:textColor="@color/primary"
+            android:visibility="gone"
+            app:strokeColor="@color/primary"
             app:strokeWidth="1dp"
             app:cornerRadius="12dp"/>
 

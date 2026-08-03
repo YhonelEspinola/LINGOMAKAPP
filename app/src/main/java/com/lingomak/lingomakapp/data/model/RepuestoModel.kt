@@ -23,5 +23,10 @@ data class RepuestoModel(
     val fechaRegistro: Date? = null,
     val fechaActualizacion: Date? = null,
     val registradoPor: String = "",
-    val actualizadoPor: String = ""
+    val actualizadoPor: String = "",
+
+    // Auditoría detallada
+    val modificadoPorUid: String? = null,
+    val modificadoPorNombre: String? = null,
+    val fechaUltimaModificacion: String? = null
 )

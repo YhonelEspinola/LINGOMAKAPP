@@ -82,6 +82,7 @@ class EditarMaquinariaFragment : Fragment() {
         binding.etAnioMaquinaria.setText(maquinaria.anio.toString())
         binding.etHorometroActual.setText(maquinaria.horometroActual.toString())
         binding.etHorometroUltimoMantenimiento.setText(maquinaria.horometroUltimoMantenimiento.toString())
+        binding.etCapacidadTanque.setText(maquinaria.capacidadTanqueGls?.toString() ?: "")
         binding.etUbicacionActual.setText(maquinaria.ubicacionActual)
         binding.etIntervaloMantenimiento.setText(maquinaria.intervaloMantenimientoHoras.toString())
         binding.etObservacionesMaquinaria.setText(maquinaria.observaciones)
@@ -89,18 +90,12 @@ class EditarMaquinariaFragment : Fragment() {
         // Preseleccionar tipo si las categorías ya cargaron
         actualizarSeleccionTipo()
 
-        val estadosAdapter = binding.spEstadoMaquinaria.adapter
-        for (i in 0 until estadosAdapter.count) {
-            if (estadosAdapter.getItem(i).toString() == maquinaria.estado) {
-                binding.spEstadoMaquinaria.setSelection(i)
-                break
-            }
-        }
+        binding.spEstadoMaquinaria.setText(maquinaria.estado, false)
 
         if (imagenUrlActual.isNotEmpty()) {
             Glide.with(this).load(imagenUrlActual).centerCrop()
-                .placeholder(R.drawable.ic_maquinaria_placeholder)
-                .error(R.drawable.ic_maquinaria_placeholder)
+                .placeholder(R.drawable.bg_image_placeholder)
+                .error(R.drawable.bg_image_placeholder)
                 .into(binding.imgVistaPreviaMaquinaria)
         }
     }
@@ -122,40 +117,45 @@ class EditarMaquinariaFragment : Fragment() {
         val tipo = maquinariaCargada?.tipo ?: return
         val index = listaCategorias.indexOf(tipo)
         if (index >= 0) {
-            binding.spTipoMaquinaria.setSelection(index)
+            binding.spTipoMaquinaria.setText(tipo, false)
         }
     }
 
     private fun configurarSpinnerTipoMaquinaria(categorias: List<String>) {
-        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, categorias)
-        binding.spTipoMaquinaria.adapter = adapter
+        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, categorias)
+        binding.spTipoMaquinaria.setAdapter(adapter)
     }
 
     private fun configurarSpinnerEstado() {
         val estados = listOf("OPERATIVA", "EN_MANTENIMIENTO", "INACTIVA")
-        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, estados)
-        binding.spEstadoMaquinaria.adapter = adapter
+        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, estados)
+        binding.spEstadoMaquinaria.setAdapter(adapter)
     }
 
     private fun configurarEventos() {
+        binding.etHorometroActual.filters = arrayOf(com.lingomak.lingomakapp.utils.DecimalDigitsInputFilter(2))
+        binding.etHorometroUltimoMantenimiento.filters = arrayOf(com.lingomak.lingomakapp.utils.DecimalDigitsInputFilter(2))
+        binding.etCapacidadTanque.filters = arrayOf(com.lingomak.lingomakapp.utils.DecimalDigitsInputFilter(2))
+
         binding.btnSeleccionarImagen.setOnClickListener { seleccionarImagenLauncher.launch("image/*") }
         binding.btnGuardarMaquinaria.setOnClickListener { validarFormulario() }
     }
 
     private fun validarFormulario() {
         val nombre = binding.etNombreMaquinaria.text.toString().trim()
-        val tipo = binding.spTipoMaquinaria.selectedItem?.toString() ?: ""
+        val tipo = binding.spTipoMaquinaria.text.toString()
         val marca = binding.etMarcaMaquinaria.text.toString().trim()
         val modelo = binding.etModeloMaquinaria.text.toString().trim()
         val placaSerie = binding.etPlacaSerie.text.toString().trim()
         val anio = binding.etAnioMaquinaria.text.toString().toIntOrNull() ?: 0
-        val horometroActual = binding.etHorometroActual.text.toString().toIntOrNull() ?: 0
-        val horometroUltimo = binding.etHorometroUltimoMantenimiento.text.toString().toIntOrNull() ?: 0
+        val horometroActual = binding.etHorometroActual.text.toString().toDoubleOrNull() ?: 0.0
+        val horometroUltimo = binding.etHorometroUltimoMantenimiento.text.toString().toDoubleOrNull() ?: 0.0
+        val capacidadTanque = binding.etCapacidadTanque.text.toString().toDoubleOrNull()
         val ubicacion = binding.etUbicacionActual.text.toString().trim()
         val intervalo = binding.etIntervaloMantenimiento.text.toString().toIntOrNull() ?: 250
         val observaciones = binding.etObservacionesMaquinaria.text.toString().trim()
 
-        if (nombre.isEmpty() || tipo == "Seleccione un tipo" || marca.isEmpty() || anio <= 0) {
+        if (nombre.isEmpty() || tipo == "Seleccione un tipo" || tipo.isEmpty() || marca.isEmpty() || anio <= 0) {
             Toast.makeText(requireContext(), "Complete los campos obligatorios correctamente", Toast.LENGTH_SHORT).show()
             return
         }
@@ -163,18 +163,18 @@ class EditarMaquinariaFragment : Fragment() {
         mostrarCargando(true)
         if (nuevaImagenUri != null) {
             viewModel.subirImagenMaquinaria(nuevaImagenUri!!, uid) { url ->
-                enviarAFirestore(nombre, tipo, marca, modelo, placaSerie, anio, horometroActual, horometroUltimo, ubicacion, intervalo, observaciones, url)
+                enviarAFirestore(nombre, tipo, marca, modelo, placaSerie, anio, horometroActual, horometroUltimo, ubicacion, intervalo, observaciones, url, capacidadTanque)
             }
         } else {
-            enviarAFirestore(nombre, tipo, marca, modelo, placaSerie, anio, horometroActual, horometroUltimo, ubicacion, intervalo, observaciones, imagenUrlActual)
+            enviarAFirestore(nombre, tipo, marca, modelo, placaSerie, anio, horometroActual, horometroUltimo, ubicacion, intervalo, observaciones, imagenUrlActual, capacidadTanque)
         }
     }
 
-    private fun enviarAFirestore(nombre: String, tipo: String, marca: String, modelo: String, placa: String, anio: Int, ha: Int, hu: Int, ubi: String, i: Int, obs: String, url: String) {
+    private fun enviarAFirestore(nombre: String, tipo: String, marca: String, modelo: String, placa: String, anio: Int, ha: Double, hu: Double, ubi: String, i: Int, obs: String, url: String, capacidad: Double?) {
         val maquinaria = MaquinariaModel(
             uid = uid, codigoMaquinaria = codigoMaquinaria, nombre = nombre, tipo = tipo, marca = marca,
-            modelo = modelo, placaSerie = placa, anio = anio, estado = binding.spEstadoMaquinaria.selectedItem.toString(),
-            horometroActual = ha, horometroUltimoMantenimiento = hu, intervaloMantenimientoHoras = i,
+            modelo = modelo, placaSerie = placa, anio = anio, estado = binding.spEstadoMaquinaria.text.toString(),
+            horometroActual = ha, horometroUltimoMantenimiento = hu, capacidadTanqueGls = capacidad, intervaloMantenimientoHoras = i,
             ubicacionActual = ubi, imagenUrl = url, observaciones = obs, fechaRegistro = fechaRegistro,
             fechaActualizacion = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date()),
             registradoPor = registradoPor

@@ -66,6 +66,8 @@ class DetalleMantenimientoFragment : Fragment() {
         // Inicialmente ocultamos botones que dependen del estado
         binding.btnEditarMantenimiento.visibility = View.GONE
         binding.btnCambiarEstado.visibility = View.GONE
+        binding.btnCancelarMantenimiento.visibility = View.GONE
+        binding.btnSolicitarReprogramacion.visibility = View.GONE
         binding.btnFinalizarMantenimiento.visibility = View.GONE
         binding.btnGenerarReporteIA.visibility = View.GONE
     }
@@ -114,6 +116,15 @@ class DetalleMantenimientoFragment : Fragment() {
         binding.tvCostoEstimadoDetalle.text = "S/ $costoEstimado"
         binding.tvObservacionesDetalle.text = observaciones.ifEmpty { "Sin observaciones" }
 
+        if (m.modificadoPorUid != null) {
+            binding.separatorAuditoria.visibility = View.VISIBLE
+            binding.tvAuditoria.visibility = View.VISIBLE
+            binding.tvAuditoria.text = "Última modificación: ${m.fechaUltimaModificacion} — por ${m.modificadoPorNombre}"
+        } else {
+            binding.separatorAuditoria.visibility = View.GONE
+            binding.tvAuditoria.visibility = View.GONE
+        }
+
         // Pestaña Resolutor
         if (m.estado == "FINALIZADO") {
             binding.separatorResolutor.visibility = View.VISIBLE
@@ -133,18 +144,54 @@ class DetalleMantenimientoFragment : Fragment() {
     private fun configurarEventos() {
         binding.btnEditarMantenimiento.setOnClickListener { abrirEditarMantenimiento() }
         binding.btnCambiarEstado.setOnClickListener { 
-            val isAdmin = requireActivity() is DashboardAdminActivity
-            if (isAdmin) {
-                mostrarDialogoCambiarEstado()
-            } else {
-                confirmarInicioMantenimiento()
+            when (estadoActual) {
+                "PENDIENTE" -> confirmarInicioMantenimiento()
+                "VENCIDO" -> mostrarDatePickerReprogramar()
             }
         }
         binding.btnFinalizarMantenimiento.setOnClickListener { abrirFinalizarMantenimiento() }
+        binding.btnCancelarMantenimiento.setOnClickListener { mostrarDialogoCancelarMantenimiento() }
+        binding.btnSolicitarReprogramacion.setOnClickListener { solicitarReprogramacion() }
         
         binding.btnGenerarReporteIA.setOnClickListener {
             abrirDetalleReporteIA()
         }
+    }
+
+    private fun mostrarDialogoCancelarMantenimiento() {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Cancelar Mantenimiento")
+            .setMessage("¿Estás seguro de cancelar este mantenimiento?")
+            .setPositiveButton("Sí, cancelar") { _, _ ->
+                viewModel.cancelarMantenimiento(uidMantenimiento) {
+                    Toast.makeText(requireContext(), "Mantenimiento cancelado", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton("No", null)
+            .show()
+    }
+
+    private fun mostrarDatePickerReprogramar() {
+        val calendar = java.util.Calendar.getInstance()
+        val year = calendar.get(java.util.Calendar.YEAR)
+        val month = calendar.get(java.util.Calendar.MONTH)
+        val day = calendar.get(java.util.Calendar.DAY_OF_MONTH)
+
+        val datePickerDialog = android.app.DatePickerDialog(
+            requireContext(),
+            { _, selectedYear, selectedMonth, selectedDay ->
+                val nuevaFecha = String.format("%04d-%02d-%02d", selectedYear, selectedMonth + 1, selectedDay)
+                viewModel.reprogramarMantenimiento(uidMantenimiento, nuevaFecha) {
+                    Toast.makeText(requireContext(), "Mantenimiento reprogramado para $nuevaFecha", Toast.LENGTH_SHORT).show()
+                }
+            },
+            year, month, day
+        )
+
+        // Restricción: Solo fechas estrictamente mayores a hoy (Fix 4.4)
+        calendar.add(java.util.Calendar.DAY_OF_MONTH, 1)
+        datePickerDialog.datePicker.minDate = calendar.timeInMillis
+        datePickerDialog.show()
     }
 
     private fun confirmarInicioMantenimiento() {
@@ -153,29 +200,23 @@ class DetalleMantenimientoFragment : Fragment() {
             .setMessage("¿Desea marcar este mantenimiento como EN PROCESO?")
             .setPositiveButton("Sí, iniciar") { _, _ ->
                 viewModel.iniciarMantenimiento(uidMantenimiento, uidMaquinaria) {
-                    // Room actualizará el LiveData
+                    Toast.makeText(requireContext(), "Mantenimiento iniciado", Toast.LENGTH_SHORT).show()
                 }
             }
             .setNegativeButton("Cancelar", null)
             .show()
     }
 
-    private fun mostrarDialogoCambiarEstado() {
-        val estados = arrayOf("PENDIENTE", "EN_PROCESO", "CANCELADO")
+    private fun solicitarReprogramacion() {
         AlertDialog.Builder(requireContext())
-            .setTitle("Cambiar estado")
-            .setItems(estados) { _, which ->
-                val nuevoEstado = estados[which]
-                if (nuevoEstado == "EN_PROCESO") {
-                    viewModel.iniciarMantenimiento(uidMantenimiento, uidMaquinaria) {
-                        // Room actualizará
-                    }
-                } else {
-                    viewModel.cambiarEstadoMantenimiento(uidMantenimiento, nuevoEstado) {
-                        // Room actualizará
-                    }
+            .setTitle("Solicitar Reprogramación")
+            .setMessage("Se enviará una solicitud al administrador para reprogramar este mantenimiento vencido. ¿Desea continuar?")
+            .setPositiveButton("Enviar solicitud") { _, _ ->
+                viewModel.solicitarReprogramacion(uidMantenimiento) {
+                    Toast.makeText(requireContext(), "Solicitud enviada al administrador", Toast.LENGTH_LONG).show()
                 }
             }
+            .setNegativeButton("Cerrar", null)
             .show()
     }
 
@@ -214,21 +255,34 @@ class DetalleMantenimientoFragment : Fragment() {
             binding.btnGenerarReporteIA.visibility = View.GONE
         }
 
-        // Acciones generales por estado (para todos los roles autorizados)
+        // Acciones generales por estado (Fix 4.4)
         when (estadoActual) {
             "PENDIENTE" -> {
                 binding.btnEditarMantenimiento.visibility = if (isAdmin) View.VISIBLE else View.GONE
                 binding.btnCambiarEstado.visibility = View.VISIBLE
+                binding.btnCambiarEstado.text = "INICIAR MANTENIMIENTO"
+                binding.btnCancelarMantenimiento.visibility = if (isAdmin) View.VISIBLE else View.GONE
+                binding.btnFinalizarMantenimiento.visibility = View.GONE
+            }
+            "VENCIDO" -> {
+                binding.btnEditarMantenimiento.visibility = if (isAdmin) View.VISIBLE else View.GONE
+                binding.btnCambiarEstado.visibility = if (isAdmin) View.VISIBLE else View.GONE
+                binding.btnCambiarEstado.text = "REPROGRAMAR MANTENIMIENTO"
+                binding.btnCancelarMantenimiento.visibility = if (isAdmin) View.VISIBLE else View.GONE
+                binding.btnSolicitarReprogramacion.visibility = if (!isAdmin) View.VISIBLE else View.GONE
                 binding.btnFinalizarMantenimiento.visibility = View.GONE
             }
             "EN_PROCESO" -> {
                 binding.btnEditarMantenimiento.visibility = View.GONE
                 binding.btnCambiarEstado.visibility = View.GONE
+                binding.btnCancelarMantenimiento.visibility = View.GONE
                 binding.btnFinalizarMantenimiento.visibility = View.VISIBLE
             }
             else -> {
+                // CANCELADO o FINALIZADO
                 binding.btnEditarMantenimiento.visibility = View.GONE
                 binding.btnCambiarEstado.visibility = View.GONE
+                binding.btnCancelarMantenimiento.visibility = View.GONE
                 binding.btnFinalizarMantenimiento.visibility = View.GONE
             }
         }

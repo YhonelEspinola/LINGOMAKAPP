@@ -79,10 +79,10 @@ class RegistrarSalidaOpFragment : Fragment() {
             if (repuesto.imagenUrl.isNotEmpty()) {
                 Glide.with(this)
                     .load(repuesto.imagenUrl)
-                    .placeholder(android.R.drawable.ic_menu_gallery)
+                    .placeholder(R.drawable.bg_image_placeholder)
                     .into(binding.includeRepuestoCard.ivImagenRepuesto)
             } else {
-                binding.includeRepuestoCard.ivImagenRepuesto.setImageResource(android.R.drawable.ic_menu_gallery)
+                binding.includeRepuestoCard.ivImagenRepuesto.setImageResource(R.drawable.bg_image_placeholder)
             }
         } else {
             binding.includeRepuestoCard.cardRepuestoDetalle.visibility = View.GONE

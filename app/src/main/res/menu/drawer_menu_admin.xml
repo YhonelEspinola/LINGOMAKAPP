@@ -15,10 +15,6 @@
             android:title="Inventario"
             android:icon="@drawable/inventario" />
         <item
-            android:id="@+id/drawer_movimientos"
-            android:title="Movimientos"
-            android:icon="@drawable/movimiento" />
-        <item
             android:id="@+id/drawer_maquinaria"
             android:title="Maquinaria"
             android:icon="@drawable/machine" />

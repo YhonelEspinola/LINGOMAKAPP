@@ -30,6 +30,7 @@ import com.lingomak.lingomakapp.ui.mantenimiento.MantenimientoFragment
 import com.lingomak.lingomakapp.ui.mantenimiento.SolicitudesMantenimientoFragment
 import com.lingomak.lingomakapp.ui.maquinaria.MaquinariaFragment
 import com.lingomak.lingomakapp.ui.movimientos.MovimientosGlobalFragment
+import com.lingomak.lingomakapp.ui.repuestos.InventarioContainerFragment
 import com.lingomak.lingomakapp.ui.repuestos.InventarioFragment
 import com.lingomak.lingomakapp.ui.usuarios.UsuariosFragment
 import com.lingomak.lingomakapp.utils.Constants
@@ -328,16 +329,7 @@ class DashboardAdminActivity : AppCompatActivity() {
                     R.id.drawer_inventario -> {
 
                         abrirFragmentDrawer(
-                            InventarioFragment()
-                        )
-
-                        true
-                    }
-
-                    R.id.drawer_movimientos -> {
-
-                        abrirFragmentDrawer(
-                            MovimientosGlobalFragment()
+                            InventarioContainerFragment()
                         )
 
                         true

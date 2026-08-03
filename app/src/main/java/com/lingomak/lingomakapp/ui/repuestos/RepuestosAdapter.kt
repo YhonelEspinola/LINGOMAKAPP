@@ -36,11 +36,11 @@ class RepuestosAdapter(
                 Glide.with(binding.root.context)
                     .load(optimizedUrl)
                     .thumbnail(Glide.with(binding.root.context).load(repuesto.imagenUrl).override(100))
-                    .placeholder(android.R.drawable.ic_menu_gallery)
-                    .error(android.R.drawable.ic_menu_gallery)
+                    .placeholder(R.drawable.bg_image_placeholder)
+                    .error(R.drawable.bg_image_placeholder)
                     .into(binding.ivRepuesto)
             } else {
-                binding.ivRepuesto.setImageResource(android.R.drawable.ic_menu_gallery)
+                binding.ivRepuesto.setImageResource(R.drawable.bg_image_placeholder)
             }
 
             // Lógica de criticidad de color para el indicador lateral

@@ -33,6 +33,12 @@ class MaquinariaRepository(context: Context) {
         }
     }
 
+    fun obtenerMaquinariasActivasObservable(): LiveData<List<MaquinariaModel>> {
+        return maquinariaDao.obtenerActivasObservable().map { entities ->
+            entities.map { it.aModel() }
+        }
+    }
+
     fun obtenerMaquinariaPorUidObservable(uid: String): LiveData<MaquinariaModel?> {
         return maquinariaDao.obtenerPorUidObservable(uid).map { it?.aModel() }
     }
@@ -185,57 +191,5 @@ class MaquinariaRepository(context: Context) {
             .addOnFailureListener { exception ->
                 onError(exception.message ?: "Error al subir imagen")
             }
-    }
-
-    // =======================================================================
-    // MAPPERS
-    // =======================================================================
-
-    private fun MaquinariaModel.aEntity(estadoSync: String, timestampLocal: Long): MaquinariaEntity {
-        return MaquinariaEntity(
-            uid = uid,
-            codigoMaquinaria = codigoMaquinaria,
-            nombre = nombre,
-            tipo = tipo,
-            marca = marca,
-            modelo = modelo,
-            placaSerie = placaSerie,
-            anio = anio,
-            estado = estado,
-            horometroActual = horometroActual,
-            horometroUltimoMantenimiento = horometroUltimoMantenimiento,
-            intervaloMantenimientoHoras = intervaloMantenimientoHoras,
-            ubicacionActual = ubicacionActual,
-            imagenUrl = imagenUrl,
-            observaciones = observaciones,
-            fechaRegistro = fechaRegistro,
-            fechaActualizacion = fechaActualizacion,
-            registradoPor = registradoPor,
-            estadoSync = estadoSync,
-            timestampLocal = timestampLocal
-        )
-    }
-
-    private fun MaquinariaEntity.aModel(): MaquinariaModel {
-        return MaquinariaModel(
-            uid = uid,
-            codigoMaquinaria = codigoMaquinaria,
-            nombre = nombre,
-            tipo = tipo,
-            marca = marca,
-            modelo = modelo,
-            placaSerie = placaSerie,
-            anio = anio,
-            estado = estado,
-            horometroActual = horometroActual,
-            horometroUltimoMantenimiento = horometroUltimoMantenimiento,
-            intervaloMantenimientoHoras = intervaloMantenimientoHoras,
-            ubicacionActual = ubicacionActual,
-            imagenUrl = imagenUrl,
-            observaciones = observaciones,
-            fechaRegistro = fechaRegistro,
-            fechaActualizacion = fechaActualizacion,
-            registradoPor = registradoPor
-        )
     }
 }
