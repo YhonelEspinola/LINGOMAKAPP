@@ -5,8 +5,12 @@ import android.os.Bundle
 import android.view.View
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
 import androidx.lifecycle.lifecycleScope
 import com.google.firebase.Firebase
 import com.google.firebase.appcheck.appCheck
@@ -45,6 +49,7 @@ class DashboardAdminActivity : AppCompatActivity() {
     private val alertasViewModel: AlertasViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         com.lingomak.lingomakapp.utils.ThemeManager.applyTheme(this)
         super.onCreate(savedInstanceState)
 
@@ -52,6 +57,20 @@ class DashboardAdminActivity : AppCompatActivity() {
             DashboardAdminBinding.inflate(layoutInflater)
 
         setContentView(binding.root)
+
+        // Ajustar insets para el Toolbar (evitar superposición con status bar)
+        ViewCompat.setOnApplyWindowInsetsListener(binding.toolbarAdmin) { v, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.updatePadding(top = systemBars.top)
+            insets
+        }
+
+        // Ajustar insets para el NavigationView
+        ViewCompat.setOnApplyWindowInsetsListener(binding.navigationViewAdmin) { v, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.updatePadding(top = systemBars.top)
+            insets
+        }
 
         escucharEstadoUsuario()
         configurarBadgeAlertas()

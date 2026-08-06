@@ -14,6 +14,7 @@
             android:id="@+id/toolbar"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:minHeight="56dp"
             android:background="@color/primary"
             android:title="LINGOMAK"
             android:titleTextColor="@color/fixed_white"
