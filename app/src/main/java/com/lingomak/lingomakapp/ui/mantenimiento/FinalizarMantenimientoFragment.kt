@@ -40,7 +40,7 @@ class FinalizarMantenimientoFragment : Fragment() {
     private var uidMantenimiento = ""
     private var uidMaquinaria = ""
     private var estadoMantenimiento = ""
-    private var horometroActualMaquina = 0
+    private var horometroActualMaquina = 0.0
 
     private val insumosSeleccionados: MutableList<ConsumoRepuesto> = mutableListOf()
     private lateinit var adapterInsumos: InsumoMantenimientoAdapter
@@ -127,6 +127,9 @@ class FinalizarMantenimientoFragment : Fragment() {
     }
 
     private fun configurarEventos() {
+        binding.etHorometroReal.filters = arrayOf(com.lingomak.lingomakapp.utils.DecimalDigitsInputFilter(2))
+        binding.etCostoReal.filters = arrayOf(com.lingomak.lingomakapp.utils.DecimalDigitsInputFilter(2))
+
         binding.btnAgregarInsumo.setOnClickListener { mostrarDialogoAgregarInsumo() }
         binding.cardSubirEvidencia.setOnClickListener { mostrarSelectorImagen() }
         binding.btnFinalizarMantenimiento.setOnClickListener { validarFormulario() }
@@ -250,7 +253,7 @@ class FinalizarMantenimientoFragment : Fragment() {
             return
         }
 
-        val hReal = horometroStr.toInt()
+        val hReal = horometroStr.toDouble()
         val cReal = costoStr.toDouble()
 
         if (imagenesFinalizacionLocal.isEmpty()) {

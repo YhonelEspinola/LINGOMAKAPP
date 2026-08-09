@@ -33,4 +33,13 @@ interface SuministroDao {
 
     @Query("UPDATE suministros SET estadoSync = 'SINCRONIZADO' WHERE uid = :uid")
     suspend fun marcarComoSincronizado(uid: String)
+
+    @Query("DELETE FROM suministros WHERE estadoSync = 'SINCRONIZADO'")
+    suspend fun eliminarSincronizados()
+
+    @Query("DELETE FROM suministros WHERE uid NOT IN (:uids) AND estadoSync = 'SINCRONIZADO'")
+    suspend fun eliminarSincronizadosNoPresentes(uids: List<String>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertarLista(suministros: List<SuministroEntity>)
 }

@@ -13,11 +13,11 @@ data class SolicitudMantenimientoModel(
     val nombreOperario: String = "",
     val correoOperario: String = "",
 
-    val horometroActual: Int = 0,
-    val horometroUltimoMantenimiento: Int = 0,
-    val intervaloMantenimientoHoras: Int = 250,
-    val horasDesdeUltimoMantenimiento: Int = 0,
-    val horasRestantes: Int = 0,
+    val horometroActual: Double = 0.0,
+    val horometroUltimoMantenimiento: Double = 0.0,
+    val intervaloMantenimientoHoras: Double = 250.0,
+    val horasDesdeUltimoMantenimiento: Double = 0.0,
+    val horasRestantes: Double = 0.0,
 
     val motivo: String = "",
 

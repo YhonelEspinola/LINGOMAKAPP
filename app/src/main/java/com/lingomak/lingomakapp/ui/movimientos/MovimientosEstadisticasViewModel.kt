@@ -12,11 +12,16 @@ import com.lingomak.lingomakapp.data.repository.MaquinariaRepository
 import java.text.SimpleDateFormat
 import java.util.*
 
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
+
 class MovimientosEstadisticasViewModel(application: Application) : AndroidViewModel(application) {
 
     private val movimientoRepo = MovimientoRepository(application)
     private val maquinariaRepo = MaquinariaRepository(application)
     private val mantenimientoRepo = MantenimientoRepository(application)
+    private val suministroRepo = com.lingomak.lingomakapp.data.repository.SuministroRepository(application)
+    private val registroUsoRepo = com.lingomak.lingomakapp.data.repository.RegistroUsoMaquinariaRepository(application)
     private val repuestoDao = AppDatabase.getInstance(application).repuestoDao()
 
     private val _rango = MutableLiveData<Pair<Long, Long>>()
@@ -29,6 +34,24 @@ class MovimientosEstadisticasViewModel(application: Application) : AndroidViewMo
     private val todosLosRepuestos = repuestoDao.obtenerTodosObservable()
     private val todasLasMaquinas = maquinariaRepo.obtenerMaquinariasObservable()
     private val todosLosMantenimientos = mantenimientoRepo.obtenerTodosObservable()
+    
+    private val _topMenorConsumo = MutableLiveData<List<Pair<com.lingomak.lingomakapp.data.model.MaquinariaModel, Double>>>()
+    val topMenorConsumo: LiveData<List<Pair<com.lingomak.lingomakapp.data.model.MaquinariaModel, Double>>> = _topMenorConsumo
+
+    private val _rendimientoOperarios = MutableLiveData<List<com.lingomak.lingomakapp.data.repository.RendimientoOperarioMes>>()
+    val rendimientoOperarios: LiveData<List<com.lingomak.lingomakapp.data.repository.RendimientoOperarioMes>> = _rendimientoOperarios
+
+    fun cargarTopMenorConsumo() {
+        viewModelScope.launch {
+            _topMenorConsumo.value = suministroRepo.obtenerTopMenorConsumo()
+        }
+    }
+
+    fun cargarRendimientoOperarios() {
+        viewModelScope.launch {
+            _rendimientoOperarios.value = registroUsoRepo.obtenerHorasPorOperarioYMes()
+        }
+    }
 
     val estadisticas = MediatorLiveData<EstadisticasData>().apply {
         fun update() {
@@ -36,6 +59,8 @@ class MovimientosEstadisticasViewModel(application: Application) : AndroidViewMo
             val repuestos = todosLosRepuestos.value ?: return
             val maquinas = todasLasMaquinas.value ?: emptyList()
             val mantenimientos = todosLosMantenimientos.value ?: emptyList()
+            val topConsumo = _topMenorConsumo.value ?: emptyList()
+            val rendimiento = _rendimientoOperarios.value ?: emptyList()
             
             val r = _rango.value
             val repuestosMap = repuestos.associateBy { it.uid }
@@ -167,7 +192,9 @@ class MovimientosEstadisticasViewModel(application: Application) : AndroidViewMo
                 distribucionSalida = porDestino,
                 omVsSueltas = salidasConOM to salidasSinOM,
                 costosComparativa = Triple(costoEst, costoReal, labelCostos),
-                recomendacion = productoEnRiesgo
+                recomendacion = productoEnRiesgo,
+                topMenorConsumo = topConsumo.map { "${it.first.nombre} (${it.first.codigoMaquinaria})" to it.second },
+                rendimientoOperarios = rendimiento
             )
         }
         addSource(todosLosMovimientos) { update() }
@@ -175,6 +202,8 @@ class MovimientosEstadisticasViewModel(application: Application) : AndroidViewMo
         addSource(todasLasMaquinas) { update() }
         addSource(todosLosMantenimientos) { update() }
         addSource(_rango) { update() }
+        addSource(_topMenorConsumo) { update() }
+        addSource(_rendimientoOperarios) { update() }
     }
 
     fun setRango(inicio: Long, fin: Long, etiqueta: String) {
@@ -195,6 +224,8 @@ class MovimientosEstadisticasViewModel(application: Application) : AndroidViewMo
         val distribucionSalida: Map<String, Int>,
         val omVsSueltas: Pair<Int, Int>,
         val costosComparativa: Triple<Double, Double, String>,
-        val recomendacion: String?
+        val recomendacion: String?,
+        val topMenorConsumo: List<Pair<String, Double>> = emptyList(),
+        val rendimientoOperarios: List<com.lingomak.lingomakapp.data.repository.RendimientoOperarioMes> = emptyList()
     )
 }

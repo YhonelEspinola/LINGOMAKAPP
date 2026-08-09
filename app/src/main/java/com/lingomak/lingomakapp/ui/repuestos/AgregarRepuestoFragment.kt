@@ -141,17 +141,16 @@ class AgregarRepuestoFragment : Fragment() {
         }
     }
 
+    private var categoriaSeleccionada: String? = null
+
     private fun configurarSpinnerCategorias(categorias: List<String>) {
-        listaCategorias = listOf("Seleccione categoría") + categorias
-        val spinnerAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, listaCategorias)
-        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding.spinnerCategoria.adapter = spinnerAdapter
-        binding.spinnerCategoria.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                if (position > 0) viewModel.generarCodigoInterno(listaCategorias[position])
-                else binding.etCodigoInterno.setText("")
-            }
-            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        listaCategorias = categorias
+        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, listaCategorias)
+        binding.spinnerCategoria.setAdapter(adapter)
+        binding.spinnerCategoria.setOnItemClickListener { parent, _, position, _ ->
+            val seleccion = parent.getItemAtPosition(position).toString()
+            categoriaSeleccionada = seleccion
+            viewModel.generarCodigoInterno(seleccion)
         }
     }
 
@@ -184,10 +183,10 @@ class AgregarRepuestoFragment : Fragment() {
 
         binding.btnGuardarRepuesto.setOnClickListener {
             val nombre = binding.etNombre.text.toString().trim()
-            val categoriaPos = binding.spinnerCategoria.selectedItemPosition
+            val categoria = categoriaSeleccionada
             val codigoInterno = binding.etCodigoInterno.text.toString().trim()
             
-            if (nombre.isEmpty() || categoriaPos == 0) {
+            if (nombre.isEmpty() || categoria == null) {
                 Toast.makeText(requireContext(), "Por favor complete los campos obligatorios", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
@@ -221,7 +220,7 @@ class AgregarRepuestoFragment : Fragment() {
 
             viewModel.registrarRepuesto(
                 nombre = nombre,
-                categoria = listaCategorias[categoriaPos],
+                categoria = categoria,
                 marca = binding.etMarca.text.toString().trim(),
                 descripcion = binding.etDescripcion.text.toString().trim(),
                 stockActual = stockActual,

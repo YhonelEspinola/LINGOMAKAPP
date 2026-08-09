@@ -277,7 +277,7 @@ class AlertasService(
             val prioridad = if (solicitud.horasRestantes <= 10) "ALTA" else "MEDIA"
             val mensaje = when {
                 solicitud.horasRestantes < 0 -> "La maquinaria ${solicitud.nombreMaquinaria} superó el intervalo de mantenimiento por ${kotlin.math.abs(solicitud.horasRestantes)} horas."
-                solicitud.horasRestantes == 0 -> "La maquinaria ${solicitud.nombreMaquinaria} alcanzó el límite de mantenimiento."
+                solicitud.horasRestantes == 0.0 -> "La maquinaria ${solicitud.nombreMaquinaria} alcanzó el límite de mantenimiento."
                 else -> "La maquinaria ${solicitud.nombreMaquinaria} tiene una solicitud pendiente. Faltan ${solicitud.horasRestantes} horas."
             }
 

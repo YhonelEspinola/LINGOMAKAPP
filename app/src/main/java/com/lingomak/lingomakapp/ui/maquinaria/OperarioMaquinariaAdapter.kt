@@ -8,6 +8,7 @@ import com.bumptech.glide.Glide
 import com.lingomak.lingomakapp.R
 import com.lingomak.lingomakapp.data.model.MaquinariaModel
 import com.lingomak.lingomakapp.databinding.ItemMaquinariaOperarioBinding
+import com.lingomak.lingomakapp.utils.formatoHoras
 
 class OperarioMaquinariaAdapter(
     private var listaMaquinarias: List<MaquinariaModel>,
@@ -28,56 +29,29 @@ class OperarioMaquinariaAdapter(
 
             binding.tvEstadoMaquinaria.text = maquinaria.estado
 
-            binding.tvHorometroMaquinaria.text =
-                "Horómetro actual: ${maquinaria.horometroActual} h"
+            binding.tvHorometroMaquinaria.text = "Horómetro actual: ${maquinaria.horometroActual.formatoHoras()} h"
 
             binding.tvUbicacionMaquinaria.text =
                 maquinaria.ubicacionActual.ifEmpty { "Sin ubicación" }
 
-
             val horasDesdeUltimo =
                 maquinaria.horometroActual - maquinaria.horometroUltimoMantenimiento
-
 
             val horasRestantes =
                 maquinaria.intervaloMantenimientoHoras - horasDesdeUltimo
 
-
             when {
-                horasRestantes <= 0 -> {
-                    binding.tvHorasRestantes.text =
-                        "Mantenimiento requerido"
-
-                    binding.tvHorasRestantes.setTextColor(
-                        Color.rgb(185, 28, 28)
-                    )
-                }
-
                 horasRestantes <= 20 -> {
-                    binding.tvHorasRestantes.text =
-                        "Faltan $horasRestantes h para mantenimiento"
-
-                    binding.tvHorasRestantes.setTextColor(
-                        Color.rgb(185, 28, 28)
-                    )
+                    binding.tvHorasRestantes.text = "Faltan ${horasRestantes.formatoHoras()} h para mantenimiento"
+                    binding.tvHorasRestantes.setTextColor(androidx.core.content.ContextCompat.getColor(binding.root.context, R.color.danger))
                 }
-
                 horasRestantes <= 50 -> {
-                    binding.tvHorasRestantes.text =
-                        "Faltan $horasRestantes h para mantenimiento"
-
-                    binding.tvHorasRestantes.setTextColor(
-                        Color.rgb(180, 83, 9)
-                    )
+                    binding.tvHorasRestantes.text = "Faltan ${horasRestantes.formatoHoras()} h para mantenimiento"
+                    binding.tvHorasRestantes.setTextColor(androidx.core.content.ContextCompat.getColor(binding.root.context, R.color.warning))
                 }
-
                 else -> {
-                    binding.tvHorasRestantes.text =
-                        "Faltan $horasRestantes h para mantenimiento"
-
-                    binding.tvHorasRestantes.setTextColor(
-                        Color.rgb(22, 101, 52)
-                    )
+                    binding.tvHorasRestantes.text = "Faltan ${horasRestantes.formatoHoras()} h para mantenimiento"
+                    binding.tvHorasRestantes.setTextColor(androidx.core.content.ContextCompat.getColor(binding.root.context, R.color.success))
                 }
             }
 

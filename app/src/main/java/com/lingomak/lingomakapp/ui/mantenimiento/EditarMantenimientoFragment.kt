@@ -153,8 +153,7 @@ class EditarMantenimientoFragment : Fragment() {
         binding.etCostoEstimadoEditar.setText(m.costoEstimado.toString())
         binding.etObservacionesEditar.setText(m.observaciones)
 
-        val tipos = listOf("PREVENTIVO", "CORRECTIVO")
-        binding.spTipoMantenimientoEditar.setSelection(tipos.indexOf(m.tipoMantenimiento))
+        binding.spTipoMantenimientoEditar.setText(m.tipoMantenimiento, false)
 
         when (m.prioridad) {
             "ALTA" -> binding.rbPrioridadAltaEditar.isChecked = true
@@ -174,10 +173,17 @@ class EditarMantenimientoFragment : Fragment() {
 
     private fun configurarSpinners() {
         val tipos = listOf("PREVENTIVO", "CORRECTIVO")
-        binding.spTipoMantenimientoEditar.adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, tipos)
+        binding.spTipoMantenimientoEditar.setAdapter(ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, tipos))
     }
 
     private fun configurarEventos() {
+        binding.etHorometroProgramadoEditar.filters = arrayOf(com.lingomak.lingomakapp.utils.DecimalDigitsInputFilter(2))
+        binding.etCostoEstimadoEditar.filters = arrayOf(com.lingomak.lingomakapp.utils.DecimalDigitsInputFilter(2))
+
+        // Bloquear pegado de texto en campos de fecha
+        binding.etFechaProgramadaEditar.isLongClickable = false
+        binding.etFechaProgramadaEditar.keyListener = null
+
         binding.etFechaProgramadaEditar.setOnClickListener { mostrarDatePicker() }
         binding.btnAgregarEvidenciaEditar.setOnClickListener { mostrarSelectorImagen() }
         binding.btnGuardarCambiosMantenimiento.setOnClickListener { validarYGuardar() }
@@ -263,6 +269,14 @@ class EditarMantenimientoFragment : Fragment() {
             return
         }
 
+        val horometroProgramado = horometroStr.toDoubleOrNull() ?: 0.0
+        val maquinaria = maquinariaSeleccionada ?: listaMaquinarias.find { it.uid == m.uidMaquinaria }
+        
+        if (maquinaria != null && horometroProgramado < maquinaria.horometroActual) {
+            binding.etHorometroProgramadoEditar.error = "El horómetro programado no puede ser menor al actual (${maquinaria.horometroActual})"
+            return
+        }
+
         mostrarCargando(true)
 
         val nuevoEstado = if (m.estado == "VENCIDO" || m.estado == "CANCELADO") "PENDIENTE" else m.estado
@@ -276,11 +290,11 @@ class EditarMantenimientoFragment : Fragment() {
             responsable = if (operarioSeleccionado != null) operarioSeleccionado!!.nombre else m.responsable,
             responsableUid = if (operarioSeleccionado != null) operarioSeleccionado!!.uid else m.responsableUid,
 
-            tipoMantenimiento = binding.spTipoMantenimientoEditar.selectedItem.toString(),
+            tipoMantenimiento = binding.spTipoMantenimientoEditar.text.toString(),
             prioridad = if (binding.rbPrioridadAltaEditar.isChecked) "ALTA" else if (binding.rbPrioridadMediaEditar.isChecked) "MEDIA" else "BAJA",
             descripcion = descripcion,
             fechaProgramada = binding.etFechaProgramadaEditar.text.toString(),
-            horometroProgramado = horometroStr.toIntOrNull() ?: m.horometroProgramado,
+            horometroProgramado = horometroStr.toDoubleOrNull() ?: m.horometroProgramado,
             costoEstimado = binding.etCostoEstimadoEditar.text.toString().toDoubleOrNull() ?: m.costoEstimado,
             observaciones = binding.etObservacionesEditar.text.toString().trim(),
             estado = nuevoEstado,

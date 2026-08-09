@@ -44,6 +44,9 @@ class MovimientosEstadisticasFragment : Fragment() {
         
         validarAccesoAdmin()
 
+        viewModel.cargarTopMenorConsumo()
+        viewModel.cargarRendimientoOperarios()
+
         return binding.root
     }
 

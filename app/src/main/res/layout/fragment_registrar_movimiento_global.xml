@@ -22,29 +22,19 @@
             android:textSize="22sp"
             android:textStyle="bold" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Producto / Repuesto"
-            android:textColor="@color/text_primary"
-            android:textStyle="bold" />
-
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/tilRepuesto"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            app:hintEnabled="false">
+            android:layout_marginBottom="16dp"
+            android:hint="Producto / Repuesto">
 
             <AutoCompleteTextView
                 android:id="@+id/autoCompleteRepuesto"
                 android:layout_width="match_parent"
-                android:layout_height="55dp"
-                android:background="@drawable/bg_edit_text"
-                android:hint="Busque por nombre o código"
-                android:inputType="text"
-                android:padding="12dp" />
+                android:layout_height="wrap_content"
+                android:inputType="text" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -82,42 +72,35 @@
                 android:text="Salida" />
         </RadioGroup>
 
-        <TextView
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Cantidad"
-            android:textColor="@color/text_primary"
-            android:textStyle="bold" />
-
-        <EditText
-            android:id="@+id/etCantidad"
-            android:layout_width="match_parent"
-            android:layout_height="55dp"
-            android:layout_marginTop="8dp"
             android:layout_marginBottom="16dp"
-            android:background="@drawable/bg_edit_text"
-            android:hint="Ingrese la cantidad"
-            android:inputType="number"
-            android:padding="12dp" />
+            android:hint="Cantidad">
 
-        <TextView
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etCantidad"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Observación"
-            android:textColor="@color/text_primary"
-            android:textStyle="bold" />
-
-        <EditText
-            android:id="@+id/etObservacion"
-            android:layout_width="match_parent"
-            android:layout_height="100dp"
-            android:layout_marginTop="8dp"
             android:layout_marginBottom="24dp"
-            android:background="@drawable/bg_edit_text"
-            android:gravity="top"
-            android:hint="Observación (opcional)"
-            android:inputType="textMultiLine"
-            android:padding="12dp" />
+            android:hint="Observación">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etObservacion"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="top"
+                android:minLines="2"
+                android:inputType="textMultiLine" />
+        </com.google.android.material.textfield.TextInputLayout>
 
         <Button
             android:id="@+id/btnGuardar"

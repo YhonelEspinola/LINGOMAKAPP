@@ -88,7 +88,7 @@ class MantenimientoViewModel(application: Application) : AndroidViewModel(applic
         uid: String,
         uidMaquinaria: String,
         fechaRealizada: String,
-        horometroReal: Int,
+        horometroReal: Double,
         costoReal: Double,
         observacionesFinales: String,
         insumos: List<ConsumoRepuesto>,

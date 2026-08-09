@@ -8,11 +8,19 @@ import com.bumptech.glide.Glide
 import com.lingomak.lingomakapp.R
 import com.lingomak.lingomakapp.data.model.MaquinariaModel
 import com.lingomak.lingomakapp.databinding.ItemMaquinariaBinding
+import com.lingomak.lingomakapp.utils.formatoHoras
 
 class MaquinariaAdapter(
     private var listaMaquinarias: List<MaquinariaModel>,
     private val onMaquinariaClick: (MaquinariaModel) -> Unit
 ) : RecyclerView.Adapter<MaquinariaAdapter.MaquinariaViewHolder>() {
+
+    private var nivelesCombustible: Map<String, com.lingomak.lingomakapp.data.repository.NivelCombustibleEstimado> = emptyMap()
+
+    fun actualizarNivelesCombustible(nuevosNiveles: Map<String, com.lingomak.lingomakapp.data.repository.NivelCombustibleEstimado>) {
+        this.nivelesCombustible = nuevosNiveles
+        notifyDataSetChanged()
+    }
 
     inner class MaquinariaViewHolder(
         private val binding: ItemMaquinariaBinding
@@ -26,7 +34,7 @@ class MaquinariaAdapter(
                 "${maquinaria.tipo} | ${maquinaria.marca} | ${maquinaria.modelo}"
 
             binding.tvHorometroMaquinaria.text =
-                "${maquinaria.horometroActual} h"
+                "${maquinaria.horometroActual.formatoHoras()} h"
 
             binding.tvUbicacionMaquinaria.text =
                 maquinaria.ubicacionActual.ifEmpty { "sin ubicacion" }
@@ -36,22 +44,39 @@ class MaquinariaAdapter(
             val horasRestantes = maquinaria.intervaloMantenimientoHoras - horasDesdeUltimo
 
             when {
-                horasRestantes <= 0 -> {
-                    binding.tvHorasRestantes.text = "Mantenimiento requerido"
-                    binding.tvHorasRestantes.setTextColor(Color.rgb(185, 28, 28)) // Rojo
-                }
                 horasRestantes <= 20 -> {
-                    binding.tvHorasRestantes.text = "Faltan ${String.format("%.1f", horasRestantes)} h para mantenimiento"
-                    binding.tvHorasRestantes.setTextColor(Color.rgb(185, 28, 28)) // Rojo
+                    binding.tvHorasRestantes.text = "Faltan ${horasRestantes.formatoHoras()} h para mantenimiento"
+                    binding.tvHorasRestantes.setTextColor(androidx.core.content.ContextCompat.getColor(binding.root.context, R.color.danger))
                 }
                 horasRestantes <= 50 -> {
-                    binding.tvHorasRestantes.text = "Faltan ${String.format("%.1f", horasRestantes)} h para mantenimiento"
-                    binding.tvHorasRestantes.setTextColor(Color.rgb(180, 83, 9)) // Naranja
+                    binding.tvHorasRestantes.text = "Faltan ${horasRestantes.formatoHoras()} h para mantenimiento"
+                    binding.tvHorasRestantes.setTextColor(androidx.core.content.ContextCompat.getColor(binding.root.context, R.color.warning))
                 }
                 else -> {
-                    binding.tvHorasRestantes.text = "Faltan ${String.format("%.1f", horasRestantes)} h para mantenimiento"
-                    binding.tvHorasRestantes.setTextColor(Color.rgb(22, 101, 52)) // Verde
+                    binding.tvHorasRestantes.text = "Faltan ${horasRestantes.formatoHoras()} h para mantenimiento"
+                    binding.tvHorasRestantes.setTextColor(androidx.core.content.ContextCompat.getColor(binding.root.context, R.color.success))
                 }
+            }
+
+            // Indicador de combustible
+            val nivel = nivelesCombustible[maquinaria.uid]
+            if (nivel != null) {
+                binding.tvNivelCombustible.text = "${String.format(java.util.Locale.getDefault(), "%.0f%%", nivel.porcentaje)} (${nivel.galones.formatoHoras()} Gls)"
+                val colorRes = when {
+                    nivel.porcentaje <= 20 -> R.color.danger
+                    nivel.porcentaje <= 50 -> R.color.warning
+                    else -> R.color.success
+                }
+                val color = androidx.core.content.ContextCompat.getColor(binding.root.context, colorRes)
+                binding.tvNivelCombustible.setTextColor(color)
+                binding.ivIconoCombustible.setColorFilter(color)
+                binding.ivIconoCombustible.setImageResource(R.drawable.ic_gas_station)
+            } else {
+                binding.tvNivelCombustible.text = "Sin datos suficientes"
+                val colorSec = androidx.core.content.ContextCompat.getColor(binding.root.context, R.color.text_secondary)
+                binding.tvNivelCombustible.setTextColor(colorSec)
+                binding.ivIconoCombustible.setColorFilter(colorSec)
+                binding.ivIconoCombustible.setImageResource(R.drawable.ic_gas_station)
             }
 
             if (maquinaria.imagenUrl.isNotEmpty()){

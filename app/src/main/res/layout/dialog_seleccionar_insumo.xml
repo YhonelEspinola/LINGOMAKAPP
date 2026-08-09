@@ -5,39 +5,31 @@
     android:orientation="vertical"
     android:padding="20dp">
 
-    <TextView
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Seleccione un repuesto"
-        android:textColor="@color/text_primary"
-        android:textStyle="bold" />
+        android:layout_marginBottom="16dp"
+        android:hint="Seleccione un repuesto">
 
-    <AutoCompleteTextView
-        android:id="@+id/actvRepuesto"
-        android:layout_width="match_parent"
-        android:layout_height="55dp"
-        android:layout_marginTop="8dp"
-        android:background="@drawable/bg_edit_text"
-        android:hint="Escriba el nombre o código"
-        android:padding="12dp"
-        android:completionThreshold="1" />
+        <AutoCompleteTextView
+            android:id="@+id/actvRepuesto"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:completionThreshold="1" />
+    </com.google.android.material.textfield.TextInputLayout>
 
-    <TextView
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="Cantidad utilizada"
-        android:textColor="@color/text_primary"
-        android:textStyle="bold" />
+        android:hint="Cantidad utilizada">
 
-    <EditText
-        android:id="@+id/etCantidadInsumo"
-        android:layout_width="match_parent"
-        android:layout_height="55dp"
-        android:layout_marginTop="8dp"
-        android:background="@drawable/bg_edit_text"
-        android:hint="Ejemplo: 2"
-        android:inputType="number"
-        android:padding="12dp" />
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etCantidadInsumo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="number" />
+    </com.google.android.material.textfield.TextInputLayout>
 
 </LinearLayout>

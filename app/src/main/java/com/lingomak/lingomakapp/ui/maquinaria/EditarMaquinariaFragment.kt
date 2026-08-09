@@ -136,6 +136,7 @@ class EditarMaquinariaFragment : Fragment() {
         binding.etHorometroActual.filters = arrayOf(com.lingomak.lingomakapp.utils.DecimalDigitsInputFilter(2))
         binding.etHorometroUltimoMantenimiento.filters = arrayOf(com.lingomak.lingomakapp.utils.DecimalDigitsInputFilter(2))
         binding.etCapacidadTanque.filters = arrayOf(com.lingomak.lingomakapp.utils.DecimalDigitsInputFilter(2))
+        binding.etIntervaloMantenimiento.filters = arrayOf(com.lingomak.lingomakapp.utils.DecimalDigitsInputFilter(2))
 
         binding.btnSeleccionarImagen.setOnClickListener { seleccionarImagenLauncher.launch("image/*") }
         binding.btnGuardarMaquinaria.setOnClickListener { validarFormulario() }
@@ -152,7 +153,7 @@ class EditarMaquinariaFragment : Fragment() {
         val horometroUltimo = binding.etHorometroUltimoMantenimiento.text.toString().toDoubleOrNull() ?: 0.0
         val capacidadTanque = binding.etCapacidadTanque.text.toString().toDoubleOrNull()
         val ubicacion = binding.etUbicacionActual.text.toString().trim()
-        val intervalo = binding.etIntervaloMantenimiento.text.toString().toIntOrNull() ?: 250
+        val intervalo = binding.etIntervaloMantenimiento.text.toString().toDoubleOrNull() ?: 250.0
         val observaciones = binding.etObservacionesMaquinaria.text.toString().trim()
 
         if (nombre.isEmpty() || tipo == "Seleccione un tipo" || tipo.isEmpty() || marca.isEmpty() || anio <= 0) {
@@ -170,7 +171,7 @@ class EditarMaquinariaFragment : Fragment() {
         }
     }
 
-    private fun enviarAFirestore(nombre: String, tipo: String, marca: String, modelo: String, placa: String, anio: Int, ha: Double, hu: Double, ubi: String, i: Int, obs: String, url: String, capacidad: Double?) {
+    private fun enviarAFirestore(nombre: String, tipo: String, marca: String, modelo: String, placa: String, anio: Int, ha: Double, hu: Double, ubi: String, i: Double, obs: String, url: String, capacidad: Double?) {
         val maquinaria = MaquinariaModel(
             uid = uid, codigoMaquinaria = codigoMaquinaria, nombre = nombre, tipo = tipo, marca = marca,
             modelo = modelo, placaSerie = placa, anio = anio, estado = binding.spEstadoMaquinaria.text.toString(),

@@ -6,6 +6,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.lingomak.lingomakapp.R
 import com.lingomak.lingomakapp.data.model.SolicitudMantenimientoModel
 import com.lingomak.lingomakapp.databinding.ItemSolicitudMantenimientoBinding
+import com.lingomak.lingomakapp.utils.formatoHoras
 
 class SolicitudMantenimientoAdapter(
     private var listaSolicitudes: List<SolicitudMantenimientoModel>,
@@ -21,17 +22,17 @@ class SolicitudMantenimientoAdapter(
             binding.tvNombreMaquinariaSolicitud.text = solicitud.nombreMaquinaria
             binding.tvCodigoMaquinariaSolicitud.text = "Código: ${solicitud.codigoMaquinaria}"
             
-            binding.tvHorometroActualSolicitud.text = "Horómetro actual: ${solicitud.horometroActual} h"
+            binding.tvHorometroActualSolicitud.text = "Horómetro actual: ${solicitud.horometroActual.formatoHoras()} h"
 
             binding.tvHorasRestantesSolicitud.text = when {
                 solicitud.horasRestantes < 0 -> {
-                    "Horas excedidas: ${kotlin.math.abs(solicitud.horasRestantes)} h"
+                    "Horas excedidas: ${kotlin.math.abs(solicitud.horasRestantes).formatoHoras()} h"
                 }
-                solicitud.horasRestantes == 0 -> {
+                solicitud.horasRestantes == 0.0 -> {
                     "Límite de horómetro alcanzado"
                 }
                 else -> {
-                    "Horas restantes: ${solicitud.horasRestantes} h"
+                    "Horas restantes: ${solicitud.horasRestantes.formatoHoras()} h"
                 }
             }
 
@@ -48,7 +49,7 @@ class SolicitudMantenimientoAdapter(
             }
         }
 
-        private fun aplicarEstiloUrgencia(horasRestantes: Int) {
+        private fun aplicarEstiloUrgencia(horasRestantes: Double) {
             val context = binding.root.context
             when {
                 horasRestantes <= 5 -> {

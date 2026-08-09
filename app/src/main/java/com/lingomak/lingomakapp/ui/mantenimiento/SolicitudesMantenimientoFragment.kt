@@ -160,12 +160,12 @@ class SolicitudesMantenimientoFragment : Fragment() {
                 solicitud.tipoMaquinaria
             )
 
-            putInt(
+            putDouble(
                 "horometroActual",
                 solicitud.horometroActual
             )
 
-            putInt(
+            putDouble(
                 "horometroProgramado",
                 solicitud.horometroActual
             )

@@ -27,6 +27,12 @@ class MaquinariaViewModel(application: Application) : AndroidViewModel(applicati
     private val _consumoPromedio = MutableLiveData<Double?>()
     val consumoPromedio: LiveData<Double?> get() = _consumoPromedio
 
+    private val _nivelCombustible = MutableLiveData<com.lingomak.lingomakapp.data.repository.NivelCombustibleEstimado?>()
+    val nivelCombustible: LiveData<com.lingomak.lingomakapp.data.repository.NivelCombustibleEstimado?> = _nivelCombustible
+
+    private val _nivelesCombustible = MutableLiveData<Map<String, com.lingomak.lingomakapp.data.repository.NivelCombustibleEstimado>>()
+    val nivelesCombustible: LiveData<Map<String, com.lingomak.lingomakapp.data.repository.NivelCombustibleEstimado>> = _nivelesCombustible
+
     val listaMaquinarias: LiveData<List<MaquinariaModel>> = repository.obtenerMaquinariasObservable()
     val maquinariasActivas: LiveData<List<MaquinariaModel>> = repository.obtenerMaquinariasActivasObservable()
     val operariosActivos: LiveData<List<com.lingomak.lingomakapp.data.model.UserModel>> = userRepo.obtenerOperariosActivosObservable()
@@ -39,6 +45,22 @@ class MaquinariaViewModel(application: Application) : AndroidViewModel(applicati
         viewModelScope.launch {
             val consumo = suministroRepo.calcularConsumoGlsHora(uidMaquinaria)
             _consumoPromedio.postValue(consumo)
+        }
+    }
+
+    fun cargarNivelCombustible(uidMaquinaria: String) {
+        viewModelScope.launch {
+            val nivel = suministroRepo.calcularNivelEstimadoCombustible(uidMaquinaria)
+            _nivelCombustible.postValue(nivel)
+        }
+    }
+
+    fun cargarNivelesCombustible(maquinarias: List<MaquinariaModel>) {
+        viewModelScope.launch {
+            val mapa = maquinarias.associate { maquina ->
+                maquina.uid to suministroRepo.calcularNivelEstimadoCombustible(maquina.uid)
+            }.filterValues { it != null }.mapValues { it.value!! }
+            _nivelesCombustible.postValue(mapa)
         }
     }
 

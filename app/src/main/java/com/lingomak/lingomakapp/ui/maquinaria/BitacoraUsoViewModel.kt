@@ -24,6 +24,9 @@ class BitacoraUsoViewModel(application: Application) : AndroidViewModel(applicat
         _cargando.value = true
         viewModelScope.launch(Dispatchers.IO) {
             try {
+                // Sincronizar con Firestore antes de cargar localmente
+                repository.descargarCambiosDeFirestore()
+
                 val registros = repository.obtenerTodosLosRegistros()
                 val maquinarias = repository.obtenerTodasLasMaquinarias().associateBy { it.uid }
                 val suministros = repository.obtenerTodosLosSuministros().associateBy { it.uidRegistroUso }
