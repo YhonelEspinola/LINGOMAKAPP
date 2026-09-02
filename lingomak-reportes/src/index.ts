@@ -45,7 +45,7 @@ export const generarReporteMantenimiento = onCall({
   `;
 
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 15000);
+  const timeoutId = setTimeout(() => controller.abort(), 30000);
 
   try {
     const groqUrl = "https://api.groq.com/openai/v1/chat/completions";
@@ -57,7 +57,7 @@ export const generarReporteMantenimiento = onCall({
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "llama-3.1-8b-instant",
+        model: "openai/gpt-oss-120b",
         messages: [
           {
             role: "system",
@@ -74,9 +74,18 @@ export const generarReporteMantenimiento = onCall({
     clearTimeout(timeoutId);
 
     if (!response.ok) {
-      const errorData = await response.json();
-      logger.error("Error de Groq API", errorData);
-      throw new HttpsError("unavailable", "El motor de IA no responde.");
+        const errorText = await response.text();
+
+        logger.error("ERROR GROQ", {
+            status: response.status,
+            statusText: response.statusText,
+            body: errorText,
+        });
+
+        throw new HttpsError(
+            "unavailable",
+            `Groq respondió con HTTP ${response.status}.`
+        );
     }
 
     const json: any = await response.json();
