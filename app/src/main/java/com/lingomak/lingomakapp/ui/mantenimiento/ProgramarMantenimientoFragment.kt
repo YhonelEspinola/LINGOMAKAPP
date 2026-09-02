@@ -27,6 +27,7 @@ import com.lingomak.lingomakapp.data.repository.SolicitudMantenimientoRepository
 import com.lingomak.lingomakapp.data.repository.UserRepository
 import com.lingomak.lingomakapp.databinding.FragmentProgramarMantenimientoBinding
 import com.lingomak.lingomakapp.ui.maquinaria.MaquinariaViewModel
+import com.lingomak.lingomakapp.utils.formatoHoras
 import com.yalantis.ucrop.UCrop
 import java.io.File
 import java.io.IOException
@@ -64,7 +65,7 @@ class ProgramarMantenimientoFragment : Fragment() {
     private var tipoMaquinariaSolicitud: String = ""
     private var motivoSolicitud: String = ""
     private var fechaSugerida: String = ""
-    private var horometroSolicitud: Int = 0
+    private var horometroSolicitud: Double = 0.0
 
     /*
      * Evita volver a cargar los datos si el observable de
@@ -206,8 +207,8 @@ class ProgramarMantenimientoFragment : Fragment() {
             .orEmpty()
 
         horometroSolicitud = arguments
-            ?.getInt("horometroProgramado", 0)
-            ?: 0
+            ?.getDouble("horometroProgramado", 0.0)
+            ?: 0.0
     }
 
     private fun vieneDesdeSolicitud(): Boolean {
@@ -326,15 +327,24 @@ class ProgramarMantenimientoFragment : Fragment() {
             "CORRECTIVO"
         )
 
-        binding.spTipoMantenimiento.adapter =
+        binding.spTipoMantenimiento.setAdapter(
             ArrayAdapter(
                 requireContext(),
-                android.R.layout.simple_spinner_dropdown_item,
+                android.R.layout.simple_list_item_1,
                 tipos
             )
+        )
     }
 
     private fun configurarEventos() {
+
+        binding.etHorometroProgramado.filters = arrayOf(com.lingomak.lingomakapp.utils.DecimalDigitsInputFilter(2))
+        binding.etCostoEstimado.filters = arrayOf(com.lingomak.lingomakapp.utils.DecimalDigitsInputFilter(2))
+
+        // Bloquear pegado de texto y teclado en campos de fecha
+        binding.etFechaProgramada.isLongClickable = false
+        binding.etFechaProgramada.isFocusable = false
+        binding.etFechaProgramada.keyListener = null
 
         binding.etFechaProgramada.setOnClickListener {
             mostrarDatePicker()
@@ -349,7 +359,7 @@ class ProgramarMantenimientoFragment : Fragment() {
         }
 
         binding.actvMaquinaria.setOnItemClickListener {
-                _, _, position, _ ->
+                parent, _, position, _ ->
 
             /*
              * Aunque el campo queda bloqueado cuando viene
@@ -360,23 +370,32 @@ class ProgramarMantenimientoFragment : Fragment() {
                 return@setOnItemClickListener
             }
 
-            val seleccion =
-                binding.actvMaquinaria.adapter
-                    .getItem(position)
-                    .toString()
+            // Usamos el parent (el adapter) para obtener el string exacto seleccionado
+            val seleccion = parent.getItemAtPosition(position).toString()
 
-            maquinariaSeleccionada =
-                listaMaquinarias.find {
-                    "${it.nombre} (${it.codigoMaquinaria})" ==
-                            seleccion
-                }
+            // Búsqueda más robusta: ignorando espacios y mayúsculas/minúsculas
+            maquinariaSeleccionada = listaMaquinarias.find {
+                val template = "${it.nombre} (${it.codigoMaquinaria})".trim()
+                template.equals(seleccion.trim(), ignoreCase = true)
+            }
 
             maquinariaSeleccionada?.let { maquinaria ->
-
+                // El horómetro programado ahora solo muestra el actual de la máquina y no es editable
                 binding.etHorometroProgramado.setText(
-                    maquinaria.horometroActual.toString()
+                    maquinaria.horometroActual.formatoHoras()
                 )
+                binding.etHorometroProgramado.isEnabled = false
+            } ?: run {
+                // Fallback: si no lo encuentra por el template exacto, intentar por código si el string lo contiene
+                maquinariaSeleccionada = listaMaquinarias.find { seleccion.contains(it.codigoMaquinaria) }
+                maquinariaSeleccionada?.let {
+                    binding.etHorometroProgramado.setText(it.horometroActual.formatoHoras())
+                    binding.etHorometroProgramado.isEnabled = false
+                }
             }
+
+            // Forzar actualización inmediata de la UI
+            binding.actvMaquinaria.clearFocus()
         }
 
         binding.actvResponsable.setOnItemClickListener {
@@ -530,13 +549,18 @@ class ProgramarMantenimientoFragment : Fragment() {
         }
 
         val horometroProgramado =
-            horometroTexto.toIntOrNull()
+            horometroTexto.toDoubleOrNull()
 
         if (horometroProgramado == null) {
 
             binding.etHorometroProgramado.error =
                 "Ingrese un horómetro válido"
 
+            return
+        }
+
+        if (horometroProgramado < maquinaria.horometroActual) {
+            binding.etHorometroProgramado.error = "El horómetro programado no puede ser menor al actual (${maquinaria.horometroActual})"
             return
         }
 
@@ -555,7 +579,7 @@ class ProgramarMantenimientoFragment : Fragment() {
                         "PREVENTIVO"
                     } else {
                         binding.spTipoMantenimiento
-                            .selectedItem
+                            .text
                             .toString()
                     },
 
@@ -568,7 +592,7 @@ class ProgramarMantenimientoFragment : Fragment() {
                 responsableUid = responsable.uid,
 
                 horometroProgramado = horometroProgramado,
-                horometroReal = 0,
+                horometroReal = 0.0,
 
                 costoEstimado =
                     binding.etCostoEstimado.text

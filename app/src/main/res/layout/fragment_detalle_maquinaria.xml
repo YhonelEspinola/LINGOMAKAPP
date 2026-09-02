@@ -133,6 +133,9 @@
                 <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:text="ÚLTIMO MANTENIMIENTO" android:textSize="10sp" android:textStyle="bold" android:textColor="@color/text_secondary"/>
                 <TextView android:id="@+id/tvHorometroUltimoDetalleMaquinaria" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="3200 h" android:textColor="@color/text_primary" android:textSize="15sp"/>
 
+                <TextView android:id="@+id/tvLabelProximoMantenimiento" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:text="PRÓXIMO MANTENIMIENTO" android:textSize="10sp" android:textStyle="bold" android:textColor="@color/text_secondary"/>
+                <TextView android:id="@+id/tvProximoMantenimientoDetalle" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Faltan 250 h" android:textColor="@color/success" android:textSize="15sp" android:textStyle="bold"/>
+
                 <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#EEEEEE" android:layout_marginVertical="16dp"/>
 
                 <!-- Rendimiento -->
@@ -142,6 +145,23 @@
                     <ImageView android:layout_width="16dp" android:layout_height="16dp" android:src="@drawable/inventario" app:tint="@color/primary"/>
                     <TextView android:id="@+id/tvConsumoPromedio" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginStart="8dp" android:text="Calculando..." android:textColor="@color/text_primary" android:textSize="15sp" android:textStyle="bold"/>
                 </LinearLayout>
+
+                <!-- Nivel de Combustible -->
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="16dp" android:text="NIVEL DE COMBUSTIBLE (ESTIMADO)" android:textSize="11sp" android:textStyle="bold" android:textColor="@color/text_secondary"/>
+
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:orientation="horizontal" android:gravity="center_vertical">
+                    <ImageView android:id="@+id/ivIconoCombustibleDetalle" android:layout_width="16dp" android:layout_height="16dp" android:src="@drawable/ic_gas_station" app:tint="@color/primary"/>
+                    <TextView android:id="@+id/tvNivelCombustibleDetalle" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="8dp" android:text="Calculando..." android:textColor="@color/text_primary" android:textSize="15sp" android:textStyle="bold"/>
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="* Estimado según consumo promedio, no medición directa."
+                    android:textColor="@color/text_secondary"
+                    android:textSize="11sp"
+                    android:textStyle="italic" />
 
                 <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#EEEEEE" android:layout_marginVertical="16dp"/>
 

@@ -11,45 +11,33 @@
         android:orientation="vertical"
         android:padding="24dp">
 
-        <TextView
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Nombre Completo"
-            android:textColor="@color/text_primary"
-            android:textStyle="bold">
-        </TextView>
-
-        <EditText
-            android:id="@+id/etNombreUsuario"
-            android:layout_width="match_parent"
-            android:layout_height="55dp"
-            android:layout_marginTop="8dp"
             android:layout_marginBottom="16dp"
-            android:background="@drawable/bg_edit_text"
-            android:hint="Ingrese nombre completo"
-            android:padding="12dp"
-            android:inputType="textPersonName">
-        </EditText>
+            android:hint="Nombre completo">
 
-        <TextView
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etNombreUsuario"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textPersonName" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Correo Electronico"
-            android:textColor="@color/text_primary"
-            android:textStyle="bold">
-        </TextView>
-
-        <EditText
-            android:id="@+id/etCorreoUsuario"
-            android:layout_width="match_parent"
-            android:layout_height="55dp"
-            android:layout_marginTop="8dp"
             android:layout_marginBottom="16dp"
-            android:background="@drawable/bg_edit_text"
-            android:hint="Ingrese correo"
-            android:padding="12dp"
-            android:inputType="textEmailAddress">
-        </EditText>
+            android:hint="Correo electrónico">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etCorreoUsuario"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textEmailAddress" />
+        </com.google.android.material.textfield.TextInputLayout>
 
         <TextView
             android:layout_width="match_parent"

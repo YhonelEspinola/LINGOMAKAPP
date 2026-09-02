@@ -35,6 +35,23 @@ class MaquinariaFragment : Fragment() {
         }
     }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        // El pagerAdapter se crea UNA sola vez por instancia de Fragment (onCreate, no onCreateView).
+        // Antes se creaba dentro de setupViewPager(), que corre en cada onCreateView — y onCreateView
+        // se vuelve a ejecutar completo cada vez que se vuelve de DetalleBitacoraFragment (porque esa
+        // navegación usa replace() + addToBackStack, que destruye la vista de este fragment y la
+        // recrea al volver). Eso generaba un pagerAdapter nuevo en cada regreso, con su propio
+        // expandedFilters reiniciado, mientras el ViewPager2/TabLayout podían restaurar currentItem=1
+        // por su cuenta — el desfase entre "adapter nuevo, vacío" y "vista restaurada en la pestaña 1"
+        // es lo que rompía el toggle de filtros.
+        pagerAdapter = MaquinariaAdminPagerAdapter(
+            onMaquinariaClick = { abrirDetalleMaquinaria(it.uid) },
+            onBitacoraClick = { abrirDetalleBitacora(it) },
+            onBitacoraFiltered = { bitacoraFiltrada = it }
+        )
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -54,12 +71,7 @@ class MaquinariaFragment : Fragment() {
     }
 
     private fun setupViewPager() {
-        pagerAdapter = MaquinariaAdminPagerAdapter(
-            onMaquinariaClick = { abrirDetalleMaquinaria(it.uid) },
-            onBitacoraClick = { abrirDetalleBitacora(it) },
-            onBitacoraFiltered = { bitacoraFiltrada = it }
-        )
-        
+        // pagerAdapter ya existe (creado en onCreate) — solo se reengancha a la vista nueva.
         binding.viewPagerMaquinaria.adapter = pagerAdapter
 
         TabLayoutMediator(binding.tabLayoutMaquinaria, binding.viewPagerMaquinaria) { tab, position ->
@@ -73,7 +85,7 @@ class MaquinariaFragment : Fragment() {
         })
         
         // Llamada manual inicial (Tarea 9)
-        actualizarFabPorPagina(0)
+        actualizarFabPorPagina(binding.viewPagerMaquinaria.currentItem)
     }
 
     private fun actualizarFabPorPagina(position: Int) {
@@ -90,6 +102,10 @@ class MaquinariaFragment : Fragment() {
     private fun observarViewModels() {
         maquinariaViewModel.listaMaquinarias.observe(viewLifecycleOwner) {
             pagerAdapter.updateMaquinarias(it)
+            maquinariaViewModel.cargarNivelesCombustible(it)
+        }
+        maquinariaViewModel.nivelesCombustible.observe(viewLifecycleOwner) {
+            pagerAdapter.updateNivelesCombustible(it)
         }
         maquinariaViewModel.maquinariasActivas.observe(viewLifecycleOwner) {
             pagerAdapter.updateCatalogoMaquinas(it)
@@ -188,7 +204,7 @@ class MaquinariaFragment : Fragment() {
                     putString("tipoMaquinaria", maq.tipo)
                     putDouble("horometroActual", maq.horometroActual)
                     putDouble("horometroUltimoMantenimiento", maq.horometroUltimoMantenimiento)
-                    putInt("intervaloMantenimientoHoras", maq.intervaloMantenimientoHoras)
+                    putDouble("intervaloMantenimientoHoras", maq.intervaloMantenimientoHoras)
                     if (maq.capacidadTanqueGls != null) {
                         putDouble("capacidadTanqueGls", maq.capacidadTanqueGls!!)
                     }

@@ -73,37 +73,36 @@
                     android:textColor="@color/text_secondary"
                     android:layout_marginTop="2dp" />
 
-                <EditText
-                    android:id="@+id/etFechaRealizada"
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
-                    android:layout_height="55dp"
-                    android:background="@drawable/bg_edit_text"
-                    android:focusable="false"
-                    android:hint="Fecha realizada"
-                    android:inputType="none"
-                    android:padding="12dp"
-                    android:visibility="gone" />
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"
+                    android:hint="Fecha realizada">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etFechaRealizada"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:focusable="false"
+                        android:inputType="none" />
+                </com.google.android.material.textfield.TextInputLayout>
 
                 <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#EEEEEE" android:layout_marginVertical="16dp"/>
 
-                <TextView
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Lectura de Horómetro"
-                    android:textColor="@color/text_primary"
-                    android:textStyle="bold"
-                    android:textSize="13sp" />
-
-                <EditText
-                    android:id="@+id/etHorometroReal"
-                    android:layout_width="match_parent"
-                    android:layout_height="55dp"
                     android:layout_marginTop="8dp"
-                    android:background="@drawable/bg_edit_text"
-                    android:hint="Horómetro actual de la máquina"
-                    android:inputType="number"
-                    android:padding="12dp"
-                    android:textSize="14sp" />
+                    android:hint="Lectura de Horómetro">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etHorometroReal"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="numberDecimal" />
+                </com.google.android.material.textfield.TextInputLayout>
 
                 <TextView
                     android:layout_width="match_parent"
@@ -193,37 +192,35 @@
                     app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                     tools:listitem="@layout/item_evidencia_mantenimiento" />
 
-                <TextView
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Costos y Observaciones"
-                    android:textColor="@color/text_primary"
-                    android:textStyle="bold"
-                    android:layout_marginTop="20dp"
-                    android:textSize="13sp" />
-
-                <EditText
-                    android:id="@+id/etCostoReal"
-                    android:layout_width="match_parent"
-                    android:layout_height="55dp"
                     android:layout_marginTop="8dp"
-                    android:background="@drawable/bg_edit_text"
-                    android:hint="Costo total estimado (S/)"
-                    android:inputType="numberDecimal"
-                    android:padding="12dp"
-                    android:textSize="14sp" />
+                    android:hint="Costo real (S/)">
 
-                <EditText
-                    android:id="@+id/etObservacionesFinales"
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etCostoReal"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="numberDecimal" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
-                    android:layout_height="80dp"
+                    android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:background="@drawable/bg_edit_text"
-                    android:gravity="top"
-                    android:hint="Notas finales sobre el mantenimiento"
-                    android:inputType="textMultiLine"
-                    android:padding="12dp"
-                    android:textSize="14sp" />
+                    android:hint="Observaciones finales">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etObservacionesFinales"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="top"
+                        android:minLines="2"
+                        android:inputType="textMultiLine" />
+                </com.google.android.material.textfield.TextInputLayout>
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnFinalizarMantenimiento"

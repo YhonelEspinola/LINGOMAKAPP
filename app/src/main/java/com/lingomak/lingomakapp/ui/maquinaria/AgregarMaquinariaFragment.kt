@@ -77,6 +77,7 @@ class AgregarMaquinariaFragment : Fragment() {
         binding.etHorometroActual.filters = arrayOf(com.lingomak.lingomakapp.utils.DecimalDigitsInputFilter(2))
         binding.etHorometroUltimoMantenimiento.filters = arrayOf(com.lingomak.lingomakapp.utils.DecimalDigitsInputFilter(2))
         binding.etCapacidadTanque.filters = arrayOf(com.lingomak.lingomakapp.utils.DecimalDigitsInputFilter(2))
+        binding.etIntervaloMantenimiento.filters = arrayOf(com.lingomak.lingomakapp.utils.DecimalDigitsInputFilter(2))
 
         binding.cardSubirImagenMaquinaria.setOnClickListener {
             seleccionadarImagenLauncher.launch("image/*")
@@ -153,7 +154,7 @@ class AgregarMaquinariaFragment : Fragment() {
         val anio = anioTexto.toIntOrNull()
         val horometroActual = horometroActualTexto.toDoubleOrNull()
         val horometroUltimo = horometroUltimoTexto.toDoubleOrNull() ?: 0.0
-        val intervaloMantenimiento = intervaloTexto.toIntOrNull() ?: 250
+        val intervaloMantenimiento = intervaloTexto.toDoubleOrNull() ?: 250.0
         
         val capacidadTanque = capacidadTanqueTexto.toDoubleOrNull()
 
@@ -204,7 +205,7 @@ class AgregarMaquinariaFragment : Fragment() {
         horometroActual: Double,
         horometroUltimo: Double,
         ubicacion: String,
-        intervalo: Int,
+        intervalo: Double,
         observaciones: String,
         capacidadTanque: Double?
     ){
@@ -278,7 +279,7 @@ class AgregarMaquinariaFragment : Fragment() {
         horometroActual: Double,
         horometroUltimo: Double,
         ubicacion: String,
-        intervalo: Int,
+        intervalo: Double,
         observaciones: String,
         imagenUrl: String,
         fechaActual: String,

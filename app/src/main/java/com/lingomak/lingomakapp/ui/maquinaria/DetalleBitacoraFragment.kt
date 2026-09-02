@@ -104,7 +104,7 @@ class DetalleBitacoraFragment : Fragment() {
             // Datos de la máquina actual para validaciones
             putDouble("horometroActual", m.maquinaria?.horometroActual ?: m.horometroFinal)
             putDouble("horometroUltimoMantenimiento", m.maquinaria?.horometroUltimoMantenimiento ?: 0.0)
-            putInt("intervaloMantenimientoHoras", m.maquinaria?.intervaloMantenimientoHoras ?: 250)
+            putDouble("intervaloMantenimientoHoras", m.maquinaria?.intervaloMantenimientoHoras ?: 250.0)
             if (m.maquinaria?.capacidadTanqueGls != null) {
                 putDouble("capacidadTanqueGls", m.maquinaria.capacidadTanqueGls!!)
             }

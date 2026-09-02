@@ -23,42 +23,34 @@
             android:layout_marginBottom="24dp" />
 
 
-        <TextView
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Código interno"
-            android:textColor="@color/text_primary"
-            android:textStyle="bold" />
-
-        <EditText
-            android:id="@+id/etCodigoInterno"
-            android:layout_width="match_parent"
-            android:layout_height="55dp"
-            android:layout_marginTop="8dp"
             android:layout_marginBottom="16dp"
-            android:background="@drawable/bg_edit_text"
-            android:hint="Ingrese código interno"
-            android:padding="12dp"
-            android:inputType="text" />
+            android:hint="Código interno">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etCodigoInterno"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text" />
+        </com.google.android.material.textfield.TextInputLayout>
 
 
-        <TextView
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Nombre"
-            android:textColor="@color/text_primary"
-            android:textStyle="bold" />
-
-        <EditText
-            android:id="@+id/etNombre"
-            android:layout_width="match_parent"
-            android:layout_height="55dp"
-            android:layout_marginTop="8dp"
             android:layout_marginBottom="16dp"
-            android:background="@drawable/bg_edit_text"
-            android:hint="Ingrese nombre del repuesto"
-            android:padding="12dp"
-            android:inputType="text" />
+            android:hint="Nombre">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etNombre"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text" />
+        </com.google.android.material.textfield.TextInputLayout>
 
         <TextView
             android:layout_width="match_parent"
@@ -107,172 +99,139 @@
         </FrameLayout>
 
 
-        <TextView
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Categoría"
-            android:textColor="@color/text_primary"
-            android:textStyle="bold" />
-
-        <Spinner
-            android:id="@+id/spinnerCategoria"
-            android:layout_width="match_parent"
-            android:layout_height="55dp"
-            android:layout_marginTop="8dp"
             android:layout_marginBottom="16dp"
-            android:background="@drawable/bg_edit_text"
-            android:padding="12dp" />
+            android:hint="Categoría">
+
+            <AutoCompleteTextView
+                android:id="@+id/spinnerCategoria"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="none" />
+        </com.google.android.material.textfield.TextInputLayout>
 
 
-        <TextView
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Marca"
-            android:textColor="@color/text_primary"
-            android:textStyle="bold" />
-
-        <EditText
-            android:id="@+id/etMarca"
-            android:layout_width="match_parent"
-            android:layout_height="55dp"
-            android:layout_marginTop="8dp"
             android:layout_marginBottom="16dp"
-            android:background="@drawable/bg_edit_text"
-            android:hint="Ingrese marca"
-            android:padding="12dp"
-            android:inputType="text" />
+            android:hint="Marca">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etMarca"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text" />
+        </com.google.android.material.textfield.TextInputLayout>
 
 
-        <TextView
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Descripción"
-            android:textColor="@color/text_primary"
-            android:textStyle="bold" />
-
-        <EditText
-            android:id="@+id/etDescripcion"
-            android:layout_width="match_parent"
-            android:layout_height="100dp"
-            android:layout_marginTop="8dp"
             android:layout_marginBottom="16dp"
-            android:background="@drawable/bg_edit_text"
-            android:hint="Ingrese una descripción (opcional)"
-            android:padding="12dp"
-            android:gravity="top"
-            android:inputType="textMultiLine" />
+            android:hint="Descripción">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etDescripcion"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="top"
+                android:minLines="2"
+                android:inputType="textMultiLine" />
+        </com.google.android.material.textfield.TextInputLayout>
 
 
-        <TextView
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Stock actual"
-            android:textColor="@color/text_primary"
-            android:textStyle="bold" />
-
-        <EditText
-            android:id="@+id/etStockActual"
-            android:layout_width="match_parent"
-            android:layout_height="55dp"
-            android:layout_marginTop="8dp"
             android:layout_marginBottom="16dp"
-            android:background="@drawable/bg_edit_text"
-            android:hint="Ingrese stock actual"
-            android:padding="12dp"
-            android:inputType="number" />
+            android:hint="Stock actual">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etStockActual"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number" />
+        </com.google.android.material.textfield.TextInputLayout>
 
 
-        <TextView
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Stock mínimo"
-            android:textColor="@color/text_primary"
-            android:textStyle="bold" />
-
-        <EditText
-            android:id="@+id/etStockMinimo"
-            android:layout_width="match_parent"
-            android:layout_height="55dp"
-            android:layout_marginTop="8dp"
             android:layout_marginBottom="16dp"
-            android:background="@drawable/bg_edit_text"
-            android:hint="Ingrese stock mínimo"
-            android:padding="12dp"
-            android:inputType="number" />
+            android:hint="Stock mínimo">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etStockMinimo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number" />
+        </com.google.android.material.textfield.TextInputLayout>
 
 
-        <TextView
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Stock máximo"
-            android:textColor="@color/text_primary"
-            android:textStyle="bold" />
-
-        <EditText
-            android:id="@+id/etStockMaximo"
-            android:layout_width="match_parent"
-            android:layout_height="55dp"
-            android:layout_marginTop="8dp"
             android:layout_marginBottom="16dp"
-            android:background="@drawable/bg_edit_text"
-            android:hint="Ingrese stock máximo"
-            android:padding="12dp"
-            android:inputType="number" />
+            android:hint="Stock máximo">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etStockMaximo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number" />
+        </com.google.android.material.textfield.TextInputLayout>
 
 
-        <TextView
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Ubicación en almacén"
-            android:textColor="@color/text_primary"
-            android:textStyle="bold" />
-
-        <EditText
-            android:id="@+id/etUbicacionAlmacen"
-            android:layout_width="match_parent"
-            android:layout_height="55dp"
-            android:layout_marginTop="8dp"
             android:layout_marginBottom="16dp"
-            android:background="@drawable/bg_edit_text"
-            android:hint="Ej: Estante A - Nivel 2"
-            android:padding="12dp"
-            android:inputType="text" />
+            android:hint="Ubicación en almacén">
 
-        <TextView
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etUbicacionAlmacen"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Proveedor"
-            android:textColor="@color/text_primary"
-            android:textStyle="bold" />
-
-        <EditText
-            android:id="@+id/etProveedorNombre"
-            android:layout_width="match_parent"
-            android:layout_height="55dp"
-            android:layout_marginTop="8dp"
             android:layout_marginBottom="16dp"
-            android:background="@drawable/bg_edit_text"
-            android:hint="Nombre del proveedor"
-            android:padding="12dp"
-            android:inputType="text" />
+            android:hint="Nombre del proveedor">
 
-        <TextView
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etProveedorNombre"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Contacto del proveedor"
-            android:textColor="@color/text_primary"
-            android:textStyle="bold" />
-
-        <EditText
-            android:id="@+id/etProveedorContacto"
-            android:layout_width="match_parent"
-            android:layout_height="55dp"
-            android:layout_marginTop="8dp"
             android:layout_marginBottom="24dp"
-            android:background="@drawable/bg_edit_text"
-            android:hint="Teléfono, email o web"
-            android:padding="12dp"
-            android:inputType="text" />
+            android:hint="Contacto del proveedor">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etProveedorContacto"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text" />
+        </com.google.android.material.textfield.TextInputLayout>
 
         <TextView
             android:layout_width="match_parent"

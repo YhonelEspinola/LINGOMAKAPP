@@ -20,6 +20,12 @@ import com.lingomak.lingomakapp.data.worker.SincronizacionRegistroUsoMaquinariaW
 import kotlinx.coroutines.tasks.await
 import java.util.UUID
 
+data class RendimientoOperarioMes(
+    val nombreOperario: String,
+    val mes: String,
+    val totalHoras: Double
+)
+
 class RegistroUsoMaquinariaRepository(context: Context) {
 
     private val db = FirebaseFirestore.getInstance()
@@ -148,11 +154,11 @@ class RegistroUsoMaquinariaRepository(context: Context) {
                         uidOperario = registroUsoEntity.uidOperario,
                         nombreOperario = registroUsoEntity.nombreOperario,
                         correoOperario = registroUsoEntity.correoOperario,
-                        horometroActual = horometroFinal.toInt(),
-                        horometroUltimoMantenimiento = maqEntity.horometroUltimoMantenimiento.toInt(),
+                        horometroActual = horometroFinal,
+                        horometroUltimoMantenimiento = maqEntity.horometroUltimoMantenimiento,
                         intervaloMantenimientoHoras = maqEntity.intervaloMantenimientoHoras,
-                        horasDesdeUltimoMantenimiento = horasDesdeUltimoMantenimiento.toInt(),
-                        horasRestantes = horasRestantes.toInt(),
+                        horasDesdeUltimoMantenimiento = horasDesdeUltimoMantenimiento,
+                        horasRestantes = horasRestantes,
                         motivo = obtenerMotivoSolicitud(horasRestantes.toInt()),
                         estadoSolicitud = "PENDIENTE_APROBACION",
                         origen = "HOROMETRO_OPERARIO",
@@ -163,9 +169,9 @@ class RegistroUsoMaquinariaRepository(context: Context) {
                     )
                 } else {
                     solicitudEntity = solicitudExistente.copy(
-                        horometroActual = horometroFinal.toInt(),
-                        horasDesdeUltimoMantenimiento = horasDesdeUltimoMantenimiento.toInt(),
-                        horasRestantes = horasRestantes.toInt(),
+                        horometroActual = horometroFinal,
+                        horasDesdeUltimoMantenimiento = horasDesdeUltimoMantenimiento,
+                        horasRestantes = horasRestantes,
                         motivo = obtenerMotivoSolicitud(horasRestantes.toInt()),
                         fechaSugerida = DateUtils.obtenerFechaActual(),
                         estadoSync = "PENDIENTE_ACTUALIZAR",
@@ -244,6 +250,19 @@ class RegistroUsoMaquinariaRepository(context: Context) {
         return suministroDao.obtenerTodos().map { it.aModel() }
     }
 
+    suspend fun obtenerHorasPorOperarioYMes(): List<RendimientoOperarioMes> {
+        val registros = registroUsoDao.obtenerTodos()
+        return registros.groupBy { it.nombreOperario to it.fechaUso.take(7) }
+            .map { (key, group) ->
+                RendimientoOperarioMes(
+                    nombreOperario = key.first,
+                    mes = key.second,
+                    totalHoras = group.sumOf { it.horasUso }
+                )
+            }
+            .sortedWith(compareByDescending<RendimientoOperarioMes> { it.mes }.thenByDescending { it.totalHoras })
+    }
+
     // ===================================================================
     // SINCRONIZACIÓN CON FIRESTORE
     // ===================================================================
@@ -264,22 +283,62 @@ class RegistroUsoMaquinariaRepository(context: Context) {
                 solicitudDao.marcarComoSincronizado(entity.uid)
             } catch (e: Exception) { /* Reintento */ }
         }
+
+        val pendientesSuministro = suministroDao.obtenerPendientesDeSincronizar()
+        for (entity in pendientesSuministro) {
+            try {
+                db.collection("suministros").document(entity.uid).set(entity.aModel()).await()
+                suministroDao.marcarComoSincronizado(entity.uid)
+            } catch (e: Exception) { /* Reintento */ }
+        }
     }
 
     suspend fun descargarCambiosDeFirestore() {
         try {
-            val snapshot = db.collection(coleccionSolicitudes)
+            // 1. Descargar Registros de Uso
+            val snapshotUso = db.collection(coleccionRegistrosUso).get().await()
+            val remotosUso = snapshotUso.toObjects(RegistroUsoMaquinariaModel::class.java)
+            val uidsUso = remotosUso.map { it.uid }
+            
+            if (uidsUso.isEmpty()) {
+                registroUsoDao.eliminarSincronizados()
+            } else {
+                registroUsoDao.eliminarSincronizadosNoPresentes(uidsUso)
+                val entitiesUso = remotosUso.map { it.aEntity("SINCRONIZADO", System.currentTimeMillis()) }
+                registroUsoDao.insertarLista(entitiesUso)
+            }
+
+            // 2. Descargar Solicitudes de Mantenimiento (Solo las pendientes como antes)
+            val snapshotSol = db.collection(coleccionSolicitudes)
                 .whereEqualTo("estadoSolicitud", "PENDIENTE_APROBACION")
                 .get().await()
-            
-            val remotos = snapshot.toObjects(SolicitudMantenimientoModel::class.java)
-            for (modelo in remotos) {
-                val local = solicitudDao.obtenerPorUid(modelo.uid)
-                if (local != null && local.estadoSync != "SINCRONIZADO") continue
-                
-                solicitudDao.insertarOActualizar(modelo.aEntity("SINCRONIZADO", System.currentTimeMillis()))
+            val remotosSol = snapshotSol.toObjects(SolicitudMantenimientoModel::class.java)
+            val uidsSol = remotosSol.map { it.uid }
+
+            if (uidsSol.isEmpty()) {
+                solicitudDao.eliminarSincronizados()
+            } else {
+                solicitudDao.eliminarSincronizadosNoPresentes(uidsSol)
+                val entitiesSol = remotosSol.map { it.aEntity("SINCRONIZADO", System.currentTimeMillis()) }
+                solicitudDao.insertarLista(entitiesSol)
             }
-        } catch (e: Exception) { /* Offline */ }
+
+            // 3. Descargar Suministros (Combustible)
+            val snapshotSum = db.collection("suministros").get().await()
+            val remotosSum = snapshotSum.toObjects(SuministroModel::class.java)
+            val uidsSum = remotosSum.map { it.uid }
+
+            if (uidsSum.isEmpty()) {
+                suministroDao.eliminarSincronizados()
+            } else {
+                suministroDao.eliminarSincronizadosNoPresentes(uidsSum)
+                val entitiesSum = remotosSum.map { it.aEntity("SINCRONIZADO", System.currentTimeMillis()) }
+                suministroDao.insertarLista(entitiesSum)
+            }
+
+        } catch (e: Exception) {
+            android.util.Log.e("RegistroUsoRepo", "Error al descargar cambios: ${e.message}")
+        }
     }
 
     private fun obtenerMotivoSolicitud(horasRestantes: Int): String {

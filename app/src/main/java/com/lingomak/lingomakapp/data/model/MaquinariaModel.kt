@@ -18,7 +18,7 @@ data class MaquinariaModel(
     var horometroActual: Double = 0.0,
     var horometroUltimoMantenimiento: Double = 0.0,
     var capacidadTanqueGls: Double? = null,
-    var intervaloMantenimientoHoras: Int = 250,
+    var intervaloMantenimientoHoras: Double = 250.0,
     var ubicacionActual: String = "",
     var imagenUrl: String = "",
     var observaciones: String = "",

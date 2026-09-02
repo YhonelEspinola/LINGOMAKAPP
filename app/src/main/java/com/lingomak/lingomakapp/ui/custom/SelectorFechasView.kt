@@ -67,8 +67,95 @@ class SelectorFechasView @JvmOverloads constructor(
         setupViewPager()
     }
 
+    private var touchDownX = 0f
+    private var touchDownY = 0f
+    private var isDraggingHorizontally = false
+    private val touchSlop = android.view.ViewConfiguration.get(context).scaledTouchSlop
+
+    /**
+     * Por qué el fix anterior (un simple setOnTouchListener en la vista raíz) no funcionaba:
+     * item_selector_page_chips.xml tiene RadioButtons ocupando casi todo el ancho de la página.
+     * Un View.OnTouchListener puesto en un ViewGroup padre NUNCA recibe los eventos si un hijo
+     * clickable (como un RadioButton) los consume desde el ACTION_DOWN — el listener del padre
+     * simplemente no se dispara para esos toques, sin importar dónde esté puesto.
+     *
+     * La única forma correcta de "robarle" el gesto a un hijo clickable a mitad de camino es
+     * sobrescribir onInterceptTouchEvent en el ViewGroup padre: se deja pasar el ACTION_DOWN al
+     * hijo normalmente (return false), pero si en un ACTION_MOVE posterior se detecta arrastre
+     * horizontal claro (mayor que el touchSlop y más horizontal que vertical), se empieza a
+     * interceptar (return true) — Android automáticamente cancela el gesto en el hijo (le manda
+     * ACTION_CANCEL) y las siguientes MOVE/UP se procesan en onTouchEvent de este padre.
+     */
+    override fun onInterceptTouchEvent(ev: android.view.MotionEvent): Boolean {
+        when (ev.action) {
+            android.view.MotionEvent.ACTION_DOWN -> {
+                touchDownX = ev.x
+                touchDownY = ev.y
+                isDraggingHorizontally = false
+                // Solicitamos a TODOS los padres que no intercepten toques al empezar.
+                // Esto es clave para que el ViewPager2 principal deje de "robar" el evento.
+                parent?.requestDisallowInterceptTouchEvent(true)
+            }
+            android.view.MotionEvent.ACTION_MOVE -> {
+                val deltaX = ev.x - touchDownX
+                val deltaY = ev.y - touchDownY
+                
+                // Si detectamos que es un movimiento vertical, le devolvemos el control al padre
+                if (kotlin.math.abs(deltaY) > touchSlop && kotlin.math.abs(deltaY) > kotlin.math.abs(deltaX)) {
+                    parent?.requestDisallowInterceptTouchEvent(false)
+                    return false
+                }
+
+                if (!isDraggingHorizontally &&
+                    kotlin.math.abs(deltaX) > touchSlop &&
+                    kotlin.math.abs(deltaX) > kotlin.math.abs(deltaY)
+                ) {
+                    isDraggingHorizontally = true
+                    return true 
+                }
+            }
+        }
+        return false
+    }
+
+    override fun onTouchEvent(event: android.view.MotionEvent): Boolean {
+        when (event.action) {
+            android.view.MotionEvent.ACTION_DOWN -> return true // Necesario para recibir MOVE/UP
+            android.view.MotionEvent.ACTION_MOVE -> return true
+            android.view.MotionEvent.ACTION_UP, android.view.MotionEvent.ACTION_CANCEL -> {
+                if (isDraggingHorizontally) {
+                    val deltaX = event.x - touchDownX
+                    if (kotlin.math.abs(deltaX) > touchSlop) {
+                        if (deltaX < 0 && viewPager.currentItem < 2) {
+                            viewPager.setCurrentItem(viewPager.currentItem + 1, true)
+                        } else if (deltaX > 0 && viewPager.currentItem > 0) {
+                            viewPager.setCurrentItem(viewPager.currentItem - 1, true)
+                        }
+                    }
+                }
+                isDraggingHorizontally = false
+                parent?.requestDisallowInterceptTouchEvent(false)
+                return true
+            }
+        }
+        return false
+    }
+
     private fun setupViewPager() {
         viewPager.adapter = SelectorAdapter()
+
+        // Fix clásico para ViewPager2 anidado: evitar que el padre (otro ViewPager2)
+        // intercepte el gesto de arrastre horizontal cuando el dedo está directamente
+        // sobre el RecyclerView interno del ViewPager2 (área donde SÍ funcionaba antes).
+        val innerRecyclerView = viewPager.getChildAt(0) as? RecyclerView
+        innerRecyclerView?.setOnTouchListener { v, event ->
+            when (event.action) {
+                android.view.MotionEvent.ACTION_DOWN -> parent.requestDisallowInterceptTouchEvent(true)
+                android.view.MotionEvent.ACTION_UP, android.view.MotionEvent.ACTION_CANCEL ->
+                    parent.requestDisallowInterceptTouchEvent(false)
+            }
+            false
+        }
 
         viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {

@@ -47,35 +47,54 @@ class MaquinariaAdminPagerAdapter(
         put(1, false)
     }
 
+    init {
+        // IDs estables: con solo 2 páginas fijas (Maquinaria=0, Bitácora=1), esto le garantiza a
+        // RecyclerView que la posición 0 siempre es la misma "identidad" y la 1 también, sin
+        // ambigüedad al reciclar/rebindear tras volver de un detalle. Es la causa más probable
+        // de que el estado de expandedFilters se desincronizara con la vista real.
+        setHasStableIds(true)
+    }
+
+    override fun getItemId(position: Int): Long = position.toLong()
+
     fun updateMaquinarias(list: List<MaquinariaModel>) {
         allMaquinarias = list
-        notifyDataSetChanged()
+        notifyItemChanged(0)
     }
 
     fun updateBitacora(list: List<BitacoraUsoModel>) {
         allBitacora = list
-        notifyDataSetChanged()
+        notifyItemChanged(1)
     }
 
     fun updateCategorias(list: List<CategoriaModel>) {
         allCategorias = list
-        notifyDataSetChanged()
+        notifyItemChanged(0)
     }
 
     fun updateCatalogoMaquinas(list: List<MaquinariaModel>) {
         catalogoMaquinas = list
-        notifyDataSetChanged()
+        notifyItemChanged(1)
     }
 
     fun updateCatalogoOperarios(list: List<com.lingomak.lingomakapp.data.model.UserModel>) {
         catalogoOperarios = list
-        notifyDataSetChanged()
+        notifyItemChanged(1)
     }
 
     fun updateSearch(query: String) {
         searchQuery = query
-        notifyDataSetChanged()
+        // La búsqueda aplica a ambas pestañas.
+        notifyItemChanged(0)
+        notifyItemChanged(1)
     }
+
+    fun updateNivelesCombustible(map: Map<String, com.lingomak.lingomakapp.data.repository.NivelCombustibleEstimado>) {
+        this.nivelesCombustibleMap = map
+        notifyItemChanged(0)
+    }
+
+    private var nivelesCombustibleMap: Map<String, com.lingomak.lingomakapp.data.repository.NivelCombustibleEstimado> = emptyMap()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PageViewHolder {
         val binding = ItemMaquinariaAdminPageBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -114,6 +133,7 @@ class MaquinariaAdminPagerAdapter(
 
             if (position == 0) {
                 binding.rvContenido.adapter = maqAdapter
+                maqAdapter.actualizarNivelesCombustible(nivelesCombustibleMap)
                 setupPageMaquinaria()
             } else {
                 binding.rvContenido.adapter = bitAdapter

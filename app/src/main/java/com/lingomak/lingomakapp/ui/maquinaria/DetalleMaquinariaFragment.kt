@@ -12,6 +12,7 @@ import com.lingomak.lingomakapp.R
 import com.lingomak.lingomakapp.data.model.MaquinariaModel
 import com.lingomak.lingomakapp.databinding.FragmentDetalleMaquinariaBinding
 import com.lingomak.lingomakapp.ui.dashboard.DashboardAdminActivity
+import com.lingomak.lingomakapp.utils.formatoHoras
 
 class DetalleMaquinariaFragment : Fragment() {
 
@@ -56,6 +57,28 @@ class DetalleMaquinariaFragment : Fragment() {
             }
             
             viewModel.cargarConsumoPromedio(uid)
+            
+            viewModel.nivelCombustible.observe(viewLifecycleOwner) { nivel ->
+                if (nivel != null) {
+                    binding.tvNivelCombustibleDetalle.text = "%.1f%% (%.1f Gls)".format(nivel.porcentaje, nivel.galones)
+                    val colorRes = when {
+                        nivel.porcentaje <= 20 -> R.color.danger
+                        nivel.porcentaje <= 50 -> R.color.warning
+                        else -> R.color.success
+                    }
+                    val color = requireContext().getColor(colorRes)
+                    binding.tvNivelCombustibleDetalle.setTextColor(color)
+                    binding.ivIconoCombustibleDetalle.setColorFilter(color)
+                    binding.ivIconoCombustibleDetalle.setImageResource(R.drawable.ic_gas_station)
+                } else {
+                    binding.tvNivelCombustibleDetalle.text = "Sin datos suficientes"
+                    val colorSecondary = requireContext().getColor(R.color.text_secondary)
+                    binding.tvNivelCombustibleDetalle.setTextColor(colorSecondary)
+                    binding.ivIconoCombustibleDetalle.setColorFilter(colorSecondary)
+                    binding.ivIconoCombustibleDetalle.setImageResource(R.drawable.ic_gas_station)
+                }
+            }
+            viewModel.cargarNivelCombustible(uid)
         }
     }
 
@@ -88,8 +111,28 @@ class DetalleMaquinariaFragment : Fragment() {
         binding.tvModeloDetalleMaquinaria.text = maquinaria.modelo
         binding.tvAnioDetalleMaquinaria.text = maquinaria.anio.toString()
         binding.tvPlacaDetalleMaquinaria.text = maquinaria.placaSerie
-        binding.tvHorometroDetalleMaquinaria.text = "${maquinaria.horometroActual} h"
-        binding.tvHorometroUltimoDetalleMaquinaria.text = "${maquinaria.horometroUltimoMantenimiento} h"
+        binding.tvHorometroDetalleMaquinaria.text = "${maquinaria.horometroActual.formatoHoras()} h"
+        binding.tvHorometroUltimoDetalleMaquinaria.text = "${maquinaria.horometroUltimoMantenimiento.formatoHoras()} h"
+
+        // Próximo mantenimiento
+        val horasDesdeUltimo = maquinaria.horometroActual - maquinaria.horometroUltimoMantenimiento
+        val horasRestantes = maquinaria.intervaloMantenimientoHoras - horasDesdeUltimo
+
+        when {
+            horasRestantes <= 20 -> {
+                binding.tvProximoMantenimientoDetalle.text = "Faltan ${horasRestantes.formatoHoras()} h para mantenimiento"
+                binding.tvProximoMantenimientoDetalle.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), R.color.danger))
+            }
+            horasRestantes <= 50 -> {
+                binding.tvProximoMantenimientoDetalle.text = "Faltan ${horasRestantes.formatoHoras()} h para mantenimiento"
+                binding.tvProximoMantenimientoDetalle.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), R.color.warning))
+            }
+            else -> {
+                binding.tvProximoMantenimientoDetalle.text = "Faltan ${horasRestantes.formatoHoras()} h para mantenimiento"
+                binding.tvProximoMantenimientoDetalle.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), R.color.success))
+            }
+        }
+
         binding.tvUbicacionDetalleMaquinaria.text = maquinaria.ubicacionActual
         binding.tvObservacionesDetalleMaquinaria.text = maquinaria.observaciones.ifEmpty { "Sin observaciones registradas." }
 

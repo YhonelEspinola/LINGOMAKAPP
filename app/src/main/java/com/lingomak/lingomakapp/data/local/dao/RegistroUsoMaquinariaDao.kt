@@ -64,6 +64,15 @@ interface RegistroUsoMaquinariaDao {
     @Query("UPDATE registros_uso_maquinaria SET estadoSync = 'SINCRONIZADO' WHERE uid = :uid")
     suspend fun marcarComoSincronizado(uid: String)
 
+    @Query("DELETE FROM registros_uso_maquinaria WHERE estadoSync = 'SINCRONIZADO'")
+    suspend fun eliminarSincronizados()
+
+    @Query("DELETE FROM registros_uso_maquinaria WHERE uid NOT IN (:uids) AND estadoSync = 'SINCRONIZADO'")
+    suspend fun eliminarSincronizadosNoPresentes(uids: List<String>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertarLista(registros: List<RegistroUsoMaquinariaEntity>)
+
     @Query("SELECT COUNT(*) FROM registros_uso_maquinaria WHERE estadoSync != 'SINCRONIZADO'")
     fun obtenerPendientesDeSincronizarCount(): LiveData<Int>
 

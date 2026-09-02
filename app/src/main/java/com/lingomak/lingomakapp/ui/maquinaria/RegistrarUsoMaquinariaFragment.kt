@@ -18,6 +18,7 @@ import com.lingomak.lingomakapp.data.model.RegistroUsoMaquinariaModel
 import com.lingomak.lingomakapp.data.model.SuministroModel
 import com.lingomak.lingomakapp.databinding.FragmentRegistrarUsoMaquinariaBinding
 import com.lingomak.lingomakapp.utils.DateUtils
+import com.lingomak.lingomakapp.utils.formatoHoras
 import java.util.UUID
 
 class RegistrarUsoMaquinariaFragment : Fragment() {
@@ -34,7 +35,7 @@ class RegistrarUsoMaquinariaFragment : Fragment() {
     private var tipoMaquinaria = ""
     private var horometroActualMaquina = 0.0
     private var horometroUltimoMantenimiento = 0.0
-    private var intervaloMantenimientoHoras = 250
+    private var intervaloMantenimientoHoras = 250.0
     private var capacidadTanqueGls: Double? = null
 
     // Datos Edición (si aplica)
@@ -60,7 +61,7 @@ class RegistrarUsoMaquinariaFragment : Fragment() {
         if (esEdicion) {
             cargarDatosEdicion()
         } else {
-            binding.tvHorometroActual.text = "$horometroActualMaquina h"
+            binding.tvHorometroActual.text = "${horometroActualMaquina.formatoHoras()} h"
         }
 
         return binding.root
@@ -75,7 +76,7 @@ class RegistrarUsoMaquinariaFragment : Fragment() {
         
         horometroActualMaquina = args.getDouble("horometroActual", 0.0)
         horometroUltimoMantenimiento = args.getDouble("horometroUltimoMantenimiento", 0.0)
-        intervaloMantenimientoHoras = args.getInt("intervaloMantenimientoHoras", 250)
+        intervaloMantenimientoHoras = args.getDouble("intervaloMantenimientoHoras", 250.0)
         
         if (args.containsKey("capacidadTanqueGls")) {
             capacidadTanqueGls = args.getDouble("capacidadTanqueGls")
@@ -87,8 +88,8 @@ class RegistrarUsoMaquinariaFragment : Fragment() {
         binding.tvNombreMaquinaria.text = nombreMaquinaria
         binding.tvCodigoMaquinaria.text = "Código: $codigoMaquinaria"
         binding.tvTipoMaquinaria.text = "Tipo: $tipoMaquinaria"
-        binding.tvUltimoMantenimiento.text = "$horometroUltimoMantenimiento h"
-        binding.tvIntervaloMantenimiento.text = "Frecuencia: cada $intervaloMantenimientoHoras h"
+        binding.tvUltimoMantenimiento.text = "${horometroUltimoMantenimiento.formatoHoras()} h"
+        binding.tvIntervaloMantenimiento.text = "Frecuencia: cada ${intervaloMantenimientoHoras.formatoHoras()} h"
         
         if (esEdicion) {
             binding.tvTituloFormulario.text = "Editar Actividad"
@@ -144,7 +145,7 @@ class RegistrarUsoMaquinariaFragment : Fragment() {
         horometroAnteriorTramo = args.getDouble("horometroAnterior", 0.0)
         horometroFinalOriginal = args.getDouble("horometroFinal", 0.0)
         
-        binding.tvHorometroActual.text = "$horometroAnteriorTramo h"
+        binding.tvHorometroActual.text = "${horometroAnteriorTramo.formatoHoras()} h"
         binding.etHorometroFinal.setText(horometroFinalOriginal.toString())
         binding.etTrabajoRealizado.setText(args.getString("trabajoRealizado"))
         
@@ -201,12 +202,12 @@ class RegistrarUsoMaquinariaFragment : Fragment() {
         val horometroFinal = binding.etHorometroFinal.text.toString().toDoubleOrNull() ?: 0.0
         
         val horasUso = if (horometroFinal > horometroAnterior) horometroFinal - horometroAnterior else 0.0
-        binding.tvHorasCalculadas.text = "%.1f h".format(horasUso)
+        binding.tvHorasCalculadas.text = "${horasUso.formatoHoras()} h"
 
         if (horometroFinal > 0) {
             val horasDesdeUltimo = horometroFinal - horometroUltimoMantenimiento
             val horasRestantes = intervaloMantenimientoHoras - horasDesdeUltimo
-            binding.tvHorasRestantes.text = "%.1f h".format(horasRestantes)
+            binding.tvHorasRestantes.text = "${horasRestantes.formatoHoras()} h"
 
             when {
                 horasRestantes <= 0 -> {
@@ -214,7 +215,7 @@ class RegistrarUsoMaquinariaFragment : Fragment() {
                     binding.tvMensajeMantenimiento.setTextColor(Color.RED)
                 }
                 horasRestantes <= 20 -> {
-                    binding.tvMensajeMantenimiento.text = "🟡 Próxima a mantenimiento (faltan %.1f h)".format(horasRestantes)
+                    binding.tvMensajeMantenimiento.text = "🟡 Próxima a mantenimiento (faltan ${horasRestantes.formatoHoras()} h)"
                     binding.tvMensajeMantenimiento.setTextColor(Color.parseColor("#FFA500"))
                 }
                 else -> {
@@ -227,7 +228,7 @@ class RegistrarUsoMaquinariaFragment : Fragment() {
         val combustible = binding.etGalonesCombustible.text.toString().toDoubleOrNull() ?: 0.0
         if (capacidadTanqueGls != null && capacidadTanqueGls!! > 0) {
             val porc = (combustible / capacidadTanqueGls!!) * 100
-            binding.tvPorcentajeTanque.text = "%.0f%%".format(porc)
+            binding.tvPorcentajeTanque.text = "${porc.formatoHoras()}%"
             if (porc > 100 && binding.spTipoCarga.text.toString() == "Completa") {
                 binding.tvPorcentajeTanque.setTextColor(Color.RED)
             } else {

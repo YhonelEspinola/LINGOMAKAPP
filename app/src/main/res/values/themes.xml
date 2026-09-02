@@ -12,8 +12,9 @@
         <item name="colorOnSecondary">@color/white</item>
 
         <!-- Estado y Fondo -->
-        <item name="android:statusBarColor">@color/primary_dark</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:windowBackground">@color/background</item>
+        <item name="android:windowLightStatusBar">false</item>
 
         <!-- Definición de tema para el selector de fecha -->
         <item name="materialCalendarTheme">@style/CustomDatePickerTheme</item>

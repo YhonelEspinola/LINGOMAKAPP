@@ -13,6 +13,7 @@ import com.lingomak.lingomakapp.R
 import com.lingomak.lingomakapp.data.model.MantenimientoModel
 import com.lingomak.lingomakapp.databinding.FragmentDetalleMantenimientoBinding
 import com.lingomak.lingomakapp.ui.dashboard.DashboardAdminActivity
+import com.lingomak.lingomakapp.utils.formatoHoras
 
 class DetalleMantenimientoFragment : Fragment() {
 
@@ -36,7 +37,7 @@ class DetalleMantenimientoFragment : Fragment() {
     private var responsable: String = ""
     private var prioridad: String = ""
     private var observaciones: String = ""
-    private var horometroProgramado: Int = 0
+    private var horometroProgramado: Double = 0.0
     private var costoEstimado: Double = 0.0
 
     private var origen: String = ""
@@ -110,7 +111,7 @@ class DetalleMantenimientoFragment : Fragment() {
         binding.tvTipoMaquinariaDetalle.text = tipoMaquinaria
         binding.tvDescripcionDetalle.text = descripcion
         binding.tvFechaDetalle.text = fechaProgramada
-        binding.tvHorometroDetalle.text = "$horometroProgramado h"
+        binding.tvHorometroDetalle.text = "${horometroProgramado.formatoHoras()} h"
         binding.tvResponsableDetalle.text = responsable
         binding.tvPrioridadDetalle.text = prioridad
         binding.tvCostoEstimadoDetalle.text = "S/ $costoEstimado"

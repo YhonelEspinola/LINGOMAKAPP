@@ -14,7 +14,8 @@
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbarAdmin"
             android:layout_width="0dp"
-            android:layout_height="56dp"
+            android:layout_height="wrap_content"
+            android:minHeight="56dp"
             android:background="#7F0000"
             android:title="LINGOMAK"
             android:titleTextColor="#FFFFFF"
