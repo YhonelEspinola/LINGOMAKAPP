@@ -17,7 +17,7 @@ data class MaquinariaEntity(
     val horometroActual: Double,
     val horometroUltimoMantenimiento: Double,
     val capacidadTanqueGls: Double? = null,
-    val intervaloMantenimientoHoras: Int = 250,
+    val intervaloMantenimientoHoras: Double = 250.0,
     val ubicacionActual: String,
     val imagenUrl: String,
     val observaciones: String,

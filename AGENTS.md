@@ -1,262 +1,214 @@
-# AGENTS.md — LINGOMAKAPP: Coherencia visual de listados y filtros
+# AGENTS.md — LINGOMAKAPP: Eliminar el indicador de nivel de combustible estimado
 
-Este documento es la instrucción de trabajo para el agente de IA embebido en Android Studio.
-Todo lo que dice aquí fue verificado leyendo el código real del proyecto antes de escribirlo — no son
-suposiciones. Cuando se dice "confirmado en código", significa que se citó el archivo y la línea exacta.
-
-## Contexto del proyecto
-
-- App Android nativa, Kotlin, arquitectura MVVM, Room + Firestore (offline-first).
-- Los módulos con listados usan uno de estos dos patrones de "contenedor + pestañas":
-  - **Patrón A (ViewPager2 + Fragments separados)** — no se usa actualmente en los módulos de este documento.
-  - **Patrón B (ViewPager2 + un solo `RecyclerView.Adapter` que genera cada pestaña como un "page")** —
-    este es el patrón real y vigente. Ejemplos: `MantenimientoPagerAdapter.kt` (pestañas EN COLA/HISTORIAL)
-    y `MaquinariaAdminPagerAdapter.kt` (pestañas MAQUINARIA/BITÁCORA DE USO). Cada "page" es un
-    `ViewHolder` que infla `item_mantenimiento_page.xml` o `item_maquinaria_admin_page.xml` respectivamente.
-- Regla de alcance: si vas a tocar un módulo, sigue el Patrón B — no reintroduzcas fragments separados
-  por pestaña, ya se intentó antes y generó inconsistencias (duplicación de FABs, botones sin conectar).
-
-## Regla base — ningún cambio "de estilo nuevo": esto es reordenar y unificar lo que ya existe
-
-Antes de escribir una sola línea, un hallazgo importante para no malgastar esfuerzo:
-**no existen dos estilos visuales distintos de dropdown o de chip en el proyecto.** Tanto
-`item_mantenimiento_page.xml` como `item_maquinaria_admin_page.xml` usan el mismo
-`style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"` para
-los dropdowns. Lo que hace que Bitácora de Uso "se vea mejor" no es un componente distinto — es el
-**orden**: ahí los dropdowns (Máquina, Operario) aparecen antes que los chips, mientras que en
-Mantenimiento los chips aparecen antes que el dropdown (Usuario). Ese orden invertido en Mantenimiento
-es justamente lo que hay que corregir (ver Tarea 3).
-
-Sí hay una inconsistencia real de **chips** (ver Tarea 4), pero tampoco es "dos estilos": es que el
-mismo estilo bueno (`R.layout.layout_chip_choice`, con `selector_chip_choice` y `selector_chip_text`)
-se usa en algunos chip groups y en otros no, incluso dentro del mismo módulo.
+Instrucción de trabajo para el agente embebido en Android Studio. Se verificó cada archivo y línea
+citada contra el código real antes de escribir esto.
 
 ---
 
-## TAREA 1 — Todos los filtros deben ser colapsables
+## Decisión y motivo (para que quede documentado, no lo cuestiones)
 
-Estado actual (confirmado):
-- `item_mantenimiento_page.xml` y `item_maquinaria_admin_page.xml` ya son colapsables (header
-  "FILTROS Y RANGO" + chevron + `layoutFiltrosExpandible` con `visibility="gone"` por defecto).
-- **`fragment_usuarios.xml` no tiene filtros de ningún tipo** (ni colapsables ni fijos) — es solo un
-  `RecyclerView` a pantalla completa. Si el módulo de Usuarios debe tener filtro (ej. por rol o por
-  estado activo/inactivo), agrégalo siguiendo el mismo patrón de header colapsable de los otros dos
-  archivos citados arriba. Si no necesita filtros, está bien que no los tenga — pero sí falta el
-  buscador (ver Tarea 7).
+Se decidió **eliminar por completo** la funcionalidad que calculaba y mostraba el nivel estimado de
+combustible (galones + % del tanque + color de criticidad rojo/amarillo/verde) tanto en el card del
+listado de Maquinaria como en la ficha de detalle. Motivo: las máquinas reales no dan una lectura
+exacta de combustible (es un indicador analógico de aguja/rayitas), y un cálculo con decimales de
+precisión a partir de esa fuente se desincroniza con la realidad con el paso del tiempo — el error se
+acumula y nunca se autocorrige.
 
-## TAREA 2 — Barra de búsqueda fuera de los filtros colapsables, encima del selector de pestañas
+**Lo que SÍ se mantiene, no lo toques:** el cálculo de consumo/rendimiento
+(`SuministroRepository.calcularConsumoGlsHora`, lo que se muestra como "Rendimiento (últimos 30
+días)" en la ficha de máquina). Eso sigue siendo útil y correcto — solo se elimina el indicador de
+**nivel** (cuánto combustible queda en el tanque), no el de **consumo** (cuánto gasta por hora).
 
-Estado actual (confirmado):
-- `fragment_mantenimiento.xml` y `fragment_maquinaria_admin.xml` ya cumplen esto: tienen un
-  `Toolbar` con un `EditText` de búsqueda (`etBuscarMantenimiento` / `etBuscarMaquinaria`) ANTES del
-  `TabLayout`, en el contenedor — no dentro de cada pestaña.
-- **`fragment_inventario_container.xml` NO tiene barra de búsqueda.** El `TabLayout` está directo en
-  la raíz, sin ningún `Toolbar`/`EditText` encima.
-- En su lugar, la búsqueda vive **duplicada** dentro de cada pestaña por separado:
-  - `fragment_inventario.xml` línea 9: `EditText id="etBuscar"`
-  - `fragment_movimientos_global.xml` línea 23: `EditText id="etBuscar"` (mismo id, archivo distinto)
+---
 
-Esto es una regresión respecto al patrón ya usado en Mantenimiento y Maquinaria. Corrección:
-1. Mueve el `EditText` de búsqueda a `fragment_inventario_container.xml`, replicando exactamente
-   la estructura de `fragment_maquinaria_admin.xml` (Toolbar con `LinearLayout` + `EditText`,
-   `app:layout_constraintTop_toTopOf="parent"`, y el `TabLayout` constreñido debajo de ese Toolbar).
-2. Elimina los dos `EditText etBuscar` duplicados de `fragment_inventario.xml` y
-   `fragment_movimientos_global.xml`.
-3. En el Kotlin del contenedor de Inventario, cablea el texto del buscador para que filtre la
-   pestaña visible actualmente (revisa cómo lo hace `MaquinariaFragment.kt` con
-   `etBuscarMaquinaria` hacia `pagerAdapter.updateSearch(...)` y replica el mismo mecanismo).
+## Archivos a modificar (8 confirmados, ninguno más debería tener referencias)
 
-## TAREA 3 — Orden jerárquico al expandir filtros: fechas → dropdowns → chips
+### 1. `data/repository/SuministroRepository.kt`
+- Elimina el `data class NivelCombustibleEstimado` (línea ~8).
+- Elimina la función `suspend fun calcularNivelEstimadoCombustible(uidMaquinaria: String): NivelCombustibleEstimado?` (línea ~49-80).
+- No toques `calcularConsumoGlsHora` ni ninguna otra función de este archivo.
 
-Estado actual (confirmado, orden real por archivo):
+### 2. `ui/maquinaria/MaquinariaViewModel.kt`
+Elimina (línea ~30-34, ~51-63):
+- `_nivelCombustible` / `nivelCombustible` (LiveData)
+- `_nivelesCombustible` / `nivelesCombustible` (LiveData)
+- `fun cargarNivelCombustible(uidMaquinaria: String)`
+- Cualquier otra función que llame a `calcularNivelEstimadoCombustible` o popule `_nivelesCombustible`.
 
-| Archivo | Orden actual | ¿Correcto? |
+### 3. `ui/maquinaria/MaquinariaAdapter.kt`
+Elimina (línea ~18-21, ~62-77):
+- La propiedad `nivelesCombustible` y `fun actualizarNivelesCombustible(...)`.
+- El bloque completo en `bind()`/`onBindViewHolder` que arma `binding.tvNivelCombustible.text` y le
+  aplica color según criticidad.
+- **Después de esto, elimina también el `TextView` `tvNivelCombustible` de `item_maquinaria.xml`**
+  (busca su bloque completo, incluyendo cualquier ícono/label que lo acompañe, ej. "⛽").
+
+### 4. `ui/maquinaria/DetalleMaquinariaFragment.kt`
+Elimina (línea ~61-81):
+- El observer de `viewModel.nivelCombustible`.
+- El bloque que arma `binding.tvNivelCombustibleDetalle.text` y su color.
+- La llamada `viewModel.cargarNivelCombustible(uid)`.
+- **Después, elimina también el `TextView` `tvNivelCombustibleDetalle`** (y cualquier label como
+  "Nivel de combustible estimado" que lo acompañe) de `fragment_detalle_maquinaria.xml`, en la
+  sección "Suministro y Repostaje" donde vive hoy.
+
+### 5. `ui/maquinaria/MaquinariaAdminPagerAdapter.kt`
+Elimina (línea ~81-86, ~138):
+- `fun updateNivelesCombustible(...)`.
+- La propiedad `nivelesCombustibleMap`.
+- La llamada `maqAdapter.actualizarNivelesCombustible(nivelesCombustibleMap)` dentro del bind de la
+  página de Maquinaria.
+
+### 6. `ui/maquinaria/MaquinariaFragment.kt`
+Elimina (línea ~95):
+- El observer `maquinariaViewModel.nivelesCombustible.observe(viewLifecycleOwner) { ... }` completo.
+
+### 7. `res/layout/item_maquinaria.xml`
+Elimina el `TextView` `tvNivelCombustible` y cualquier vista hermana que solo exista para acompañarlo
+(ícono, separador). Verifica que el layout quede visualmente coherente después de quitarlo (ajusta
+márgenes si el elemento de abajo quedaba pegado a este).
+
+### 8. `res/layout/fragment_detalle_maquinaria.xml`
+Elimina el `TextView` `tvNivelCombustibleDetalle` y su label. Igual que en el punto anterior, revisa
+que la sección "Suministro y Repostaje" quede bien después de quitarlo (probablemente solo queda
+"Último Repostaje" y "Capacidad Tanque" ahí, que sí se mantienen).
+
+---
+
+## Verificación final obligatoria (Tarea 1)
+
+Después de los 8 cambios, busca en **todo el proyecto** (no solo estos 8 archivos) cualquier
+referencia restante a: `NivelCombustibleEstimado`, `nivelCombustible`, `nivelesCombustible`,
+`calcularNivelEstimadoCombustible`, `tvNivelCombustible`, `tvNivelCombustibleDetalle`. Si encuentras
+alguna que no esté en esta lista, avísame antes de decidir qué hacer con ella — no la borres a
+ciegas.
+
+Compila y corre en el emulador: confirma que el card de Maquinaria y la ficha de detalle ya no
+muestran nada de nivel de combustible, pero que "Rendimiento (últimos 30 días)" (consumo) sigue
+apareciendo normal, sin cambios.
+
+---
+
+## Reglas de alcance (Tarea 1)
+
+1. No toques `calcularConsumoGlsHora` ni el texto de "Rendimiento" — eso se mantiene intacto.
+2. No borres `SuministroEntity`, `SuministroRepository` completo, ni la sección "Suministro y
+   Repostaje" — solo el sub-elemento de nivel dentro de ella.
+3. Si algo de esto ya no existe en tu copia del código (por ejemplo si ya se había tocado antes),
+   dilo explícitamente en vez de asumir que sigue igual.
+4. Compila antes de reportar como terminado.
+
+---
+
+## TAREA 2 — Bug: los chips de filtro no se pueden deslizar horizontalmente
+
+**Síntoma:** en varios filtros con chips que no caben en una sola pantalla, no se puede deslizar el
+dedo para ver las opciones que quedan fuera de la vista — se quedan fijas.
+
+**Diagnóstico (probable, confírmalo antes de corregir):** a diferencia del bug ya resuelto en
+`SelectorFechasView` (que usaba un `ViewPager2` anidado), acá el contenedor es un
+`HorizontalScrollView` normal envolviendo un `ChipGroup`. Es un problema conocido de Android: los
+`Chip` de Material reclaman el toque agresivamente (por su ripple/estado), lo que puede impedir que
+el `HorizontalScrollView` detecte a tiempo que el usuario quiere deslizar en vez de tocar un chip
+puntual.
+
+**Archivos afectados (9 `HorizontalScrollView` + `ChipGroup`, confirmados):**
+- `fragment_alertas.xml` — `cgCategorias` (línea ~157) y `cgSubtipos`/`scrollSubtipos` (línea ~208)
+  — **este último cambia de tipo de control en la Tarea 3, revisa esa tarea primero.**
+- `item_inventario_page.xml` — `chipGroupStock` (línea ~107) y `chipGroupEstadoInventario`
+  (línea ~120)
+- `fragment_movimientos_global.xml` — `chipGroupTipo` (línea ~73) — **ojo:** en este archivo el
+  `ChipGroup` NO está envuelto en `HorizontalScrollView` (son solo 3 chips, entran sin scroll) — no
+  necesita este fix, ya está bien así.
+- `item_mantenimiento_page.xml` — `chipGroupTipo` (línea ~103) y `chipGroupEstado` (línea ~117) —
+  **este último cambia a dropdown en la Tarea 3 en la pestaña "En cola", revisa esa tarea primero.**
+- `item_maquinaria_admin_page.xml` — `chipGroupEstadoMaquinaria` (línea ~151, pasa a dropdown en
+  Tarea 3) y `chipGroupCategoriaMaquinaria` (línea ~164, pasa a dropdown en Tarea 3)
+- `fragment_usuarios.xml` — `chipGroupRol` (línea ~100) y `chipGroupEstado` (línea ~156)
+
+**Antes de corregir:** reproduce el bug en el emulador en al menos uno de estos (ej. Usuarios, que
+tiene 3 chips y no cambia a dropdown en la Tarea 3) y confirma si el problema es exactamente el que
+se describe arriba.
+
+**Corrección propuesta, si se confirma:** crea una clase reutilizable
+`utils/SwipeableHorizontalScrollView.kt` que extienda `android.widget.HorizontalScrollView` y
+sobrescriba `onInterceptTouchEvent` con el mismo patrón ya usado en
+`SelectorFechasView.onInterceptTouchEvent` (dejar pasar el `ACTION_DOWN` al hijo, pero interceptar en
+`ACTION_MOVE` si el arrastre horizontal supera el touch slop y es más horizontal que vertical).
+Reemplaza la etiqueta `<HorizontalScrollView>` por
+`<com.lingomak.lingomakapp.utils.SwipeableHorizontalScrollView>` en los 7 archivos de arriba que sí
+lo necesitan (los que quedan como chips después de la Tarea 3). No dupliques la lógica de
+interceptación en cada archivo — un solo componente reutilizable para los 7.
+
+---
+
+## TAREA 3 — Regla: filtro con más de 3 opciones (incluyendo "Todos") → dropdown, si no → chips
+
+Convierte estos filtros de chips a dropdown (mismo estilo `TextInputLayout` con
+`ExposedDropdownMenu` que ya se usa en "Filtrar por Usuario" de Mantenimiento — cópiale el patrón
+exacto):
+
+| Archivo | ChipGroup a convertir | Opciones actuales |
 |---|---|---|
-| `item_maquinaria_admin_page.xml` (Bitácora) | fecha → dropdowns (Máquina, Operario) → *(sin chips en esa pestaña)* | Sí, es la referencia |
-| `item_maquinaria_admin_page.xml` (Maquinaria) | chips (Estado, Categoría) → *(sin dropdown ni fecha en esa pestaña)* | No aplica comparación, no tiene los 3 tipos |
-| `item_mantenimiento_page.xml` | fecha → **chips (Tipo, Estado)** → **dropdown (Usuario)** | **No — orden invertido, corregir** |
+| `item_mantenimiento_page.xml` / `MantenimientoPagerAdapter.kt` | `chipGroupEstado`, **solo en la pestaña "En cola" (position 0)** — la de Historial (position 1) se queda como chips, tiene 3 opciones | TODOS, PENDIENTE, EN_PROCESO, VENCIDO |
+| `item_maquinaria_admin_page.xml` / `MaquinariaAdminPagerAdapter.kt` | `chipGroupEstadoMaquinaria` | TODOS, OPERATIVA, EN_MANTENIMIENTO, INACTIVA |
+| `item_maquinaria_admin_page.xml` / `MaquinariaAdminPagerAdapter.kt` | `chipGroupCategoriaMaquinaria` | TODAS + categorías dinámicas (conviértelo aunque hoy tenga pocas — puede crecer) |
+| `item_inventario_page.xml` / `InventarioPagerAdapter.kt` | `chipGroupStock` | TODOS, CON STOCK, BAJO STOCK, SIN STOCK |
+| `fragment_alertas.xml` / `AlertasFragment.kt` | `cgCategorias` | Todas, Mantenimiento, Stock, Movimientos |
+| `fragment_alertas.xml` / `AlertasFragment.kt` | `cgSubtipos` | **Conviértelo siempre a dropdown**, aunque a veces tenga solo 3 opciones (cuando la categoría es "Movimientos") — es el mismo filtro cambiando de tamaño según la categoría elegida arriba, y se ve inconsistente que a veces sea chips y a veces dropdown para el mismo control. Trátalo como una excepción explícita a la regla de "3 o menos = chips". |
 
-Corrección en `item_mantenimiento_page.xml`: mueve el bloque
-`TextInputLayout id="tilFiltroUsuario"` (dropdown de Usuario) para que quede **inmediatamente
-después** del bloque `layoutFiltroFecha`, y antes de los dos `HorizontalScrollView` que contienen
-`chipGroupTipo` y `chipGroupEstado`. No cambies ningún id ni la lógica de filtrado en el Kotlin
-(`MantenimientoPagerAdapter.kt`), es un cambio de orden visual únicamente.
+**No toques estos, ya cumplen la regla (3 opciones, se quedan como chips):**
+`chipGroupTipo` de Mantenimiento, `chipGroupEstado` de Historial en Mantenimiento,
+`chipGroupEstadoInventario`, `chipGroupTipo` de Movimientos, `chipGroupRol` y `chipGroupEstado` de
+Usuarios.
 
-Cuando un módulo tenga los 3 tipos de filtro a la vez, el orden final debe quedar:
-1. Selector de fechas (con su etiqueta dinámica "Últimos 30 días" arriba)
-2. Listas desplegables (dropdowns)
-3. Chips
-
-## TAREA 4 — Mismo estilo de dropdown y de chip en todos los módulos
-
-Dropdowns: ya son consistentes (ver "Regla base" arriba) — no se necesita ningún cambio.
-
-Chips: **sí hay una inconsistencia real**, y está incluso dentro del mismo archivo. Confirmado en
-`MantenimientoPagerAdapter.kt`:
-- El chip group `chipGroupEstado` (dinámico) se construye con `createChip(...)`, que infla
-  `R.layout.layout_chip_choice` — este es el estilo "bueno" (fondo/texto con
-  `selector_chip_choice` / `selector_chip_text`, sin borde).
-- Pero los chips de `chipGroupTipo` (Todos/Preventivo/Correctivo) están escritos **directo en el XML**
-  de `item_mantenimiento_page.xml` con `style="@style/Widget.MaterialComponents.Chip.Choice"` a secas,
-  sin el selector de color custom — se ven con el estilo default de Material, no con el estilo de marca.
-
-Corrección: convierte los 3 chips estáticos de `chipGroupTipo` (`chipTipoTodos`,
-`chipTipoPreventivo`, `chipTipoCorrectivo`) en chips generados dinámicamente igual que
-`chipGroupEstado`, usando `createChip(...)` / `R.layout.layout_chip_choice`, en vez de declararlos
-fijos en el XML. Audita también cualquier otro `ChipGroup` del proyecto (ej. en Inventario,
-Movimientos, filtros de estado de Maquinaria) para confirmar que todos usan
-`R.layout.layout_chip_choice` — si encuentras alguno con `style="@style/Widget.MaterialComponents.Chip.Choice"`
-puesto directo, conviértelo al mismo patrón.
-
-## TAREA 5 — Bug de filtros en Bitácora de Uso (diagnosticar antes de asumir la causa)
-
-Descripción del síntoma tal como lo reporta el usuario: al presionar el header de filtros en la
-pestaña Bitácora de Uso, "los filtros no aparecen y en su lugar se esconde/muestra la card del
-listado" — un comportamiento visualmente incorrecto.
-
-**Auditoría hecha:** se revisó `MaquinariaAdminPagerAdapter.kt` completo (la clase que maneja ambas
-pestañas). La lógica de expansión (`expandedFilters` por posición, `actualizarUIPorExpansion`,
-el listener de `btnToggleFiltros`) está estructuralmente correcta a primera lectura — no se encontró
-una causa obvia de que tocar el header mueva la visibilidad del `RecyclerView` en vez de la del
-`layoutFiltrosExpandible`. Posibles causas a investigar con el proyecto corriendo (breakpoints o
-logs, no se puede diagnosticar más por lectura estática):
-
-1. Revisa si `getItemViewType()` está sobrescrito en `MaquinariaAdminPagerAdapter`. Ahora mismo NO lo
-   está — las dos pestañas (Maquinaria y Bitácora) usan el mismo `viewType` por defecto (0). Aunque el
-   código de `bind()` parece re-configurar todo en cada llamada, prueba a agregar
-   `override fun getItemViewType(position: Int) = position` para eliminar cualquier posibilidad de que
-   el RecyclerView interno del ViewPager2 esté reciclando y confundiendo el `ViewHolder` de una pestaña
-   con el de la otra al hacer swipe rápido.
-2. Verifica en tiempo real (con el layout inspector) si al pulsar el header, es realmente
-   `layoutFiltrosExpandible` el que cambia de `GONE` a `VISIBLE`, o si por error está afectando a
-   `rvContenido` — compara los ids exactos en el debugger, no solo por lectura del XML.
-3. Confirma que `item_maquinaria_admin_page.xml` no tiene ningún `id` duplicado con otro layout que
-   pudiera colisionar en el binding generado.
-
-No implementes una solución sin antes reproducir el bug y confirmar la causa real — este es
-justamente el tipo de bug que ya nos costó tiempo antes por asumir en vez de verificar.
-
-## TAREA 6 — Buscador y filtros anclados en la cabecera (no deben desaparecer al hacer scroll)
-
-Estado actual (confirmado):
-- `fragment_mantenimiento.xml` y `fragment_maquinaria_admin.xml` YA implementan esto correctamente:
-  el `Toolbar` (buscador) y el `TabLayout` están constreñidos directamente al `ConstraintLayout` raíz,
-  fuera del `ViewPager2` — nunca se mueven, solo el contenido de la lista hace scroll debajo.
-- Los **filtros colapsables** (dentro de cada page) SÍ viven dentro del área que hace scroll junto
-  con la lista — eso es intencional y correcto (es "colapsable", no "fijo"); lo que debe quedar fijo
-  es solo el buscador y el selector de pestañas, no el bloque de filtros expandido.
-- Una vez corregida la Tarea 2 (mover el buscador de Inventario al contenedor), Inventario/Movimientos
-  quedará con el mismo comportamiento anclado automáticamente, porque copiará la misma estructura.
-
-No hay trabajo adicional en esta tarea más allá de lo ya pedido en la Tarea 2.
-
-## TAREA 7 — Vista de Usuarios no aprovecha el ancho de pantalla
-
-Estado actual (confirmado): la sospecha inicial de "padding excesivo" **no se confirma numéricamente**.
-`fragment_usuarios.xml` tiene `android:padding="16dp"` en las 4 direcciones sobre el `ConstraintLayout`
-raíz — eso da un inset total de 16dp por lado. En comparación, en Mantenimiento el inset real es
-mayor (16dp del contenedor de la página + 12dp de `layout_marginHorizontal` que trae la propia card
-en `item_mantenimiento.xml` = 28dp por lado). Es decir, Usuarios tiene MENOS padding lateral que
-Mantenimiento, no más.
-
-La causa más probable de que "se vea raro" es otra, y sí está confirmada: **`fragment_usuarios.xml`
-es la única vista de listado del proyecto sin buscador ni cabecera anclada** — el `RecyclerView` empieza
-pegado arriba de la pantalla sin ningún `Toolbar`, a diferencia de todos los demás módulos. Además su
-FAB (`fabAgregarUsuario`) es un `FloatingActionButton` circular simple con solo ícono, mientras que en
-el resto del proyecto se usa `ExtendedFloatingActionButton` con texto (ver Tarea 8, mismo patrón de
-inconsistencia).
-
-Corrección:
-1. Dale a `fragment_usuarios.xml` la misma estructura de cabecera que `fragment_maquinaria_admin.xml`
-   (Toolbar con buscador). Usuarios no tiene pestañas, así que no necesita `TabLayout`/`ViewPager2` —
-   pero sí el `Toolbar` con `EditText` de búsqueda, ancho igual al resto.
-2. Cambia `fabAgregarUsuario` de `FloatingActionButton` a `ExtendedFloatingActionButton` con texto
-   "+ REGISTRAR USUARIO", mismo estilo que se pide en la Tarea 8 para los demás módulos.
-3. Confirma visualmente en el emulador, después del cambio, si las cards de `item_usuario.xml` ya se
-   ven consistentes con las de otros módulos — si sigue viéndose "cortado", compara medida por medida
-   contra `item_maquinaria.xml` antes de tocar el padding a ciegas.
-
-## TAREA 8 — Botones de registro en Inventario / Movimientos
-
-Estado actual confirmado en `fragment_movimientos_global.xml` (líneas ~158-172):
-```xml
-<com.google.android.material.button.MaterialButton
-    android:id="@+id/btnRegistrar"
-    android:layout_width="match_parent"
-    android:layout_height="56dp"
-    android:layout_margin="16dp"
-    android:text="REGISTRAR"
-    app:icon="@drawable/qr"
-    ...
-    app:layout_constraintBottom_toBottomOf="parent" />
-```
-Es un `MaterialButton` de **ancho completo** (`match_parent`), no un botón flotante — esa es la causa
-exacta de por qué no se ve como el resto de la app. Todos los demás FABs "REGISTRAR" del proyecto
-(`fabAgregarMaquinaria`, `fabAgregarRepuesto`, `fabAccionMaquinaria`) son
-`ExtendedFloatingActionButton` con `layout_width="wrap_content"`, forma de píldora, y posicionados
-solo en la esquina inferior derecha con `layout_margin="16dp"`.
-
-Corrección exacta:
-1. En `fragment_movimientos_global.xml`: cambia `btnRegistrar` de `MaterialButton` a
-   `ExtendedFloatingActionButton`, `layout_width="wrap_content"`, mismo patrón visual que
-   `fabAgregarRepuesto` en `fragment_inventario.xml` (líneas 195-207) — cornerRadius de píldora
-   (no le pongas `app:cornerRadius` explícito, el `ExtendedFloatingActionButton` ya la trae por
-   defecto). **Ojo:** este botón hoy dispara el flujo de escaneo QR (`app:icon="@drawable/qr"`) — al
-   convertirlo a FAB, mantén exactamente la misma acción en el `setOnClickListener`, solo cambia
-   apariencia e ícono.
-2. Cambia el texto de `btnRegistrar` de `"REGISTRAR"` a `"+ REGISTRAR MOVIMIENTO"`, y el ícono de
-   `@drawable/qr` a `@android:drawable/ic_input_add` (el mismo "+" que usan los otros FABs) — si el
-   ícono de QR es importante para indicar la función de escaneo, dilo en el chat antes de quitarlo,
-   podría ser mejor un ícono compuesto o un botón secundario aparte para el QR en vez de perder esa
-   indicación visual.
-3. En `fragment_inventario.xml`, cambia el texto de `fabAgregarRepuesto` de `"REGISTRAR"` a
-   `"+ REGISTRAR REPUESTO"` (línea 200).
-
-## TAREA 9 — Bug: el FAB de Maquinaria muestra el texto incorrecto al entrar por primera vez
-
-Causa confirmada en `MaquinariaFragment.kt` (líneas 56-81, función `setupViewPager()`):
-- El XML `fragment_maquinaria_admin.xml` (línea 81) define el texto por defecto del FAB como
-  `"REGISTRAR"`.
-- El texto correcto ("REGISTRAR ACTIVO" en pestaña 0, "REGISTRAR USO" en pestaña 1) solo se asigna
-  dentro de `registerOnPageChangeCallback { onPageSelected(...) }` — y ese callback de ViewPager2
-  **no se dispara automáticamente al cargar la pestaña inicial**, solo cuando el usuario cambia de
-  página. Por eso el FAB muestra el texto default del XML ("REGISTRAR") hasta que el usuario desliza
-  una vez y regresa.
-
-Corrección: en `setupViewPager()`, después de registrar el `OnPageChangeCallback` (o justo después
-del bloque `.attach()` del `TabLayoutMediator`), llama manualmente una vez a la misma lógica que fija
-el texto para la posición inicial:
-```kotlin
-binding.fabAccionMaquinaria.text = "REGISTRAR ACTIVO" // posición inicial = 0
-```
-o, mejor, extrae el cuerpo de `onPageSelected` a una función privada `actualizarFabPorPagina(position: Int)`
-y llámala tanto desde el callback como una vez manualmente con `position = 0` al final de
-`setupViewPager()`. Esto evita duplicar la lógica y that cualquier cambio futuro a ese texto solo se
-edite en un lugar.
+Al convertir cada uno: mantén la misma lógica de filtrado que ya existe (mismo `when`/comparación de
+strings), solo cambia el control de entrada. No cambies ningún nombre de variable de filtro
+(`filterEstadoMaq`, `filterCriticidadInv`, etc.) — otros bloques de código ya los usan.
 
 ---
 
-## Reglas de alcance — qué NO hacer (aplican a todas las tareas de arriba)
+## TAREA 4 — Quitar gráfica repetitiva en Estadísticas: "Salidas con OM vs Sueltas"
 
-Estas nacen de bugs reales que ya tuvimos con otro agente en este mismo proyecto. No son opcionales.
+En `EstadisticasPagerAdapter.kt`, elimina la página con `tvTituloPagina.text = "Salidas con OM vs
+Sueltas"` (línea ~202) — queda inmediatamente después de "Salidas: Consumo interno vs distribución
+externa" (línea ~188) y se decidió que es repetitiva con esa.
 
-1. **No borres ninguna vista o archivo sin buscar todas sus referencias primero** — un layout puede
-   estar compartido por más de un Fragment/Adapter.
-2. **No reutilices una pantalla entre roles distintos ocultando partes por condición** — si algo debe
-   verse distinto para admin y operario, evalúa si ya existen fragments/layouts separados para cada
-   uno antes de mezclar lógica condicional en uno solo.
-3. **Antes de cambiar una ruta de navegación, busca todos los puntos de entrada** — menú lateral,
-   cards de acceso rápido del home, y cualquier fallback de otra pantalla (ej. un botón "cerrar" que
-   regresa a esta).
-4. **Ningún botón visible sin su acción conectada.** Si tocas un XML con un botón, verifica en el
-   mismo cambio que tiene su `setOnClickListener` correspondiente en el Kotlin.
-5. **No dupliques controles entre un contenedor y sus pestañas hijas** — antes de agregar un FAB o
-   botón nuevo, confirma si ya existe uno equivalente en otro nivel.
-6. **Las migraciones de Room deben ser no destructivas** si tocas cualquier entidad — no uses
-   `fallbackToDestructiveMigration()`.
-7. **No toques código fuera del alcance de estas 9 tareas.** Si encuentras otro bug al auditar,
-   repórtalo aparte antes de corregirlo.
-8. **No reportes ninguna tarea como terminada sin compilar y probar en el emulador.** Si algo no
-   compila, dilo explícitamente en vez de asumir que el cambio es correcto.
-9. **Trabaja tarea por tarea, en el orden numerado de este documento**, y confirma cada una (con
-   captura o descripción de lo verificado) antes de pasar a la siguiente.
+En `MovimientosEstadisticasViewModel.kt`, elimina:
+- El bloque `// PAGINA 7: OM vs Sueltas` y sus dos variables `salidasConOM`/`salidasSinOM`
+  (línea ~153-154).
+- El campo `omVsSueltas: Pair<Int, Int>` de la data class `EstadisticasData` (línea ~225) y su
+  asignación en el `value = EstadisticasData(...)` (línea ~193).
+
+**Importante:** al quitar esta página, las páginas que venían después (Costos Mantenimiento, Top 5
+máquinas menor consumo, Rendimiento por Operario) recorren una posición hacia atrás en el
+`ViewPager2`. Revisa `getItemCount()` y cualquier lógica que referencie una página por índice
+numérico fijo (no por nombre) en `EstadisticasPagerAdapter.kt`, para que no queden desalineadas.
+
+---
+
+## TAREA 5 — Verificar si `InventarioFragment.kt` (versión admin) es código muerto
+
+**Hallazgo a confirmar, no lo borres a ciegas:** `fragment_inventario.xml` lo usan dos clases
+distintas — `InventarioFragment.kt` y `InventarioOpFragment.kt`. `InventarioOpFragment` sí se
+instancia (desde `DashboardOperarioActivity.kt`, `HomeOperarioFragment.kt`,
+`EscaneoQRFragment.kt` — confirmado, está vivo). `InventarioFragment.kt`, en cambio, **no aparece
+instanciada en ningún lugar del proyecto para el flujo de admin** — el admin real usa
+`InventarioContainerFragment` (con tabs Inventario/Movimientos), no esta clase.
+
+Busca en todo el proyecto cualquier referencia a `InventarioFragment()` (sin el sufijo `Op`). Si
+confirmas que no se usa en ningún lado, bórrala junto con cualquier código exclusivo de esa clase que
+no comparta con `InventarioOpFragment` — pero **no borres `fragment_inventario.xml`**, ese layout sí
+lo sigue usando `InventarioOpFragment`. Dime qué encontraste antes de borrar nada, por si me equivoco
+y sí se usa desde algún lugar que no vi.
+
+---
+
+## Reglas de alcance — aplican a las Tareas 2 a 5 también
+
+1. Trabaja en el orden numerado (Tarea 2, 3, 4, 5), confirmando cada una antes de pasar a la
+   siguiente.
+2. Para la Tarea 2, no apliques el fix sin antes reproducir el bug y confirmar la causa.
+3. Para la Tarea 5, no borres nada sin confirmarme primero qué encontraste.
+4. Compila y prueba en el emulador cada tarea. Si algo no compila, dilo — no asumas que está bien.
+5. Si encuentras algo fuera de estas 5 tareas, repórtalo aparte.

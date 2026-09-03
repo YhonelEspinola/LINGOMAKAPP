@@ -7,6 +7,9 @@ import androidx.lifecycle.map
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import com.lingomak.lingomakapp.data.local.AppDatabase
 import com.lingomak.lingomakapp.data.local.entity.RepuestoEntity
@@ -92,12 +95,16 @@ class RepuestoRepository(context: Context) {
             val user = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
             val auditado = if (!esNuevo) {
                 repuesto.copy(
+                    fechaActualizacion = Date(),
                     modificadoPorUid = user?.uid,
                     modificadoPorNombre = user?.displayName ?: "Usuario",
                     fechaUltimaModificacion = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
                 )
             } else {
-                repuesto
+                repuesto.copy(
+                    fechaRegistro = repuesto.fechaRegistro ?: Date(),
+                    fechaActualizacion = Date()
+                )
             }
 
             val entity = auditado.aEntity(
@@ -318,6 +325,34 @@ class RepuestoRepository(context: Context) {
             
             // Eliminar locales sincronizados que ya no están en Firestore
             repuestoDao.eliminarSincronizadosNoPresentes(uidsRemotos)
+        }
+    }
+
+    fun iniciarEscuchaRepuestos() {
+        repuestosCollection.addSnapshotListener { snapshots, e ->
+            if (e != null || snapshots == null) return@addSnapshotListener
+            
+            CoroutineScope(Dispatchers.IO).launch {
+                for (doc in snapshots.documentChanges) {
+                    val modelo = doc.document.toObject(RepuestoModel::class.java)
+                    val local = repuestoDao.obtenerPorUid(modelo.uid)
+                    
+                    val timestampRemoto = modelo.fechaActualizacion?.time ?: 0L
+                    
+                    if (local != null && local.estadoSync != "SINCRONIZADO") {
+                        // Solo protegemos si hay cambios locales pendientes Y el remoto es más antiguo
+                        if (local.timestampLocal >= timestampRemoto) {
+                            continue
+                        }
+                    }
+                    
+                    if (doc.type != com.google.firebase.firestore.DocumentChange.Type.REMOVED) {
+                        repuestoDao.insertarOActualizar(
+                            modelo.aEntity(estadoSync = "SINCRONIZADO", timestampLocal = System.currentTimeMillis())
+                        )
+                    }
+                }
+            }
         }
     }
 

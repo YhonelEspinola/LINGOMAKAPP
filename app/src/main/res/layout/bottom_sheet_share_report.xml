@@ -46,7 +46,7 @@
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="60dp"
                 android:layout_height="60dp"
-                app:cardBackgroundColor="#F5F5F5"
+                app:cardBackgroundColor="@color/chip_unselected_bg"
                 app:cardCornerRadius="30dp"
                 app:cardElevation="0dp">
 
@@ -82,7 +82,7 @@
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="60dp"
                 android:layout_height="60dp"
-                app:cardBackgroundColor="#F5F5F5"
+                app:cardBackgroundColor="@color/chip_unselected_bg"
                 app:cardCornerRadius="30dp"
                 app:cardElevation="0dp">
 

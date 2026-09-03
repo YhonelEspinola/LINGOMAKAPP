@@ -9,11 +9,18 @@ import java.util.Locale
 object DateUtils {
 
     const val FORMATO_ESTANDAR = "yyyy-MM-dd"
+    const val FORMATO_PRECISO = "yyyy-MM-dd HH:mm:ss"
 
     fun obtenerFechaActual(): String {
-
         return SimpleDateFormat(
             FORMATO_ESTANDAR,
+            Locale.getDefault()
+        ).format(Date())
+    }
+
+    fun obtenerFechaHoraActual(): String {
+        return SimpleDateFormat(
+            FORMATO_PRECISO,
             Locale.getDefault()
         ).format(Date())
     }

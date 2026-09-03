@@ -14,6 +14,7 @@ import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import com.lingomak.lingomakapp.R
 import java.text.SimpleDateFormat
+import android.view.MotionEvent
 import java.util.*
 
 class SelectorFechasView @JvmOverloads constructor(
@@ -27,18 +28,35 @@ class SelectorFechasView @JvmOverloads constructor(
 
     fun dispararSeleccionActual() {
         val current = viewPager.currentItem
-        // Esto es un poco complejo porque necesitamos acceder a los viewholders.
-        // Una mejor forma es que el View maneje el estado y notifique.
         when(current) {
-            0 -> {
-                // Notificar 30D por defecto o el chip seleccionado
-                val calInicio = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, -30) }
+            0 -> { // Modo Chips
                 val calFin = Calendar.getInstance().apply {
-                    set(Calendar.HOUR_OF_DAY, 23)
-                    set(Calendar.MINUTE, 59)
-                    set(Calendar.SECOND, 59)
+                    set(Calendar.HOUR_OF_DAY, 23); set(Calendar.MINUTE, 59); set(Calendar.SECOND, 59); set(Calendar.MILLISECOND, 999)
                 }
-                onRangoSeleccionado?.invoke(calInicio.timeInMillis, calFin.timeInMillis, "Últimos 30 días")
+                val calInicio = Calendar.getInstance().apply {
+                    set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0); set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0)
+                }
+                
+                // Intentar recuperar el chip seleccionado para disparar el rango correcto
+                val etiqueta = "Últimos 30 días" // Default
+                calInicio.add(Calendar.DAY_OF_YEAR, -30)
+                onRangoSeleccionado?.invoke(calInicio.timeInMillis, calFin.timeInMillis, etiqueta)
+            }
+            1 -> { // Modo Nav
+                val (inicio, fin, label) = calcularRangoNav()
+                onRangoSeleccionado?.invoke(inicio, fin, label)
+            }
+            2 -> { // Modo Custom
+                val calFinReal = Calendar.getInstance().apply {
+                    timeInMillis = customFechaFin
+                    set(Calendar.HOUR_OF_DAY, 23); set(Calendar.MINUTE, 59); set(Calendar.SECOND, 59); set(Calendar.MILLISECOND, 999)
+                }
+                val calInicioReal = Calendar.getInstance().apply {
+                    timeInMillis = customFechaInicio
+                    set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0); set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0)
+                }
+                val etiqueta = "${displayFormat.format(calInicioReal.timeInMillis)} — ${displayFormat.format(calFinReal.timeInMillis)}"
+                onRangoSeleccionado?.invoke(calInicioReal.timeInMillis, calFinReal.timeInMillis, etiqueta)
             }
         }
     }
@@ -69,6 +87,21 @@ class SelectorFechasView @JvmOverloads constructor(
 
     private fun setupViewPager() {
         viewPager.adapter = SelectorAdapter()
+        val innerRecyclerView = viewPager.getChildAt(0) as? RecyclerView
+
+        // INTERCEPTOR DE GESTOS: Esta es la solución para la "capa partida".
+        // Detecta el toque antes que los botones internos para bloquear al ViewPager padre.
+        innerRecyclerView?.addOnItemTouchListener(object : RecyclerView.OnItemTouchListener {
+            override fun onInterceptTouchEvent(rv: RecyclerView, e: MotionEvent): Boolean {
+                if (e.action == MotionEvent.ACTION_DOWN) {
+                    // "Secuestramos" el toque para que el padre externo no se mueva
+                    this@SelectorFechasView.parent.requestDisallowInterceptTouchEvent(true)
+                }
+                return false // Importante retornar false para que los botones sigan siendo clickeables
+            }
+            override fun onTouchEvent(rv: RecyclerView, e: MotionEvent) {}
+            override fun onRequestDisallowInterceptTouchEvent(disallowIntercept: Boolean) {}
+        })
 
         viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
@@ -144,6 +177,11 @@ class SelectorFechasView @JvmOverloads constructor(
                     }
                     else -> "Últimos 30 días"
                 }
+                
+                // Normalizar horas para el filtro (Día completo)
+                calInicio.set(Calendar.HOUR_OF_DAY, 0); calInicio.set(Calendar.MINUTE, 0); calInicio.set(Calendar.SECOND, 0); calInicio.set(Calendar.MILLISECOND, 0)
+                calFin.set(Calendar.HOUR_OF_DAY, 23); calFin.set(Calendar.MINUTE, 59); calFin.set(Calendar.SECOND, 59); calFin.set(Calendar.MILLISECOND, 999)
+
                 onRangoSeleccionado?.invoke(calInicio.timeInMillis, calFin.timeInMillis, etiqueta)
             }
             // Disparar selección inicial
@@ -207,79 +245,88 @@ class SelectorFechasView @JvmOverloads constructor(
             }
             popup.show()
         }
+    }
 
-        private fun calcularRangoNav(): Triple<Long, Long, String> {
-            val cal = Calendar.getInstance()
-            val calFin = Calendar.getInstance()
-            var label = ""
+    private fun calcularRangoNav(): Triple<Long, Long, String> {
+        val cal = Calendar.getInstance()
+        val calFin = Calendar.getInstance()
+        var label = ""
 
-            when (tipoPeriodoActual) {
-                "HOY" -> {
-                    cal.add(Calendar.DAY_OF_YEAR, offsetPeriodo)
-                    cal.set(Calendar.HOUR_OF_DAY, 0)
-                    cal.set(Calendar.MINUTE, 0)
-                    cal.set(Calendar.SECOND, 0)
-                    
-                    calFin.time = cal.time
-                    calFin.set(Calendar.HOUR_OF_DAY, 23)
-                    calFin.set(Calendar.MINUTE, 59)
-                    calFin.set(Calendar.SECOND, 59)
+        when (tipoPeriodoActual) {
+            "HOY" -> {
+                cal.add(Calendar.DAY_OF_YEAR, offsetPeriodo)
+                cal.set(Calendar.HOUR_OF_DAY, 0)
+                cal.set(Calendar.MINUTE, 0)
+                cal.set(Calendar.SECOND, 0)
+                cal.set(Calendar.MILLISECOND, 0)
+                
+                calFin.time = cal.time
+                calFin.set(Calendar.HOUR_OF_DAY, 23)
+                calFin.set(Calendar.MINUTE, 59)
+                calFin.set(Calendar.SECOND, 59)
+                calFin.set(Calendar.MILLISECOND, 999)
 
-                    label = when (offsetPeriodo) {
-                        0 -> "HOY"
-                        -1 -> "AYER"
-                        else -> displayFormat.format(cal.time)
-                    }
-                }
-                "ESTA SEMANA" -> {
-                    cal.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY)
-                    cal.add(Calendar.WEEK_OF_YEAR, offsetPeriodo)
-                    cal.set(Calendar.HOUR_OF_DAY, 0)
-                    cal.set(Calendar.MINUTE, 0)
-                    cal.set(Calendar.SECOND, 0)
-
-                    calFin.time = cal.time
-                    calFin.add(Calendar.DAY_OF_YEAR, 6)
-                    calFin.set(Calendar.HOUR_OF_DAY, 23)
-                    calFin.set(Calendar.MINUTE, 59)
-                    calFin.set(Calendar.SECOND, 59)
-
-                    label = "${displayFormat.format(cal.time)} — ${displayFormat.format(calFin.time)}"
-                }
-                "ESTE MES" -> {
-                    cal.set(Calendar.DAY_OF_MONTH, 1)
-                    cal.add(Calendar.MONTH, offsetPeriodo)
-                    cal.set(Calendar.HOUR_OF_DAY, 0)
-                    cal.set(Calendar.MINUTE, 0)
-                    cal.set(Calendar.SECOND, 0)
-
-                    calFin.time = cal.time
-                    calFin.set(Calendar.DAY_OF_MONTH, cal.getActualMaximum(Calendar.DAY_OF_MONTH))
-                    calFin.set(Calendar.HOUR_OF_DAY, 23)
-                    calFin.set(Calendar.MINUTE, 59)
-                    calFin.set(Calendar.SECOND, 59)
-
-                    label = monthYearFormat.format(cal.time)
-                }
-                "ESTE AÑO" -> {
-                    cal.set(Calendar.DAY_OF_YEAR, 1)
-                    cal.add(Calendar.YEAR, offsetPeriodo)
-                    cal.set(Calendar.HOUR_OF_DAY, 0)
-                    cal.set(Calendar.MINUTE, 0)
-                    cal.set(Calendar.SECOND, 0)
-
-                    calFin.time = cal.time
-                    calFin.set(Calendar.MONTH, 11)
-                    calFin.set(Calendar.DAY_OF_MONTH, 31)
-                    calFin.set(Calendar.HOUR_OF_DAY, 23)
-                    calFin.set(Calendar.MINUTE, 59)
-                    calFin.set(Calendar.SECOND, 59)
-
-                    label = cal.get(Calendar.YEAR).toString()
+                label = when (offsetPeriodo) {
+                    1 -> "MAÑANA"
+                    0 -> "HOY"
+                    -1 -> "AYER"
+                    else -> displayFormat.format(cal.time)
                 }
             }
-            return Triple(cal.timeInMillis, calFin.timeInMillis, label)
+            "ESTA SEMANA" -> {
+                cal.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY)
+                cal.add(Calendar.WEEK_OF_YEAR, offsetPeriodo)
+                cal.set(Calendar.HOUR_OF_DAY, 0)
+                cal.set(Calendar.MINUTE, 0)
+                cal.set(Calendar.SECOND, 0)
+                cal.set(Calendar.MILLISECOND, 0)
+
+                calFin.time = cal.time
+                calFin.add(Calendar.DAY_OF_YEAR, 6)
+                calFin.set(Calendar.HOUR_OF_DAY, 23)
+                calFin.set(Calendar.MINUTE, 59)
+                calFin.set(Calendar.SECOND, 59)
+                calFin.set(Calendar.MILLISECOND, 999)
+
+                label = "${displayFormat.format(cal.time)} — ${displayFormat.format(calFin.time)}"
+            }
+            "ESTE MES" -> {
+                cal.set(Calendar.DAY_OF_MONTH, 1)
+                cal.add(Calendar.MONTH, offsetPeriodo)
+                cal.set(Calendar.HOUR_OF_DAY, 0)
+                cal.set(Calendar.MINUTE, 0)
+                cal.set(Calendar.SECOND, 0)
+                cal.set(Calendar.MILLISECOND, 0)
+
+                calFin.time = cal.time
+                calFin.set(Calendar.DAY_OF_MONTH, cal.getActualMaximum(Calendar.DAY_OF_MONTH))
+                calFin.set(Calendar.HOUR_OF_DAY, 23)
+                calFin.set(Calendar.MINUTE, 59)
+                calFin.set(Calendar.SECOND, 59)
+                calFin.set(Calendar.MILLISECOND, 999)
+
+                label = monthYearFormat.format(cal.time)
+            }
+            "ESTE AÑO" -> {
+                cal.set(Calendar.DAY_OF_YEAR, 1)
+                cal.add(Calendar.YEAR, offsetPeriodo)
+                cal.set(Calendar.HOUR_OF_DAY, 0)
+                cal.set(Calendar.MINUTE, 0)
+                cal.set(Calendar.SECOND, 0)
+                cal.set(Calendar.MILLISECOND, 0)
+
+                calFin.time = cal.time
+                calFin.set(Calendar.MONTH, 11)
+                calFin.set(Calendar.DAY_OF_MONTH, 31)
+                calFin.set(Calendar.HOUR_OF_DAY, 23)
+                calFin.set(Calendar.MINUTE, 59)
+                calFin.set(Calendar.SECOND, 59)
+                calFin.set(Calendar.MILLISECOND, 999)
+
+                label = cal.get(Calendar.YEAR).toString()
+            }
         }
+        return Triple(cal.timeInMillis, calFin.timeInMillis, label)
     }
 
     // --- MODO 3: CUSTOM ---
@@ -304,32 +351,41 @@ class SelectorFechasView @JvmOverloads constructor(
             config.setLocale(locale)
 
             val dialog = DatePickerDialog(context, { _, y, m, d ->
-                val selection = Calendar.getInstance()
-                selection.set(y, m, d)
+                val startCal = Calendar.getInstance().apply {
+                    set(y, m, d, 0, 0, 0)
+                    set(Calendar.MILLISECOND, 0)
+                }
+                
+                val endCal = Calendar.getInstance().apply {
+                    set(y, m, d, 23, 59, 59)
+                    set(Calendar.MILLISECOND, 999)
+                }
+
                 if (esInicio) {
-                    customFechaInicio = selection.timeInMillis
+                    customFechaInicio = startCal.timeInMillis
                 } else {
-                    customFechaFin = selection.timeInMillis
+                    customFechaFin = endCal.timeInMillis
                 }
 
                 // Validar orden
                 if (customFechaInicio > customFechaFin) {
                     val temp = customFechaInicio
-                    customFechaInicio = customFechaFin
-                    customFechaFin = temp
+                    // Al invertir, debemos asegurar que el nuevo fin sea el final del día
+                    val calTemp = Calendar.getInstance().apply { 
+                        timeInMillis = customFechaFin 
+                        set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0); set(Calendar.SECOND, 0) 
+                    }
+                    val calTempEnd = Calendar.getInstance().apply {
+                        timeInMillis = temp
+                        set(Calendar.HOUR_OF_DAY, 23); set(Calendar.MINUTE, 59); set(Calendar.SECOND, 59)
+                    }
+                    customFechaInicio = calTemp.timeInMillis
+                    customFechaFin = calTempEnd.timeInMillis
                 }
                 
                 actualizarBotones()
                 val etiqueta = "${displayFormat.format(customFechaInicio)} — ${displayFormat.format(customFechaFin)}"
-                
-                // Asegurar fin del día para fecha fin
-                val calFinReal = Calendar.getInstance().apply {
-                    timeInMillis = customFechaFin
-                    set(Calendar.HOUR_OF_DAY, 23)
-                    set(Calendar.MINUTE, 59)
-                    set(Calendar.SECOND, 59)
-                }
-                onRangoSeleccionado?.invoke(customFechaInicio, calFinReal.timeInMillis, etiqueta)
+                onRangoSeleccionado?.invoke(customFechaInicio, customFechaFin, etiqueta)
             }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH))
 
             dialog.show()

@@ -30,6 +30,12 @@ data class RegistroUsoMaquinariaEntity(
     val modificadoPorUid: String? = null,
     val modificadoPorNombre: String? = null,
     val fechaUltimaModificacion: String? = null,
+
+    // Datos de Repostaje Unificados
+    val galonesCombustible: Double = 0.0,
+    val galonesAceite: Double = 0.0,
+    val tipoCombustible: String = "",
+    val tipoCarga: String = "",
     
     // Control de sincronización
     val estadoSync: String = "SINCRONIZADO",

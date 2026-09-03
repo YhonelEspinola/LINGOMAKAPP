@@ -57,80 +57,52 @@
                     android:textStyle="bold"
                     android:layout_marginBottom="16dp" />
 
-                <TextView
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Tipo de mantenimiento"
-                    android:textColor="@color/text_primary"
-                    android:textStyle="bold" />
-
-                <Spinner
-                    android:id="@+id/spTipoMantenimientoEditar"
-                    android:layout_width="match_parent"
-                    android:layout_height="55dp"
-                    android:layout_marginTop="8dp"
                     android:layout_marginBottom="16dp"
-                    android:background="@drawable/bg_edit_text"
-                    android:padding="12dp" />
+                    android:hint="Tipo de mantenimiento">
 
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Maquinaria"
-                    android:textColor="@color/text_primary"
-                    android:textStyle="bold" />
+                    <AutoCompleteTextView
+                        android:id="@+id/spTipoMantenimientoEditar"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="none" />
+                </com.google.android.material.textfield.TextInputLayout>
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/tilMaquinariaEditar"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
                     android:layout_marginBottom="16dp"
-                    app:hintEnabled="false"
-                    app:boxStrokeColor="@color/primary"
-                    app:boxStrokeWidthFocused="2dp">
+                    android:hint="Maquinaria">
 
                     <AutoCompleteTextView
                         android:id="@+id/actvMaquinariaEditar"
                         android:layout_width="match_parent"
-                        android:layout_height="55dp"
-                        android:hint="Seleccione maquinaria"
+                        android:layout_height="wrap_content"
                         android:inputType="text"
-                        android:padding="12dp"
                         android:textSize="14sp"
-                        android:background="@android:color/transparent"
                         android:completionThreshold="1" />
 
                 </com.google.android.material.textfield.TextInputLayout>
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Asignado a:"
-                    android:textColor="@color/text_primary"
-                    android:textStyle="bold" />
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/tilResponsableEditar"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
                     android:layout_marginBottom="16dp"
-                    app:hintEnabled="false"
-                    app:boxStrokeColor="@color/primary"
-                    app:boxStrokeWidthFocused="2dp">
+                    android:hint="Asignado a">
 
                     <AutoCompleteTextView
                         android:id="@+id/actvResponsableEditar"
                         android:layout_width="match_parent"
-                        android:layout_height="55dp"
-                        android:hint="Seleccione responsable"
+                        android:layout_height="wrap_content"
                         android:inputType="text"
-                        android:padding="12dp"
                         android:textSize="14sp"
-                        android:background="@android:color/transparent"
                         android:completionThreshold="1" />
 
                 </com.google.android.material.textfield.TextInputLayout>
@@ -173,98 +145,80 @@
 
                 </RadioGroup>
 
-                <TextView
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Descripción"
-                    android:textColor="@color/text_primary"
-                    android:textStyle="bold" />
-
-                <EditText
-                    android:id="@+id/etDescripcionEditar"
-                    android:layout_width="match_parent"
-                    android:layout_height="95dp"
-                    android:layout_marginTop="8dp"
                     android:layout_marginBottom="16dp"
-                    android:background="@drawable/bg_edit_text"
-                    android:gravity="top"
-                    android:hint="Descripción"
-                    android:inputType="textMultiLine"
-                    android:padding="12dp" />
+                    android:hint="Descripción">
 
-                <TextView
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etDescripcionEditar"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="top"
+                        android:minLines="3"
+                        android:inputType="textMultiLine" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Fecha programada"
-                    android:textColor="@color/text_primary"
-                    android:textStyle="bold" />
-
-                <EditText
-                    android:id="@+id/etFechaProgramadaEditar"
-                    android:layout_width="match_parent"
-                    android:layout_height="55dp"
-                    android:layout_marginTop="8dp"
                     android:layout_marginBottom="16dp"
-                    android:background="@drawable/bg_edit_text"
-                    android:focusable="false"
-                    android:hint="Fecha programada"
-                    android:inputType="none"
-                    android:padding="12dp" />
+                    android:hint="Fecha programada">
 
-                <TextView
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etFechaProgramadaEditar"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:focusable="false"
+                        android:inputType="none" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Horómetro programado"
-                    android:textColor="@color/text_primary"
-                    android:textStyle="bold" />
-
-                <EditText
-                    android:id="@+id/etHorometroProgramadoEditar"
-                    android:layout_width="match_parent"
-                    android:layout_height="55dp"
-                    android:layout_marginTop="8dp"
                     android:layout_marginBottom="16dp"
-                    android:background="@drawable/bg_edit_text"
-                    android:hint="Horómetro programado"
-                    android:inputType="number"
-                    android:padding="12dp" />
+                    android:hint="Horómetro programado">
 
-                <TextView
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etHorometroProgramadoEditar"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="numberDecimal" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Costo estimado"
-                    android:textColor="@color/text_primary"
-                    android:textStyle="bold" />
-
-                <EditText
-                    android:id="@+id/etCostoEstimadoEditar"
-                    android:layout_width="match_parent"
-                    android:layout_height="55dp"
-                    android:layout_marginTop="8dp"
                     android:layout_marginBottom="16dp"
-                    android:background="@drawable/bg_edit_text"
-                    android:hint="Costo estimado"
-                    android:inputType="numberDecimal"
-                    android:padding="12dp" />
+                    android:hint="Costo estimado">
 
-                <TextView
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etCostoEstimadoEditar"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="numberDecimal" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Observaciones"
-                    android:textColor="@color/text_primary"
-                    android:textStyle="bold" />
-
-                <EditText
-                    android:id="@+id/etObservacionesEditar"
-                    android:layout_width="match_parent"
-                    android:layout_height="95dp"
-                    android:layout_marginTop="8dp"
                     android:layout_marginBottom="16dp"
-                    android:background="@drawable/bg_edit_text"
-                    android:gravity="top"
-                    android:hint="Observaciones"
-                    android:inputType="textMultiLine"
-                    android:padding="12dp" />
+                    android:hint="Observaciones">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etObservacionesEditar"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="top"
+                        android:minLines="2"
+                        android:inputType="textMultiLine" />
+                </com.google.android.material.textfield.TextInputLayout>
 
                 <TextView
                     android:layout_width="match_parent"

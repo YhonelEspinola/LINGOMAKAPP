@@ -4,10 +4,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.chip.Chip
+import java.util.Calendar
 import com.lingomak.lingomakapp.R
 import com.lingomak.lingomakapp.data.model.BitacoraUsoModel
 import com.lingomak.lingomakapp.data.model.MaquinariaModel
@@ -39,6 +38,7 @@ class MaquinariaAdminPagerAdapter(
     // Page 1 (Bitacora) filters
     private var filterMaquinaBit = "TODAS"
     private var filterOperarioBit = "TODOS"
+    private var filterRepostajeBit = "TODOS"
     var bitacoraFechaInicio: Long = 0L
     var bitacoraFechaFin: Long = Long.MAX_VALUE
 
@@ -49,40 +49,42 @@ class MaquinariaAdminPagerAdapter(
 
     fun updateMaquinarias(list: List<MaquinariaModel>) {
         allMaquinarias = list
-        notifyDataSetChanged()
+        notifyItemChanged(0)
     }
 
     fun updateBitacora(list: List<BitacoraUsoModel>) {
         allBitacora = list
-        notifyDataSetChanged()
+        notifyItemChanged(1)
     }
 
     fun updateCategorias(list: List<CategoriaModel>) {
         allCategorias = list
-        notifyDataSetChanged()
+        notifyDataSetChanged() // Afecta ambos
     }
 
     fun updateCatalogoMaquinas(list: List<MaquinariaModel>) {
         catalogoMaquinas = list
-        notifyDataSetChanged()
+        notifyItemChanged(1) // Solo Bitacora usa catalogoMaquinas
     }
 
     fun updateCatalogoOperarios(list: List<com.lingomak.lingomakapp.data.model.UserModel>) {
         catalogoOperarios = list
-        notifyDataSetChanged()
+        notifyItemChanged(1) // Solo Bitacora usa catalogoOperarios
     }
 
     fun updateSearch(query: String) {
         searchQuery = query
-        notifyDataSetChanged()
+        notifyDataSetChanged() // Afecta ambos
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PageViewHolder {
+        android.util.Log.d("DEBUG_BUG", "onCreateViewHolder position/viewType: $viewType")
         val binding = ItemMaquinariaAdminPageBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return PageViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: PageViewHolder, position: Int) {
+        android.util.Log.d("DEBUG_BUG", "onBindViewHolder position: $position")
         holder.bind(position)
     }
 
@@ -103,13 +105,24 @@ class MaquinariaAdminPagerAdapter(
 
         fun bind(position: Int) {
             val isExpanded = expandedFilters[position] ?: false
+            android.util.Log.d("DEBUG_BUG", "bind position: $position, isExpanded: $isExpanded")
             actualizarUIPorExpansion(position, isExpanded)
 
             binding.btnToggleFiltros.setOnClickListener {
                 val newValue = !(expandedFilters[position] ?: false)
+                android.util.Log.d("DEBUG_BUG", "btnToggleFiltros click position: $position, newValue: $newValue")
                 expandedFilters[position] = newValue
                 actualizarUIPorExpansion(position, newValue)
                 binding.ivChevronFiltros.animate().rotation(if (newValue) 180f else 0f).setDuration(200).start()
+                
+                // AGREGADO: Si expandimos la página de Bitácora, forzamos al selector a redibujarse
+                if (newValue && position == 1) {
+                    binding.selectorFechas.post {
+                        binding.selectorFechas.requestLayout()
+                        // Buscamos el ViewPager2 interno del componente y lo obligamos a medirse
+                        binding.selectorFechas.findViewById<androidx.viewpager2.widget.ViewPager2>(R.id.viewPager)?.requestLayout()
+                    }
+                }
             }
 
             if (position == 0) {
@@ -122,6 +135,7 @@ class MaquinariaAdminPagerAdapter(
         }
 
         private fun actualizarUIPorExpansion(position: Int, expanded: Boolean) {
+            android.util.Log.d("DEBUG_BUG", "actualizarUIPorExpansion position: $position, expanded: $expanded")
             binding.layoutFiltrosExpandible.visibility = if (expanded) View.VISIBLE else View.GONE
             binding.ivChevronFiltros.rotation = if (expanded) 180f else 0f
             
@@ -135,34 +149,36 @@ class MaquinariaAdminPagerAdapter(
                 binding.layoutFiltroFecha.visibility = if (expanded) View.VISIBLE else View.GONE
                 binding.layoutFiltrosMaquinaria.visibility = View.GONE
             }
+
+            // BUG FIX: Obligar a Android a recalcular los tamaños de los componentes internos (especialmente el ViewPager2 de fechas)
+            if (expanded) {
+                binding.layoutFiltrosExpandible.post {
+                    binding.layoutFiltrosExpandible.requestLayout()
+                    if (position == 1) {
+                        binding.selectorFechas.requestLayout()
+                    }
+                }
+            }
         }
 
         private fun setupPageMaquinaria() {
-            // Estado Chips
-            binding.chipGroupEstadoMaquinaria.removeAllViews()
+            // Estado Dropdown
             val estados = listOf("TODOS", "OPERATIVA", "EN_MANTENIMIENTO", "INACTIVA")
-            estados.forEach { est ->
-                val chip = createChip(est, est)
-                if (filterEstadoMaq == est) chip.isChecked = true
-                binding.chipGroupEstadoMaquinaria.addView(chip)
-            }
-            binding.chipGroupEstadoMaquinaria.setOnCheckedStateChangeListener { group, checkedIds ->
-                val chipId = checkedIds.firstOrNull()
-                filterEstadoMaq = if (chipId != null) group.findViewById<Chip>(chipId).tag as String else "TODOS"
+            val adapterEst = ArrayAdapter(itemView.context, android.R.layout.simple_dropdown_item_1line, estados)
+            binding.spFiltroEstadoMaquinaria.setAdapter(adapterEst)
+            binding.spFiltroEstadoMaquinaria.setText(filterEstadoMaq, false)
+            binding.spFiltroEstadoMaquinaria.setOnItemClickListener { parent, _, position, _ ->
+                filterEstadoMaq = parent.getItemAtPosition(position) as String
                 applyFilters(0)
             }
 
-            // Categoria Chips
-            binding.chipGroupCategoriaMaquinaria.removeAllViews()
+            // Categoria Dropdown
             val cats = listOf("TODAS") + allCategorias.filter { it.tipo == "MAQUINARIA" }.map { it.nombre.uppercase() }
-            cats.forEach { cat ->
-                val chip = createChip(cat, cat)
-                if (filterCatMaq == cat) chip.isChecked = true
-                binding.chipGroupCategoriaMaquinaria.addView(chip)
-            }
-            binding.chipGroupCategoriaMaquinaria.setOnCheckedStateChangeListener { group, checkedIds ->
-                val chipId = checkedIds.firstOrNull()
-                filterCatMaq = if (chipId != null) group.findViewById<Chip>(chipId).tag as String else "TODAS"
+            val adapterCat = ArrayAdapter(itemView.context, android.R.layout.simple_dropdown_item_1line, cats)
+            binding.spFiltroCategoriaMaquinaria.setAdapter(adapterCat)
+            binding.spFiltroCategoriaMaquinaria.setText(filterCatMaq, false)
+            binding.spFiltroCategoriaMaquinaria.setOnItemClickListener { parent, _, position, _ ->
+                filterCatMaq = parent.getItemAtPosition(position) as String
                 applyFilters(0)
             }
 
@@ -190,6 +206,16 @@ class MaquinariaAdminPagerAdapter(
                 applyFilters(1)
             }
 
+            // Repostaje Dropdown
+            val repostajes = listOf("TODOS", "CON REPOSTAJE", "SIN REPOSTAJE")
+            val adapterRep = ArrayAdapter(itemView.context, android.R.layout.simple_dropdown_item_1line, repostajes)
+            binding.spFiltroRepostajeBitacora.setAdapter(adapterRep)
+            binding.spFiltroRepostajeBitacora.setText(filterRepostajeBit, false)
+            binding.spFiltroRepostajeBitacora.setOnItemClickListener { parent, _, position, _ ->
+                filterRepostajeBit = parent.getItemAtPosition(position) as String
+                applyFilters(1)
+            }
+
             // Fechas
             binding.selectorFechas.onRangoSeleccionado = { inicio, fin, etiqueta ->
                 bitacoraFechaInicio = inicio
@@ -198,14 +224,6 @@ class MaquinariaAdminPagerAdapter(
                 applyFilters(1)
             }
             binding.selectorFechas.dispararSeleccionActual()
-        }
-
-        private fun createChip(label: String, tagValue: String): Chip {
-            val chip = LayoutInflater.from(itemView.context).inflate(R.layout.layout_chip_choice, binding.chipGroupEstadoMaquinaria, false) as Chip
-            chip.text = label
-            chip.tag = tagValue
-            chip.isCheckable = true
-            return chip
         }
 
         private fun applyFilters(position: Int) {
@@ -226,9 +244,24 @@ class MaquinariaAdminPagerAdapter(
                 if (filterMaquinaBit != "TODAS") filtered = filtered.filter { it.nombreMaquinaria == filterMaquinaBit }
                 if (filterOperarioBit != "TODOS") filtered = filtered.filter { it.operarioNombre == filterOperarioBit }
                 
+                if (filterRepostajeBit != "TODOS") {
+                    filtered = if (filterRepostajeBit == "CON REPOSTAJE") {
+                        filtered.filter { it.galonesCombustible > 0 }
+                    } else {
+                        filtered.filter { it.galonesCombustible <= 0 }
+                    }
+                }
+                
                 filtered = filtered.filter { b ->
                     val date = DateUtils.convertirFecha(b.fecha)
-                    date != null && date.time in bitacoraFechaInicio..bitacoraFechaFin
+                    if (date != null) {
+                        // Forzar a comparar solo el día (00:00:00)
+                        val calReg = Calendar.getInstance().apply { 
+                            time = date
+                            set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0); set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0)
+                        }
+                        calReg.timeInMillis >= bitacoraFechaInicio && calReg.timeInMillis <= bitacoraFechaFin
+                    } else false
                 }
 
                 if (searchQuery.isNotEmpty()) {

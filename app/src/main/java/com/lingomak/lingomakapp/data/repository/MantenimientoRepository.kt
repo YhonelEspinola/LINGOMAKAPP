@@ -11,7 +11,6 @@ import com.google.firebase.storage.FirebaseStorage
 import com.lingomak.lingomakapp.data.local.AppDatabase
 import com.lingomak.lingomakapp.data.local.entity.MantenimientoEntity
 import com.lingomak.lingomakapp.data.local.entity.MovimientoEntity
-import com.lingomak.lingomakapp.data.local.entity.SolicitudMantenimientoEntity
 import com.lingomak.lingomakapp.data.model.AlertaModel
 import com.lingomak.lingomakapp.data.model.MantenimientoModel
 import com.lingomak.lingomakapp.utils.DateUtils
@@ -39,7 +38,6 @@ class MantenimientoRepository(context: Context) {
     private val database = AppDatabase.getInstance(context)
     private val maintenanceDao = database.mantenimientoDao()
     private val maquinariaDao = database.maquinariaDao()
-    private val solicitudDao = database.solicitudMantenimientoDao()
     private val repuestoDao = database.repuestoDao()
     private val movimientoDao = database.movimientoDao()
     private val userDao = database.userDao()
@@ -123,9 +121,9 @@ class MantenimientoRepository(context: Context) {
             val actualizado = mantenimiento.copy(
                 modificadoPorUid = user?.uid,
                 modificadoPorNombre = user?.displayName ?: "Usuario",
-                fechaUltimaModificacion = obtenerFechaActual(),
+                fechaUltimaModificacion = DateUtils.obtenerFechaHoraActual(),
                 actualizadoPor = user?.email ?: "SISTEMA",
-                fechaActualizacion = obtenerFechaActual()
+                fechaActualizacion = DateUtils.obtenerFechaHoraActual()
             ).aEntity(
                 estadoSync = if (actual.estadoSync == "SINCRONIZADO") "PENDIENTE_ACTUALIZAR" else actual.estadoSync,
                 timestampLocal = System.currentTimeMillis()
@@ -160,17 +158,17 @@ class MantenimientoRepository(context: Context) {
             val mActualizado = mActual.copy(
                 estado = "EN_PROCESO",
                 actualizadoPor = user?.email ?: "SISTEMA",
-                fechaActualizacion = obtenerFechaActual(),
+                fechaActualizacion = DateUtils.obtenerFechaHoraActual(),
                 modificadoPorUid = user?.uid,
                 modificadoPorNombre = user?.displayName ?: "Usuario",
-                fechaUltimaModificacion = obtenerFechaActual(),
+                fechaUltimaModificacion = DateUtils.obtenerFechaHoraActual(),
                 estadoSync = if (mActual.estadoSync == "SINCRONIZADO") "PENDIENTE_ACTUALIZAR" else mActual.estadoSync,
                 timestampLocal = System.currentTimeMillis()
             )
 
             val maqActualizada = maqActual.copy(
                 estado = "EN_MANTENIMIENTO",
-                fechaActualizacion = obtenerFechaActual(),
+                fechaActualizacion = DateUtils.obtenerFechaHoraActual(),
                 estadoSync = if (maqActual.estadoSync == "SINCRONIZADO") "PENDIENTE_ACTUALIZAR" else maqActual.estadoSync,
                 timestampLocal = System.currentTimeMillis()
             )
@@ -206,10 +204,10 @@ class MantenimientoRepository(context: Context) {
                 fechaProgramada = nuevaFecha,
                 estado = "PENDIENTE",
                 actualizadoPor = user?.email ?: "SISTEMA",
-                fechaActualizacion = obtenerFechaActual(),
+                fechaActualizacion = DateUtils.obtenerFechaHoraActual(),
                 modificadoPorUid = user?.uid,
                 modificadoPorNombre = user?.displayName ?: "Usuario",
-                fechaUltimaModificacion = obtenerFechaActual(),
+                fechaUltimaModificacion = DateUtils.obtenerFechaHoraActual(),
                 estadoSync = if (actual.estadoSync == "SINCRONIZADO") "PENDIENTE_ACTUALIZAR" else actual.estadoSync,
                 timestampLocal = System.currentTimeMillis()
             )
@@ -240,10 +238,10 @@ class MantenimientoRepository(context: Context) {
             val actualizado = actual.copy(
                 estado = "CANCELADO",
                 actualizadoPor = user?.email ?: "SISTEMA",
-                fechaActualizacion = obtenerFechaActual(),
+                fechaActualizacion = DateUtils.obtenerFechaHoraActual(),
                 modificadoPorUid = user?.uid,
                 modificadoPorNombre = user?.displayName ?: "Usuario",
-                fechaUltimaModificacion = obtenerFechaActual(),
+                fechaUltimaModificacion = DateUtils.obtenerFechaHoraActual(),
                 estadoSync = if (actual.estadoSync == "SINCRONIZADO") "PENDIENTE_ACTUALIZAR" else actual.estadoSync,
                 timestampLocal = System.currentTimeMillis()
             )
@@ -256,55 +254,11 @@ class MantenimientoRepository(context: Context) {
         }
     }
 
-    suspend fun solicitarReprogramacion(
-        uidMantenimiento: String,
-        onSuccess: () -> Unit,
-        onError: (String) -> Unit
-    ) {
-        try {
-            val user = FirebaseAuth.getInstance().currentUser
-            val mActual = maintenanceDao.obtenerPorUid(uidMantenimiento)
-                ?: throw Exception("No se encontró mantenimiento")
-            val maqActual = maquinariaDao.obtenerPorUid(mActual.uidMaquinaria)
-                ?: throw Exception("No se encontró maquinaria")
-
-            val solicitud = SolicitudMantenimientoEntity(
-                uid = UUID.randomUUID().toString(),
-                uidMaquinaria = maqActual.uid,
-                codigoMaquinaria = maqActual.codigoMaquinaria,
-                nombreMaquinaria = maqActual.nombre,
-                tipoMaquinaria = maqActual.tipo,
-                uidOperario = user?.uid ?: "",
-                nombreOperario = user?.displayName ?: "Operario",
-                correoOperario = user?.email ?: "",
-                horometroActual = maqActual.horometroActual.toInt(),
-                horometroUltimoMantenimiento = maqActual.horometroUltimoMantenimiento.toInt(),
-                intervaloMantenimientoHoras = maqActual.intervaloMantenimientoHoras,
-                horasDesdeUltimoMantenimiento = (maqActual.horometroActual - maqActual.horometroUltimoMantenimiento).toInt(),
-                horasRestantes = (maqActual.intervaloMantenimientoHoras - (maqActual.horometroActual - maqActual.horometroUltimoMantenimiento)).toInt(),
-                motivo = "Mantenimiento vencido: ${mActual.codigoMantenimiento}. El operario solicita reprogramación.",
-                estadoSolicitud = "PENDIENTE_APROBACION",
-                origen = "REPROGRAMACION",
-                fechaSugerida = obtenerFechaActual(),
-                fechaRegistro = obtenerFechaActual(),
-                uidMantenimientoGenerado = mActual.uid, // Referencia al mantenimiento a reprogramar
-                estadoSync = "PENDIENTE_CREAR",
-                timestampLocal = System.currentTimeMillis()
-            )
-
-            solicitudDao.insertarOActualizar(solicitud)
-            SincronizacionMantenimientoWorker.encolar(appContext)
-            onSuccess()
-        } catch (e: Exception) {
-            onError(e.message ?: "Error al solicitar reprogramación")
-        }
-    }
-
     suspend fun finalizarMantenimiento(
         uid: String,
         uidMaquinaria: String,
         fechaRealizada: String,
-        horometroReal: Int,
+        horometroReal: Double,
         costoReal: Double,
         observacionesFinales: String,
         insumos: List<ConsumoRepuesto>,
@@ -358,10 +312,10 @@ class MantenimientoRepository(context: Context) {
                     observaciones = observacionesFinales,
                     resolutorNombre = userName,
                     actualizadoPor = user?.email ?: "SISTEMA",
-                    fechaActualizacion = obtenerFechaActual(),
+                    fechaActualizacion = DateUtils.obtenerFechaHoraActual(),
                     modificadoPorUid = userUid,
                     modificadoPorNombre = userName,
-                    fechaUltimaModificacion = obtenerFechaActual(),
+                    fechaUltimaModificacion = DateUtils.obtenerFechaHoraActual(),
                     imagenesFinalizacionLocal = imagenesFinalizacionLocal,
                     estadoSync = if (mActual.estadoSync == "SINCRONIZADO") "PENDIENTE_ACTUALIZAR" else mActual.estadoSync,
                     timestampLocal = System.currentTimeMillis()
@@ -373,7 +327,7 @@ class MantenimientoRepository(context: Context) {
                     estado = "OPERATIVA",
                     horometroUltimoMantenimiento = horometroReal.toDouble(),
                     horometroActual = horometroReal.toDouble(),
-                    fechaActualizacion = obtenerFechaActual(),
+                    fechaActualizacion = DateUtils.obtenerFechaHoraActual(),
                     estadoSync = if (maqActual.estadoSync == "SINCRONIZADO") "PENDIENTE_ACTUALIZAR" else maqActual.estadoSync,
                     timestampLocal = System.currentTimeMillis()
                 )
@@ -476,7 +430,10 @@ class MantenimientoRepository(context: Context) {
 
                 val docRemoto = db.collection(coleccionMantenimientos).document(entity.uid).get().await()
                 val fechaRemotaStr = docRemoto.getString("fechaActualizacion") ?: ""
-                val format = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+                val format = if (fechaRemotaStr.contains(":")) 
+                    java.text.SimpleDateFormat(DateUtils.FORMATO_PRECISO, java.util.Locale.getDefault())
+                    else java.text.SimpleDateFormat(DateUtils.FORMATO_ESTANDAR, java.util.Locale.getDefault())
+                
                 val timestampRemoto = try { format.parse(fechaRemotaStr)?.time ?: 0L } catch(e: Exception) { 0L }
 
                 if (docRemoto.exists() && timestampRemoto > entity.timestampLocal) {
@@ -530,9 +487,14 @@ class MantenimientoRepository(context: Context) {
                 for (modelo in remotos) {
                     val local = maintenanceDao.obtenerPorUid(modelo.uid)
                     
-                    if (local != null && local.estadoSync != "SINCRONIZADO") {
-                        val format = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
-                        val timestampRemoto = try { format.parse(modelo.fechaActualizacion)?.time ?: 0L } catch(e: Exception) { 0L }
+                    val format = if (modelo.fechaActualizacion.contains(":")) 
+                        java.text.SimpleDateFormat(DateUtils.FORMATO_PRECISO, java.util.Locale.getDefault())
+                        else java.text.SimpleDateFormat(DateUtils.FORMATO_ESTANDAR, java.util.Locale.getDefault())
+                    
+                    val timestampRemoto = try { format.parse(modelo.fechaActualizacion)?.time ?: 0L } catch(e: Exception) { 0L }
+                    
+                    if (local != null) {
+                        // Protegemos el local si es más nuevo o igual al remoto
                         if (local.timestampLocal >= timestampRemoto) {
                             continue
                         }
@@ -545,6 +507,35 @@ class MantenimientoRepository(context: Context) {
         } catch (e: Exception) {
             android.util.Log.e("MantenimientoRepo", "Error al descargar cambios: ${e.message}", e)
             throw e
+        }
+    }
+
+    fun iniciarEscuchaMantenimientos() {
+        db.collection(coleccionMantenimientos).addSnapshotListener { snapshots, e ->
+            if (e != null || snapshots == null) return@addSnapshotListener
+            
+            CoroutineScope(Dispatchers.IO).launch {
+                for (doc in snapshots.documentChanges) {
+                    val modelo = doc.document.toObject(MantenimientoModel::class.java)
+                    val local = maintenanceDao.obtenerPorUid(modelo.uid)
+                    
+                    val format = if (modelo.fechaActualizacion.contains(":")) 
+                        java.text.SimpleDateFormat(DateUtils.FORMATO_PRECISO, java.util.Locale.getDefault())
+                        else java.text.SimpleDateFormat(DateUtils.FORMATO_ESTANDAR, java.util.Locale.getDefault())
+                    
+                    val timestampRemoto = try { format.parse(modelo.fechaActualizacion)?.time ?: 0L } catch(ex: Exception) { 0L }
+                    
+                    if (local != null && local.estadoSync != "SINCRONIZADO") {
+                        if (local.timestampLocal >= timestampRemoto) {
+                            continue
+                        }
+                    }
+                    
+                    if (doc.type != com.google.firebase.firestore.DocumentChange.Type.REMOVED) {
+                        maintenanceDao.insertarOActualizar(modelo.aEntity("SINCRONIZADO", System.currentTimeMillis()))
+                    }
+                }
+            }
         }
     }
 
@@ -588,7 +579,7 @@ class MantenimientoRepository(context: Context) {
                     if (DateUtils.fechaYaPaso(mEntity.fechaProgramada)) {
                         maintenanceDao.insertarOActualizar(mEntity.copy(
                             estado = "VENCIDO",
-                            fechaActualizacion = obtenerFechaActual(),
+                            fechaActualizacion = DateUtils.obtenerFechaHoraActual(),
                             estadoSync = "PENDIENTE_ACTUALIZAR",
                             timestampLocal = System.currentTimeMillis()
                         ))
@@ -608,7 +599,7 @@ class MantenimientoRepository(context: Context) {
 
     private fun obtenerFechaActual(): String {
         return java.text.SimpleDateFormat(
-            "yyyy-MM-dd",
+            "yyyy-MM-dd HH:mm:ss",
             java.util.Locale.getDefault()
         ).format(java.util.Date())
     }

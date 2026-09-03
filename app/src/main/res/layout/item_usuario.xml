@@ -92,15 +92,12 @@
                 android:src="@drawable/edit"
                 app:tint="@color/secondary" />
 
-            <ImageButton
-                android:id="@+id/ivCambiarEstado"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Cambiar estado"
-                android:padding="8dp"
-                android:src="@drawable/person"
-                app:tint="@color/danger" />
+            <com.google.android.material.switchmaterial.SwitchMaterial
+                android:id="@+id/switchEstado"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:thumbTint="@color/switch_thumb_selector"
+                app:trackTint="@color/switch_track_selector" />
 
         </LinearLayout>
 

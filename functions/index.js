@@ -124,14 +124,14 @@ exports.notificarNuevaSolicitudMantenimiento = onDocumentCreated(
       if (horasRestantes < 0) {
         mensaje =
             `${nombreMaquinaria} superó el intervalo por ` +
-            `${Math.abs(horasRestantes)} horas.`;
+            `${Math.abs(horasRestantes).toFixed(1)} horas.`;
       } else if (horasRestantes === 0) {
         mensaje =
             `${nombreMaquinaria} alcanzó el límite de mantenimiento.`;
       } else {
         mensaje =
             `${nombreMaquinaria} requiere revisión. ` +
-            `Faltan ${horasRestantes} horas para mantenimiento.`;
+            `Faltan ${horasRestantes.toFixed(1)} horas para mantenimiento.`;
       }
 
       const notificationMessage = {

@@ -31,7 +31,6 @@ import com.lingomak.lingomakapp.ui.mantenimiento.SolicitudesMantenimientoFragmen
 import com.lingomak.lingomakapp.ui.maquinaria.MaquinariaFragment
 import com.lingomak.lingomakapp.ui.movimientos.MovimientosGlobalFragment
 import com.lingomak.lingomakapp.ui.repuestos.InventarioContainerFragment
-import com.lingomak.lingomakapp.ui.repuestos.InventarioFragment
 import com.lingomak.lingomakapp.ui.usuarios.UsuariosFragment
 import com.lingomak.lingomakapp.utils.Constants
 import com.lingomak.lingomakapp.data.worker.AlertasWorkerManager
@@ -110,11 +109,40 @@ class DashboardAdminActivity : AppCompatActivity() {
     private fun dispararSincronizacionInicial() {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                com.lingomak.lingomakapp.data.repository.RepuestoRepository(this@DashboardAdminActivity).descargarCambiosDeFirestore()
-                com.lingomak.lingomakapp.data.repository.MaquinariaRepository(this@DashboardAdminActivity).descargarMaquinariasDeFirestore()
-                com.lingomak.lingomakapp.data.repository.MantenimientoRepository(this@DashboardAdminActivity).descargarCambiosDeFirestore()
-                com.lingomak.lingomakapp.data.repository.UserRepository(this@DashboardAdminActivity).descargarUsuariosDeFirestore()
-                com.lingomak.lingomakapp.data.repository.ConfiguracionRepository(this@DashboardAdminActivity).descargarCategoriasDeFirestore()
+                // Sincronizar todos los módulos principales para asegurar paridad de datos entre dispositivos
+                val repuestoRepo = com.lingomak.lingomakapp.data.repository.RepuestoRepository(this@DashboardAdminActivity)
+                repuestoRepo.descargarCambiosDeFirestore()
+                repuestoRepo.iniciarEscuchaRepuestos()
+
+                val maquinariaRepo = com.lingomak.lingomakapp.data.repository.MaquinariaRepository(this@DashboardAdminActivity)
+                maquinariaRepo.descargarMaquinariasDeFirestore()
+                maquinariaRepo.iniciarEscuchaMaquinaria()
+
+                val mantenimientoRepo = com.lingomak.lingomakapp.data.repository.MantenimientoRepository(this@DashboardAdminActivity)
+                mantenimientoRepo.descargarCambiosDeFirestore()
+                mantenimientoRepo.iniciarEscuchaMantenimientos()
+
+                val userRepo = com.lingomak.lingomakapp.data.repository.UserRepository(this@DashboardAdminActivity)
+                userRepo.descargarUsuariosDeFirestore()
+                userRepo.iniciarEscuchaUsuarios()
+
+                val configRepo = com.lingomak.lingomakapp.data.repository.ConfiguracionRepository(this@DashboardAdminActivity)
+                configRepo.descargarCategoriasDeFirestore()
+                configRepo.iniciarEscuchaCategorias()
+                
+                // Módulos que faltaban (Bitácora, Repostajes y Movimientos)
+                val registroUsoRepo = com.lingomak.lingomakapp.data.repository.RegistroUsoMaquinariaRepository(this@DashboardAdminActivity)
+                registroUsoRepo.descargarCambiosDeFirestore()
+                registroUsoRepo.iniciarEscuchaBitacora()
+
+                val movimientoRepo = com.lingomak.lingomakapp.data.repository.MovimientoRepository(this@DashboardAdminActivity)
+                movimientoRepo.descargarTodosDesdeFirestore()
+                movimientoRepo.iniciarEscuchaMovimientos()
+
+                val solicitudRepo = com.lingomak.lingomakapp.data.repository.SolicitudMantenimientoRepository(this@DashboardAdminActivity)
+                solicitudRepo.descargarSolicitudesDeFirestore()
+                solicitudRepo.iniciarEscuchaSolicitudes()
+
             } catch (e: Exception) {
                 // Silencioso
             }
@@ -223,25 +251,21 @@ class DashboardAdminActivity : AppCompatActivity() {
 
         return when (tipoDestino) {
 
+            "MANTENIMIENTO_VENCIDO" -> {
+                // Implementar navegación directa a mantenimiento si es necesario
+                false
+            }
+
             "SOLICITUD_MANTENIMIENTO" -> {
-
-                val fragment =
-                    SolicitudesMantenimientoFragment().apply {
-
-                        arguments = Bundle().apply {
-                            putString(
-                                "uidSolicitudDestacada",
-                                uidSolicitud
-                            )
-                        }
+                val fragment = SolicitudesMantenimientoFragment().apply {
+                    arguments = Bundle().apply {
+                        putString("uidSolicitudDestacada", uidSolicitud)
                     }
+                }
 
-                supportFragmentManager
-                    .beginTransaction()
-                    .replace(
-                        R.id.fragmentContainerAdmin,
-                        fragment
-                    )
+                supportFragmentManager.beginTransaction()
+                    .replace(R.id.fragmentContainerAdmin, fragment)
+                    .addToBackStack(null)
                     .commit()
 
                 true

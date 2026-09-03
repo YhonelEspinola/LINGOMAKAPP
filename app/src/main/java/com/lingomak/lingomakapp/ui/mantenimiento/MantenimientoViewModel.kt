@@ -88,7 +88,7 @@ class MantenimientoViewModel(application: Application) : AndroidViewModel(applic
         uid: String,
         uidMaquinaria: String,
         fechaRealizada: String,
-        horometroReal: Int,
+        horometroReal: Double,
         costoReal: Double,
         observacionesFinales: String,
         insumos: List<ConsumoRepuesto>,
@@ -128,16 +128,6 @@ class MantenimientoViewModel(application: Application) : AndroidViewModel(applic
     fun cancelarMantenimiento(uid: String, onExito: () -> Unit) {
         viewModelScope.launch(Dispatchers.IO) {
             repository.cancelarMantenimiento(uid, {
-                viewModelScope.launch(Dispatchers.Main) { onExito() }
-            }, { error ->
-                _mensajeError.postValue(error)
-            })
-        }
-    }
-
-    fun solicitarReprogramacion(uidMantenimiento: String, onExito: () -> Unit) {
-        viewModelScope.launch(Dispatchers.IO) {
-            repository.solicitarReprogramacion(uidMantenimiento, {
                 viewModelScope.launch(Dispatchers.Main) { onExito() }
             }, { error ->
                 _mensajeError.postValue(error)

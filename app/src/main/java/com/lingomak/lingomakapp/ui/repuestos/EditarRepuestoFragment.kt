@@ -139,15 +139,15 @@ class EditarRepuestoFragment : Fragment() {
     }
 
     private fun configurarSpinnerCategorias(categorias: List<String>) {
-        listaCategorias = listOf("Seleccione categoría") + categorias
-        val spinnerAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, listaCategorias)
-        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding.spinnerCategoria.adapter = spinnerAdapter
+        listaCategorias = categorias
+        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, listaCategorias)
+        binding.spinnerCategoria.setAdapter(adapter)
         
         // Si ya tenemos los datos del repuesto cargados, re-seleccionar la categoría
         repuestoOriginal?.let { repuesto ->
-            val index = listaCategorias.indexOf(repuesto.categoria)
-            if (index >= 0) binding.spinnerCategoria.setSelection(index)
+            if (listaCategorias.contains(repuesto.categoria)) {
+                binding.spinnerCategoria.setText(repuesto.categoria, false)
+            }
         }
     }
 
@@ -187,8 +187,9 @@ class EditarRepuestoFragment : Fragment() {
         binding.etProveedorNombre.setText(repuesto.proveedorNombre)
         binding.etProveedorContacto.setText(repuesto.proveedorContacto)
         
-        val index = listaCategorias.indexOf(repuesto.categoria)
-        if (index >= 0) binding.spinnerCategoria.setSelection(index)
+        if (listaCategorias.contains(repuesto.categoria)) {
+            binding.spinnerCategoria.setText(repuesto.categoria, false)
+        }
 
         if (repuesto.imagenUrl.isNotEmpty()) {
             Glide.with(this).load(repuesto.imagenUrl).placeholder(R.drawable.bg_image_placeholder).into(binding.ivFotoRepuesto)
@@ -237,7 +238,7 @@ class EditarRepuestoFragment : Fragment() {
             val repuestoEditado = repuestoOriginal?.copy(
                 codigoInterno = binding.etCodigoInterno.text.toString(),
                 nombre = binding.etNombre.text.toString(),
-                categoria = binding.spinnerCategoria.selectedItem.toString(),
+                categoria = binding.spinnerCategoria.text.toString(),
                 marca = binding.etMarca.text.toString(),
                 descripcion = binding.etDescripcion.text.toString(),
                 stockActual = stockActual,

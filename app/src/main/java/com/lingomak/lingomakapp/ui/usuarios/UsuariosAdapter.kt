@@ -2,7 +2,6 @@ package com.lingomak.lingomakapp.ui.usuarios
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.lingomak.lingomakapp.data.model.UserModel
 import com.lingomak.lingomakapp.databinding.ItemUsuarioBinding
@@ -22,25 +21,24 @@ class UsuariosAdapter(
             binding.tvCorreo.text = usuario.correo
             binding.tvRol.text = usuario.rol
             
-            // Si está ACTIVO no se muestra texto, si está INACTIVO se muestra en rojo
-            if (usuario.estado.equals("ACTIVO", ignoreCase = true)) {
+            val esActivo = usuario.estado.equals("ACTIVO", ignoreCase = true)
+            binding.switchEstado.setOnCheckedChangeListener(null)
+            binding.switchEstado.isChecked = esActivo
+
+            if (esActivo) {
                 binding.tvEstado.visibility = android.view.View.GONE
-                binding.ivCambiarEstado.setImageResource(com.lingomak.lingomakapp.R.drawable.ic_person_off)
-                binding.ivCambiarEstado.setColorFilter(ContextCompat.getColor(binding.root.context, com.lingomak.lingomakapp.R.color.danger))
             } else {
                 binding.tvEstado.visibility = android.view.View.VISIBLE
                 binding.tvEstado.text = "INACTIVO"
-                binding.tvEstado.setTextColor(ContextCompat.getColor(binding.root.context, com.lingomak.lingomakapp.R.color.danger))
-                binding.ivCambiarEstado.setImageResource(com.lingomak.lingomakapp.R.drawable.person)
-                binding.ivCambiarEstado.setColorFilter(ContextCompat.getColor(binding.root.context, com.lingomak.lingomakapp.R.color.success))
             }
 
             binding.ivEditar.setOnClickListener {
                 onEditarClick(usuario)
             }
 
-
-            binding.ivCambiarEstado.setOnClickListener {
+            binding.switchEstado.setOnClickListener {
+                // Revertimos el cambio visual para que el diálogo de confirmación sea el que mande
+                binding.switchEstado.isChecked = esActivo
                 onCambiarEstadoClick(usuario)
             }
         }

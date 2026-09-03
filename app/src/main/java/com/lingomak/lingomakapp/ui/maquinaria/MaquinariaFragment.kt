@@ -188,7 +188,7 @@ class MaquinariaFragment : Fragment() {
                     putString("tipoMaquinaria", maq.tipo)
                     putDouble("horometroActual", maq.horometroActual)
                     putDouble("horometroUltimoMantenimiento", maq.horometroUltimoMantenimiento)
-                    putInt("intervaloMantenimientoHoras", maq.intervaloMantenimientoHoras)
+                    putDouble("intervaloMantenimientoHoras", maq.intervaloMantenimientoHoras)
                     if (maq.capacidadTanqueGls != null) {
                         putDouble("capacidadTanqueGls", maq.capacidadTanqueGls!!)
                     }

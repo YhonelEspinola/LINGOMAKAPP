@@ -185,17 +185,7 @@ object CsvExporter {
         }
         sb.append("\n")
 
-        sb.append("7. SALIDAS CON OM VS SUELTAS\n")
-        sb.append("Categoría,Cantidad,Porcentaje\n")
-        val om = data.omVsSueltas.first
-        val sueltas = data.omVsSueltas.second
-        val totalOM = (om + sueltas).toDouble()
-        val percOM = if (totalOM > 0) (om / totalOM) * 100 else 0.0
-        val percSueltas = if (totalOM > 0) (sueltas / totalOM) * 100 else 0.0
-        sb.append("Con OM," + om + "," + String.format(Locale.getDefault(), "%.1f%%", percOM) + "\n")
-        sb.append("Sueltas," + sueltas + "," + String.format(Locale.getDefault(), "%.1f%%", percSueltas) + "\n\n")
-
-        sb.append("8. COSTO REAL VS ESTIMADO\n")
+        sb.append("7. COSTO REAL VS ESTIMADO\n")
         sb.append("Categoría,Monto (Soles),Diferencia\n")
         sb.append("Estimado," + data.costosComparativa.first + ",-\n")
         sb.append("Real," + data.costosComparativa.second + "," + data.costosComparativa.third + "\n")

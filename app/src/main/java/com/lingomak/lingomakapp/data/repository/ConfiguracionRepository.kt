@@ -93,6 +93,19 @@ class ConfiguracionRepository(context: Context) {
         }
     }
 
+    fun iniciarEscuchaCategorias() {
+        db.collection(coleccionCategorias).addSnapshotListener { snapshots, e ->
+            if (e != null || snapshots == null) return@addSnapshotListener
+            
+            CoroutineScope(Dispatchers.IO).launch {
+                val remotos = snapshots.toObjects(CategoriaModel::class.java)
+                val entities = remotos.map { it.aEntity(estadoSync = "SINCRONIZADO") }
+                categoriaDao.insertarLista(entities)
+                categoriaDao.eliminarSincronizadosNoPresentes(remotos.map { it.uid })
+            }
+        }
+    }
+
     private suspend fun inicializarCategoriasBase() {
         val repuestos = listOf("Aceites", "Filtros", "Frenos", "Eléctrico", "Motor")
         val maquinaria = listOf(

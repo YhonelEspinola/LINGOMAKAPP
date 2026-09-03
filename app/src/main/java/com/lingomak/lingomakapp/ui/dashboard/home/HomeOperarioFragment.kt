@@ -14,6 +14,7 @@ import com.lingomak.lingomakapp.ui.alertas.AlertasFragment
 import com.lingomak.lingomakapp.ui.maquinaria.OperarioMaquinariaFragment
 import com.lingomak.lingomakapp.ui.maquinaria.RegistrarUsoMaquinariaFragment
 import com.lingomak.lingomakapp.ui.repuestos.InventarioOpFragment
+import com.lingomak.lingomakapp.utils.formatoHoras
 
 class HomeOperarioFragment : Fragment() {
 
@@ -87,12 +88,12 @@ class HomeOperarioFragment : Fragment() {
             if (maquinaria != null && esReciente) {
                 binding.cardUltimoUso.visibility = View.VISIBLE
                 binding.tvNombreMaquinaUso.text = maquinaria.nombre
-                binding.tvHorometroMaquinaUso.text = "${maquinaria.horometroActual} h"
+                binding.tvHorometroMaquinaUso.text = "${maquinaria.horometroActual.formatoHoras()} h"
                 
                 val horasDesdeUltimo = maquinaria.horometroActual - maquinaria.horometroUltimoMantenimiento
                 val horasRestantes = maquinaria.intervaloMantenimientoHoras - horasDesdeUltimo
                 
-                binding.tvRestanteMaquinaUso.text = "$horasRestantes h"
+                binding.tvRestanteMaquinaUso.text = "${horasRestantes.formatoHoras()} h"
                 val colorRestante = if (horasRestantes <= 20) R.color.danger else R.color.success
                 binding.tvRestanteMaquinaUso.setTextColor(ContextCompat.getColor(requireContext(), colorRestante))
 
@@ -105,7 +106,7 @@ class HomeOperarioFragment : Fragment() {
                         putString("tipoMaquinaria", maquinaria.tipo)
                         putDouble("horometroActual", maquinaria.horometroActual)
                         putDouble("horometroUltimoMantenimiento", maquinaria.horometroUltimoMantenimiento)
-                        putInt("intervaloMantenimientoHoras", maquinaria.intervaloMantenimientoHoras)
+                        putDouble("intervaloMantenimientoHoras", maquinaria.intervaloMantenimientoHoras)
                     }
                     fragment.arguments = bundle
                     abrirFragment(fragment)

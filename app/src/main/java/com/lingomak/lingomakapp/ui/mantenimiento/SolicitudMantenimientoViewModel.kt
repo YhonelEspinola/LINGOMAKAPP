@@ -1,110 +1,64 @@
 package com.lingomak.lingomakapp.ui.mantenimiento
 
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.lingomak.lingomakapp.data.model.SolicitudMantenimientoModel
 import com.lingomak.lingomakapp.data.repository.SolicitudMantenimientoRepository
+import kotlinx.coroutines.launch
 
-class SolicitudMantenimientoViewModel : ViewModel() {
+class SolicitudMantenimientoViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repository =
-        SolicitudMantenimientoRepository()
+    private val repository = SolicitudMantenimientoRepository(application)
 
-    private val _solicitudesPendientes =
-        MutableLiveData<List<SolicitudMantenimientoModel>>()
+    val solicitudesPendientes: LiveData<List<SolicitudMantenimientoModel>> =
+        repository.listarPendientesObservable()
 
-    val solicitudesPendientes:
-            LiveData<List<SolicitudMantenimientoModel>>
-        get() = _solicitudesPendientes
+    private val _cargando = MutableLiveData<Boolean>()
+    val cargando: LiveData<Boolean> get() = _cargando
 
-    private val _cargando =
-        MutableLiveData<Boolean>()
+    private val _mensajeError = MutableLiveData<String>()
+    val mensajeError: LiveData<String> get() = _mensajeError
 
-    val cargando: LiveData<Boolean>
-        get() = _cargando
-
-    private val _mensajeError =
-        MutableLiveData<String>()
-
-    val mensajeError: LiveData<String>
-        get() = _mensajeError
-
-
-    private val _solicitudRechazada =
-        MutableLiveData<Boolean>()
-
-    val solicitudRechazada: LiveData<Boolean>
-        get() = _solicitudRechazada
-
-
-    fun listarSolicitudesPendientes() {
-
-        _cargando.value = true
-
-        repository.listarSolicitudesPendientes(
-            onSuccess = { lista ->
-
-                _cargando.postValue(false)
-
-                _solicitudesPendientes.postValue(lista)
-            },
-
-            onError = { error ->
-
-                _cargando.postValue(false)
-                _mensajeError.postValue(error)
-            }
-        )
-    }
-
+    private val _solicitudRechazada = MutableLiveData<Boolean>()
+    val solicitudRechazada: LiveData<Boolean> get() = _solicitudRechazada
 
     fun rechazarSolicitud(
         uidSolicitud: String,
         uidAdministrador: String,
         motivoRechazo: String
     ) {
-
         if (uidSolicitud.isBlank()) {
-            _mensajeError.value =
-                "No se encontró la solicitud"
+            _mensajeError.value = "No se encontró la solicitud"
             return
         }
-
         if (uidAdministrador.isBlank()) {
-            _mensajeError.value =
-                "No se encontró el administrador autenticado"
+            _mensajeError.value = "No se encontró el administrador autenticado"
             return
         }
-
         if (motivoRechazo.isBlank()) {
-            _mensajeError.value =
-                "Ingrese el motivo del rechazo"
+            _mensajeError.value = "Ingrese el motivo del rechazo"
             return
         }
 
         _cargando.value = true
-
-        repository.rechazarSolicitud(
-            uidSolicitud = uidSolicitud,
-            uidAdministrador = uidAdministrador,
-            motivoRechazo = motivoRechazo.trim(),
-
-            onSuccess = {
-
+        viewModelScope.launch {
+            try {
+                repository.rechazarSolicitud(
+                    uidSolicitud = uidSolicitud,
+                    uidAdministrador = uidAdministrador,
+                    motivoRechazo = motivoRechazo.trim()
+                )
                 _cargando.postValue(false)
                 _solicitudRechazada.postValue(true)
-                listarSolicitudesPendientes()
-            },
-
-            onError = { error ->
-
+            } catch (e: Exception) {
                 _cargando.postValue(false)
-                _mensajeError.postValue(error)
+                _mensajeError.postValue(e.message ?: "Error al rechazar la solicitud")
             }
-        )
+        }
     }
-
 
     fun marcarComoConvertida(
         uidSolicitud: String,
@@ -112,37 +66,23 @@ class SolicitudMantenimientoViewModel : ViewModel() {
         uidMantenimientoGenerado: String,
         onSuccess: () -> Unit
     ) {
-
-        if (
-            uidSolicitud.isBlank() ||
-            uidAdministrador.isBlank() ||
-            uidMantenimientoGenerado.isBlank()
-        ) {
-            _mensajeError.value =
-                "Faltan datos para actualizar la solicitud"
+        if (uidSolicitud.isBlank() || uidAdministrador.isBlank() || uidMantenimientoGenerado.isBlank()) {
+            _mensajeError.value = "Faltan datos para actualizar la solicitud"
             return
         }
 
-        _cargando.value = true
-
-        repository.marcarComoConvertida(
-            uidSolicitud = uidSolicitud,
-            uidAdministrador = uidAdministrador,
-            uidMantenimientoGenerado =
-                uidMantenimientoGenerado,
-
-            onSuccess = {
-
-                _cargando.postValue(false)
+        viewModelScope.launch {
+            try {
+                repository.marcarComoConvertida(
+                    uidSolicitud = uidSolicitud,
+                    uidAdministrador = uidAdministrador,
+                    uidMantenimientoGenerado = uidMantenimientoGenerado
+                )
                 onSuccess()
-            },
-
-            onError = { error ->
-
-                _cargando.postValue(false)
-                _mensajeError.postValue(error)
+            } catch (e: Exception) {
+                _mensajeError.postValue(e.message ?: "Error al actualizar la solicitud")
             }
-        )
+        }
     }
 
     fun limpiarEstadoRechazo() {

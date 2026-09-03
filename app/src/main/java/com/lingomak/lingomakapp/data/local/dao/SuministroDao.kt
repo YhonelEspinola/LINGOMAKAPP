@@ -13,6 +13,15 @@ interface SuministroDao {
     @Query("SELECT * FROM suministros WHERE uidRegistroUso = :uidRegistroUso LIMIT 1")
     fun obtenerPorRegistroUsoObservable(uidRegistroUso: String): LiveData<SuministroEntity?>
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertarLista(suministros: List<SuministroEntity>)
+
+    @Query("DELETE FROM suministros WHERE estadoSync = 'SINCRONIZADO' AND uid NOT IN (:uidsFirestore)")
+    suspend fun eliminarSincronizadosNoPresentes(uidsFirestore: List<String>)
+
+    @Query("DELETE FROM suministros WHERE estadoSync = 'SINCRONIZADO'")
+    suspend fun eliminarTodosSincronizados()
+
     @Query("SELECT * FROM suministros")
     suspend fun obtenerTodos(): List<SuministroEntity>
 

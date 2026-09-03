@@ -100,18 +100,30 @@ class InventarioOpFragment : Fragment() {
             viewModel.filtrarPorCategoria(if (cat == "Todas las categorías") null else cat)
         }
 
-        // Filtros de Criticidad
-        binding.chipTodosCriticidad.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) viewModel.filtrarPorCriticidad(InventarioOpViewModel.NivelCriticidad.TODOS)
+        // Filtro por Disponibilidad (Exposed Dropdown)
+        val opcionesStock = listOf("Todos", "En stock", "Bajo stock", "Sin stock")
+        val adapterStock = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, opcionesStock)
+        binding.spFiltroStock.setAdapter(adapterStock)
+        binding.spFiltroStock.setText(opcionesStock[0], false)
+        binding.spFiltroStock.setOnItemClickListener { _, _, position, _ ->
+            val filtro = when (position) {
+                1 -> InventarioOpViewModel.NivelCriticidad.EN_STOCK
+                2 -> InventarioOpViewModel.NivelCriticidad.BAJO_STOCK
+                3 -> InventarioOpViewModel.NivelCriticidad.SIN_STOCK
+                else -> InventarioOpViewModel.NivelCriticidad.TODOS
+            }
+            viewModel.filtrarPorCriticidad(filtro)
         }
-        binding.chipEnStock.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) viewModel.filtrarPorCriticidad(InventarioOpViewModel.NivelCriticidad.EN_STOCK)
+
+        // Filtros rápidos de estado (Selección Única)
+        binding.chipTodosEstado.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) viewModel.filtrarPorEstado(null)
         }
-        binding.chipBajoStock.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) viewModel.filtrarPorCriticidad(InventarioOpViewModel.NivelCriticidad.BAJO_STOCK)
+        binding.chipActivos.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) viewModel.filtrarPorEstado("ACTIVO")
         }
-        binding.chipSinStock.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) viewModel.filtrarPorCriticidad(InventarioOpViewModel.NivelCriticidad.SIN_STOCK)
+        binding.chipInactivos.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) viewModel.filtrarPorEstado("INACTIVO")
         }
     }
 

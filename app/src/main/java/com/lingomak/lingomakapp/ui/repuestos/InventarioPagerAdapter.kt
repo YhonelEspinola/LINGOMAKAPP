@@ -100,10 +100,19 @@ class InventarioPagerAdapter(
             actualizarUIPorExpansion(position, isExpanded)
 
             binding.btnToggleFiltros.setOnClickListener {
-                val newValue = !(expandedFilters[position] ?: false)
+                val currentValue = expandedFilters[position] ?: false
+                val newValue = !currentValue
                 expandedFilters[position] = newValue
                 actualizarUIPorExpansion(position, newValue)
                 binding.ivChevronFiltros.animate().rotation(if (newValue) 180f else 0f).setDuration(200).start()
+                
+                // Forzar despertar del selector en la pestaña de Movimientos
+                if (newValue && position == 1) {
+                    binding.selectorFechas.post {
+                        binding.selectorFechas.requestLayout()
+                        binding.selectorFechas.findViewById<androidx.viewpager2.widget.ViewPager2>(R.id.viewPager)?.requestLayout()
+                    }
+                }
             }
 
             if (position == 0) {
@@ -142,17 +151,13 @@ class InventarioPagerAdapter(
                 applyFilters(0)
             }
 
-            // Chips Criticidad
-            binding.chipGroupStock.removeAllViews()
-            val criticidades = listOf("TODOS", "CON STOCK", "BAJO STOCK", "SIN STOCK")
-            criticidades.forEach { crit ->
-                val chip = createChip(crit, crit, binding.chipGroupStock)
-                if (filterCriticidadInv == crit) chip.isChecked = true
-                binding.chipGroupStock.addView(chip)
-            }
-            binding.chipGroupStock.setOnCheckedStateChangeListener { group, checkedIds ->
-                val chipId = checkedIds.firstOrNull()
-                filterCriticidadInv = if (chipId != null) group.findViewById<Chip>(chipId).tag as String else "TODOS"
+            // Disponibilidad Dropdown
+            val opcionesStock = listOf("TODOS", "CON STOCK", "BAJO STOCK", "SIN STOCK")
+            val adapterStock = ArrayAdapter(itemView.context, android.R.layout.simple_dropdown_item_1line, opcionesStock)
+            binding.spFiltroStock.setAdapter(adapterStock)
+            binding.spFiltroStock.setText(filterCriticidadInv, false)
+            binding.spFiltroStock.setOnItemClickListener { parent, _, pos, _ ->
+                filterCriticidadInv = parent.getItemAtPosition(pos) as String
                 applyFilters(0)
             }
 
@@ -254,7 +259,14 @@ class InventarioPagerAdapter(
                 
                 filtered = filtered.filter { m ->
                     val date = m.first.fecha
-                    date != null && date.time in movFechaInicio..movFechaFin
+                    if (date != null) {
+                        // Normalizar para comparación de día puro
+                        val calReg = Calendar.getInstance().apply {
+                            time = date
+                            set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0); set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0)
+                        }
+                        calReg.timeInMillis >= movFechaInicio && calReg.timeInMillis <= movFechaFin
+                    } else false
                 }
 
                 if (searchQuery.isNotEmpty()) {

@@ -8,8 +8,8 @@ import androidx.room.Query
 import androidx.room.Transaction
 import com.lingomak.lingomakapp.data.local.entity.MaquinariaEntity
 import com.lingomak.lingomakapp.data.local.entity.RegistroUsoMaquinariaEntity
-import com.lingomak.lingomakapp.data.local.entity.SolicitudMantenimientoEntity
 import com.lingomak.lingomakapp.data.local.entity.SuministroEntity
+import com.lingomak.lingomakapp.data.local.entity.SolicitudMantenimientoEntity
 
 @Dao
 interface RegistroUsoMaquinariaDao {
@@ -19,12 +19,12 @@ interface RegistroUsoMaquinariaDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun actualizarMaquinaria(maquinaria: MaquinariaEntity)
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertarOActualizarSolicitud(solicitud: SolicitudMantenimientoEntity)
     
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertarOActualizarSuministro(suministro: SuministroEntity)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertarOActualizarSolicitud(solicitud: SolicitudMantenimientoEntity)
 
     @Query("DELETE FROM suministros WHERE uid = :suministroUid")
     suspend fun eliminarSuministroLocal(suministroUid: String)
@@ -33,27 +33,42 @@ interface RegistroUsoMaquinariaDao {
     suspend fun registrarUsoMaquinariaLocal(
         registro: RegistroUsoMaquinariaEntity,
         maquinaria: MaquinariaEntity?,
-        solicitud: SolicitudMantenimientoEntity?,
         suministro: SuministroEntity?,
+        solicitud: SolicitudMantenimientoEntity? = null,
         suministroUidAEliminar: String? = null
     ) {
         insertarOActualizar(registro)
         if (maquinaria != null) {
             actualizarMaquinaria(maquinaria)
         }
-        if (solicitud != null) {
-            insertarOActualizarSolicitud(solicitud)
-        }
         if (suministro != null) {
             insertarOActualizarSuministro(suministro)
+        }
+        if (solicitud != null) {
+            insertarOActualizarSolicitud(solicitud)
         }
         if (suministroUidAEliminar != null) {
             eliminarSuministroLocal(suministroUidAEliminar)
         }
     }
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertarLista(registros: List<RegistroUsoMaquinariaEntity>)
+
+    @Query("DELETE FROM registros_uso_maquinaria WHERE estadoSync = 'SINCRONIZADO' AND uid NOT IN (:uidsFirestore)")
+    suspend fun eliminarSincronizadosNoPresentes(uidsFirestore: List<String>)
+
+    @Query("DELETE FROM registros_uso_maquinaria WHERE estadoSync = 'SINCRONIZADO'")
+    suspend fun eliminarTodosSincronizados()
+
     @Query("SELECT * FROM registros_uso_maquinaria ORDER BY timestampLocal DESC")
     suspend fun obtenerTodos(): List<RegistroUsoMaquinariaEntity>
+
+    @Query("SELECT * FROM registros_uso_maquinaria ORDER BY timestampLocal DESC")
+    fun obtenerTodosObservable(): LiveData<List<RegistroUsoMaquinariaEntity>>
+
+    @Query("SELECT * FROM registros_uso_maquinaria WHERE uidMaquinaria = :uidMaquinaria ORDER BY timestampLocal DESC")
+    fun obtenerPorMaquinariaObservable(uidMaquinaria: String): LiveData<List<RegistroUsoMaquinariaEntity>>
 
     @Query("SELECT * FROM registros_uso_maquinaria WHERE uid = :uid LIMIT 1")
     suspend fun obtenerPorUid(uid: String): RegistroUsoMaquinariaEntity?

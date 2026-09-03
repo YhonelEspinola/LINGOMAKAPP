@@ -29,6 +29,9 @@ interface MantenimientoDao {
     @Query("SELECT * FROM mantenimientos WHERE uid = :uid LIMIT 1")
     suspend fun obtenerPorUid(uid: String): MantenimientoEntity?
 
+    @Query("SELECT * FROM mantenimientos WHERE uidMaquinaria = :uidMaquinaria AND (estado = 'PENDIENTE' OR estado = 'EN_PROCESO' OR estado = 'VENCIDO') LIMIT 1")
+    suspend fun obtenerMantenimientoActivoPorMaquinaria(uidMaquinaria: String): MantenimientoEntity?
+
     @Query("SELECT * FROM mantenimientos WHERE estadoSync != 'SINCRONIZADO'")
     suspend fun obtenerPendientesDeSincronizar(): List<MantenimientoEntity>
 

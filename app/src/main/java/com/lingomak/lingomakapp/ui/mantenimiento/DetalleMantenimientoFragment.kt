@@ -13,6 +13,7 @@ import com.lingomak.lingomakapp.R
 import com.lingomak.lingomakapp.data.model.MantenimientoModel
 import com.lingomak.lingomakapp.databinding.FragmentDetalleMantenimientoBinding
 import com.lingomak.lingomakapp.ui.dashboard.DashboardAdminActivity
+import com.lingomak.lingomakapp.utils.formatoHoras
 
 class DetalleMantenimientoFragment : Fragment() {
 
@@ -36,7 +37,7 @@ class DetalleMantenimientoFragment : Fragment() {
     private var responsable: String = ""
     private var prioridad: String = ""
     private var observaciones: String = ""
-    private var horometroProgramado: Int = 0
+    private var horometroProgramado: Double = 0.0
     private var costoEstimado: Double = 0.0
 
     private var origen: String = ""
@@ -67,7 +68,6 @@ class DetalleMantenimientoFragment : Fragment() {
         binding.btnEditarMantenimiento.visibility = View.GONE
         binding.btnCambiarEstado.visibility = View.GONE
         binding.btnCancelarMantenimiento.visibility = View.GONE
-        binding.btnSolicitarReprogramacion.visibility = View.GONE
         binding.btnFinalizarMantenimiento.visibility = View.GONE
         binding.btnGenerarReporteIA.visibility = View.GONE
     }
@@ -110,7 +110,7 @@ class DetalleMantenimientoFragment : Fragment() {
         binding.tvTipoMaquinariaDetalle.text = tipoMaquinaria
         binding.tvDescripcionDetalle.text = descripcion
         binding.tvFechaDetalle.text = fechaProgramada
-        binding.tvHorometroDetalle.text = "$horometroProgramado h"
+        binding.tvHorometroDetalle.text = "${horometroProgramado.formatoHoras()} h"
         binding.tvResponsableDetalle.text = responsable
         binding.tvPrioridadDetalle.text = prioridad
         binding.tvCostoEstimadoDetalle.text = "S/ $costoEstimado"
@@ -151,7 +151,6 @@ class DetalleMantenimientoFragment : Fragment() {
         }
         binding.btnFinalizarMantenimiento.setOnClickListener { abrirFinalizarMantenimiento() }
         binding.btnCancelarMantenimiento.setOnClickListener { mostrarDialogoCancelarMantenimiento() }
-        binding.btnSolicitarReprogramacion.setOnClickListener { solicitarReprogramacion() }
         
         binding.btnGenerarReporteIA.setOnClickListener {
             abrirDetalleReporteIA()
@@ -207,19 +206,6 @@ class DetalleMantenimientoFragment : Fragment() {
             .show()
     }
 
-    private fun solicitarReprogramacion() {
-        AlertDialog.Builder(requireContext())
-            .setTitle("Solicitar Reprogramación")
-            .setMessage("Se enviará una solicitud al administrador para reprogramar este mantenimiento vencido. ¿Desea continuar?")
-            .setPositiveButton("Enviar solicitud") { _, _ ->
-                viewModel.solicitarReprogramacion(uidMantenimiento) {
-                    Toast.makeText(requireContext(), "Solicitud enviada al administrador", Toast.LENGTH_LONG).show()
-                }
-            }
-            .setNegativeButton("Cerrar", null)
-            .show()
-    }
-
     private fun abrirEditarMantenimiento() {
         val fragment = EditarMantenimientoFragment()
         val bundle = Bundle()
@@ -269,7 +255,6 @@ class DetalleMantenimientoFragment : Fragment() {
                 binding.btnCambiarEstado.visibility = if (isAdmin) View.VISIBLE else View.GONE
                 binding.btnCambiarEstado.text = "REPROGRAMAR MANTENIMIENTO"
                 binding.btnCancelarMantenimiento.visibility = if (isAdmin) View.VISIBLE else View.GONE
-                binding.btnSolicitarReprogramacion.visibility = if (!isAdmin) View.VISIBLE else View.GONE
                 binding.btnFinalizarMantenimiento.visibility = View.GONE
             }
             "EN_PROCESO" -> {

@@ -2,6 +2,7 @@ package com.lingomak.lingomakapp.ui.auth
 
 import android.content.Intent
 import android.os.Bundle
+import android.text.method.PasswordTransformationMethod
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -30,6 +31,10 @@ class CambiarPasswordFragment : Fragment() {
     ): View {
 
         _binding = FragmentCambiarPasswordBinding.inflate(inflater, container, false)
+
+        // Forzar ocultación instantánea de caracteres
+        binding.etNuevaPassword.transformationMethod = PasswordTransformationMethod()
+        binding.etConfirmarPassword.transformationMethod = PasswordTransformationMethod()
 
         modoForzado = arguments?.getBoolean("modoForzado", true) ?: true
 

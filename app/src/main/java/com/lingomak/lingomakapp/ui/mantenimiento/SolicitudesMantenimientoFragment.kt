@@ -15,8 +15,17 @@ import com.lingomak.lingomakapp.R
 import com.lingomak.lingomakapp.data.model.SolicitudMantenimientoModel
 import com.lingomak.lingomakapp.databinding.FragmentSolicitudesMantenimientoBinding
 
+/**
+ * Pantalla de administración para revisar (aprobar/rechazar) las solicitudes
+ * de mantenimiento generadas automáticamente cuando una máquina se acerca o
+ * supera su intervalo de mantenimiento preventivo (ver
+ * RegistroUsoMaquinariaRepository.registrarUsoMaquinaria).
+ *
+ * "Revisar" abre ProgramarMantenimientoFragment precargado con los datos de
+ * la solicitud; al programar, esta se marca como CONVERTIDA_A_MANTENIMIENTO.
+ * "Rechazar" pide un motivo y cierra la solicitud sin crear un mantenimiento.
+ */
 class SolicitudesMantenimientoFragment : Fragment() {
-
 
     private var _binding: FragmentSolicitudesMantenimientoBinding? = null
     private val binding get() = _binding!!
@@ -30,12 +39,7 @@ class SolicitudesMantenimientoFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-
-        _binding = FragmentSolicitudesMantenimientoBinding.inflate(
-            inflater,
-            container,
-            false
-        )
+        _binding = FragmentSolicitudesMantenimientoBinding.inflate(inflater, container, false)
 
         configurarRecyclerView()
         observarViewModel()
@@ -44,144 +48,62 @@ class SolicitudesMantenimientoFragment : Fragment() {
     }
 
     private fun configurarRecyclerView() {
-
         adapter = SolicitudMantenimientoAdapter(
             listaSolicitudes = emptyList(),
-
-            onRevisarClick = { solicitud ->
-                revisarSolicitud(solicitud)
-            },
-
-            onRechazarClick = { solicitud ->
-                mostrarDialogoRechazo(solicitud)
-            }
+            onRevisarClick = { solicitud -> revisarSolicitud(solicitud) },
+            onRechazarClick = { solicitud -> mostrarDialogoRechazo(solicitud) }
         )
 
-        binding.rvSolicitudesMantenimiento.layoutManager =
-            LinearLayoutManager(requireContext())
-
+        binding.rvSolicitudesMantenimiento.layoutManager = LinearLayoutManager(requireContext())
         binding.rvSolicitudesMantenimiento.adapter = adapter
     }
 
     private fun observarViewModel() {
 
-        viewModel.solicitudesPendientes.observe(
-            viewLifecycleOwner
-        ) { lista ->
-
+        // LiveData en vivo desde Room: se actualiza sola apenas cambia una
+        // solicitud (aprobada/rechazada) o llega una nueva por sincronización.
+        viewModel.solicitudesPendientes.observe(viewLifecycleOwner) { lista ->
             adapter.actualizarLista(lista)
 
-            binding.tvTotalSolicitudes.text =
-                lista.size.toString()
+            binding.tvTotalSolicitudes.text = lista.size.toString()
 
             val sinSolicitudes = lista.isEmpty()
-
-            binding.layoutSinSolicitudes.visibility =
-                if (sinSolicitudes) View.VISIBLE else View.GONE
-
-            binding.rvSolicitudesMantenimiento.visibility =
-                if (sinSolicitudes) View.GONE else View.VISIBLE
+            binding.layoutSinSolicitudes.visibility = if (sinSolicitudes) View.VISIBLE else View.GONE
+            binding.rvSolicitudesMantenimiento.visibility = if (sinSolicitudes) View.GONE else View.VISIBLE
         }
 
-        viewModel.cargando.observe(
-            viewLifecycleOwner
-        ) { cargando ->
-
-            binding.progressSolicitudes.visibility =
-                if (cargando) View.VISIBLE else View.GONE
+        viewModel.cargando.observe(viewLifecycleOwner) { cargando ->
+            binding.progressSolicitudes.visibility = if (cargando) View.VISIBLE else View.GONE
         }
 
-        viewModel.mensajeError.observe(
-            viewLifecycleOwner
-        ) { mensaje ->
-
+        viewModel.mensajeError.observe(viewLifecycleOwner) { mensaje ->
             if (!mensaje.isNullOrBlank()) {
-                Toast.makeText(
-                    requireContext(),
-                    mensaje,
-                    Toast.LENGTH_SHORT
-                ).show()
+                Toast.makeText(requireContext(), mensaje, Toast.LENGTH_SHORT).show()
             }
         }
 
-        viewModel.solicitudRechazada.observe(
-            viewLifecycleOwner
-        ) { rechazada ->
-
+        viewModel.solicitudRechazada.observe(viewLifecycleOwner) { rechazada ->
             if (rechazada == true) {
-
-                Toast.makeText(
-                    requireContext(),
-                    "Solicitud rechazada correctamente",
-                    Toast.LENGTH_SHORT
-                ).show()
-
+                Toast.makeText(requireContext(), "Solicitud rechazada correctamente", Toast.LENGTH_SHORT).show()
                 viewModel.limpiarEstadoRechazo()
             }
         }
     }
 
-    private fun revisarSolicitud(
-        solicitud: SolicitudMantenimientoModel
-    ) {
-
+    private fun revisarSolicitud(solicitud: SolicitudMantenimientoModel) {
         val fragment = ProgramarMantenimientoFragment()
 
         val bundle = Bundle().apply {
-
-            putString(
-                "uidSolicitud",
-                solicitud.uid
-            )
-
-            putString(
-                "origen",
-                "SOLICITUD_MANTENIMIENTO"
-            )
-
-
-            putString(
-                "uidMaquinaria",
-                solicitud.uidMaquinaria
-            )
-
-            putString(
-                "codigoMaquinaria",
-                solicitud.codigoMaquinaria
-            )
-
-            putString(
-                "nombreMaquinaria",
-                solicitud.nombreMaquinaria
-            )
-
-            putString(
-                "tipoMaquinaria",
-                solicitud.tipoMaquinaria
-            )
-
-            putInt(
-                "horometroActual",
-                solicitud.horometroActual
-            )
-
-            putInt(
-                "horometroProgramado",
-                solicitud.horometroActual
-            )
-
-
-            putString(
-                "motivoSolicitud",
-                solicitud.motivo
-            )
-
-            putString(
-                "fechaSugerida",
-                solicitud.fechaSugerida
-            )
-
-            // Fix 4.5: Pasar datos para reprogramación si aplica
+            putString("uidSolicitud", solicitud.uid)
+            putString("origen", "SOLICITUD_MANTENIMIENTO")
+            putString("uidMaquinaria", solicitud.uidMaquinaria)
+            putString("codigoMaquinaria", solicitud.codigoMaquinaria)
+            putString("nombreMaquinaria", solicitud.nombreMaquinaria)
+            putString("tipoMaquinaria", solicitud.tipoMaquinaria)
+            putDouble("horometroActual", solicitud.horometroActual)
+            putDouble("horometroProgramado", solicitud.horometroActual)
+            putString("motivoSolicitud", solicitud.motivo)
+            putString("fechaSugerida", solicitud.fechaSugerida)
             putString("origenSolicitud", solicitud.origen)
             putString("uidMantenimientoOriginal", solicitud.uidMantenimientoGenerado)
         }
@@ -189,19 +111,12 @@ class SolicitudesMantenimientoFragment : Fragment() {
         fragment.arguments = bundle
 
         parentFragmentManager.beginTransaction()
-            .replace(
-                R.id.fragmentContainerAdmin,
-                fragment
-            )
+            .replace(R.id.fragmentContainerAdmin, fragment)
             .addToBackStack(null)
             .commit()
     }
 
-
-    private fun mostrarDialogoRechazo(
-        solicitud: SolicitudMantenimientoModel
-    ) {
-
+    private fun mostrarDialogoRechazo(solicitud: SolicitudMantenimientoModel) {
         val inputMotivo = EditText(requireContext()).apply {
             hint = "Ingrese el motivo del rechazo"
             minLines = 3
@@ -211,48 +126,27 @@ class SolicitudesMantenimientoFragment : Fragment() {
 
         val dialogo = AlertDialog.Builder(requireContext())
             .setTitle("Rechazar solicitud")
-            .setMessage(
-                "Explique por qué no se programará el mantenimiento " +
-                        "de ${solicitud.nombreMaquinaria}."
-            )
+            .setMessage("Explique por qué no se programará el mantenimiento de ${solicitud.nombreMaquinaria}.")
             .setView(inputMotivo)
             .setNegativeButton("Cancelar", null)
-
             .setPositiveButton("Rechazar", null)
             .create()
 
         dialogo.setOnShowListener {
-
-            val botonRechazar =
-                dialogo.getButton(AlertDialog.BUTTON_POSITIVE)
+            val botonRechazar = dialogo.getButton(AlertDialog.BUTTON_POSITIVE)
 
             botonRechazar.setOnClickListener {
-
-                val motivo =
-                    inputMotivo.text.toString().trim()
+                val motivo = inputMotivo.text.toString().trim()
 
                 if (motivo.isBlank()) {
-
-                    inputMotivo.error =
-                        "El motivo es obligatorio"
-
+                    inputMotivo.error = "El motivo es obligatorio"
                     return@setOnClickListener
                 }
 
-                val uidAdministrador =
-                    FirebaseAuth.getInstance()
-                        .currentUser
-                        ?.uid
-                        .orEmpty()
+                val uidAdministrador = FirebaseAuth.getInstance().currentUser?.uid.orEmpty()
 
                 if (uidAdministrador.isBlank()) {
-
-                    Toast.makeText(
-                        requireContext(),
-                        "No se encontró la sesión del administrador",
-                        Toast.LENGTH_SHORT
-                    ).show()
-
+                    Toast.makeText(requireContext(), "No se encontró la sesión del administrador", Toast.LENGTH_SHORT).show()
                     return@setOnClickListener
                 }
 
@@ -267,11 +161,6 @@ class SolicitudesMantenimientoFragment : Fragment() {
         }
 
         dialogo.show()
-    }
-
-    override fun onResume() {
-        super.onResume()
-        viewModel.listarSolicitudesPendientes()
     }
 
     override fun onDestroyView() {

@@ -4,11 +4,13 @@ import android.content.Context
 import com.google.firebase.firestore.FirebaseFirestore
 import com.lingomak.lingomakapp.data.local.AppDatabase
 import com.lingomak.lingomakapp.data.local.entity.RepuestoEntity
+import com.lingomak.lingomakapp.data.local.entity.SolicitudMantenimientoEntity
 import com.lingomak.lingomakapp.data.model.AlertaModel
 import com.lingomak.lingomakapp.data.model.MantenimientoModel
-import com.lingomak.lingomakapp.utils.DateUtils
-import kotlinx.coroutines.tasks.await
 import com.lingomak.lingomakapp.data.model.SolicitudMantenimientoModel
+import com.lingomak.lingomakapp.utils.DateUtils
+import com.lingomak.lingomakapp.utils.formatoHoras
+import kotlinx.coroutines.tasks.await
 
 class AlertasService(
     private val context: Context
@@ -17,8 +19,6 @@ class AlertasService(
     private val database = FirebaseFirestore.getInstance()
     private val repuestoDao = AppDatabase.getInstance(context).repuestoDao()
     private val movimientoDao = AppDatabase.getInstance(context).movimientoDao()
-
-    private val coleccionSolicitudesMantenimiento = "solicitudes_mantenimiento"
 
     suspend fun obtenerAlertas(userUid: String? = null, esOperario: Boolean = false): List<AlertaModel> {
 
@@ -36,16 +36,19 @@ class AlertasService(
 
         cargarAlertasMantenimiento(mantenimientos, listaAlertas)
 
+        // 2. Solicitudes de Mantenimiento (Solo para Admin o si es el origen)
+        if (!esOperario) {
+            val solicitudes = database.collection("solicitudes_mantenimiento")
+                .whereEqualTo("estadoSolicitud", "PENDIENTE_APROBACION")
+                .get().await().toObjects(SolicitudMantenimientoModel::class.java)
+            
+            cargarAlertasSolicitudes(solicitudes, listaAlertas)
+        }
+
         if (!esOperario) {
             val repuestos = repuestoDao.obtenerRepuestosActivos()
             cargarAlertasInventario(repuestos, listaAlertas)
             cargarAlertasMovimientos(repuestos, listaAlertas)
-
-            val solicitudesPendientes = database.collection(coleccionSolicitudesMantenimiento)
-                .whereEqualTo("estadoSolicitud", "PENDIENTE_APROBACION")
-                .get().await().toObjects(SolicitudMantenimientoModel::class.java)
-
-            cargarAlertasSolicitudes(solicitudesPendientes, listaAlertas)
         }
 
         return ordenarAlertas(listaAlertas)
@@ -123,6 +126,29 @@ class AlertasService(
         }
     }
 
+    private fun cargarAlertasSolicitudes(
+        solicitudes: List<SolicitudMantenimientoModel>,
+        listaAlertas: MutableList<AlertaModel>
+    ) {
+        solicitudes.forEach { solicitud ->
+            listaAlertas.add(
+                AlertaModel(
+                    uid = solicitud.uid,
+                    categoria = "MANTENIMIENTO",
+                    icono = "📝",
+                    titulo = "Solicitud de mantenimiento",
+                    mensaje = "La maquinaria ${solicitud.nombreMaquinaria} requiere programación de mantenimiento: ${solicitud.motivo}",
+                    tipo = "SOLICITUD_MANTENIMIENTO",
+                    prioridad = if (solicitud.horasRestantes <= 0) "ALTA" else "MEDIA",
+                    fecha = solicitud.fechaRegistro,
+                    uidSolicitudMantenimiento = solicitud.uid,
+                    uidMaquinaria = solicitud.uidMaquinaria,
+                    nombreMaquinaria = solicitud.nombreMaquinaria
+                )
+            )
+        }
+    }
+
     private fun cargarAlertasInventario(
         repuestos: List<RepuestoEntity>,
         listaAlertas: MutableList<AlertaModel>
@@ -140,6 +166,7 @@ class AlertasService(
                             mensaje = "El repuesto ${repuesto.nombre} se encuentra agotado.",
                             tipo = "STOCK_AGOTADO",
                             prioridad = "ALTA",
+                            fecha = DateUtils.obtenerFechaActual(),
                             uidRepuesto = repuesto.uid,
                             codigoRepuesto = repuesto.codigoInterno,
                             nombreRepuesto = repuesto.nombre,
@@ -159,6 +186,7 @@ class AlertasService(
                             mensaje = "El repuesto ${repuesto.nombre} alcanzó el stock mínimo.",
                             tipo = "STOCK_CRITICO",
                             prioridad = "ALTA",
+                            fecha = DateUtils.obtenerFechaActual(),
                             uidRepuesto = repuesto.uid,
                             codigoRepuesto = repuesto.codigoInterno,
                             nombreRepuesto = repuesto.nombre,
@@ -178,6 +206,7 @@ class AlertasService(
                             mensaje = "El repuesto ${repuesto.nombre} está próximo a llegar al stock mínimo.",
                             tipo = "STOCK_BAJO",
                             prioridad = "MEDIA",
+                            fecha = DateUtils.obtenerFechaActual(),
                             uidRepuesto = repuesto.uid,
                             codigoRepuesto = repuesto.codigoInterno,
                             nombreRepuesto = repuesto.nombre,
@@ -223,6 +252,7 @@ class AlertasService(
                         mensaje = "El repuesto ${repuesto.nombre} tuvo $consumoSemanal salidas en los últimos 7 días.",
                         tipo = "ALTO_CONSUMO",
                         prioridad = "MEDIA",
+                        fecha = DateUtils.obtenerFechaActual(),
                         uidRepuesto = repuesto.uid,
                         codigoRepuesto = repuesto.codigoInterno,
                         nombreRepuesto = repuesto.nombre,
@@ -242,6 +272,7 @@ class AlertasService(
                         mensaje = "El repuesto ${repuesto.nombre} no registra movimientos en los últimos 90 días.",
                         tipo = "SIN_ROTACION",
                         prioridad = "MEDIA",
+                        fecha = DateUtils.obtenerFechaActual(),
                         uidRepuesto = repuesto.uid,
                         codigoRepuesto = repuesto.codigoInterno,
                         nombreRepuesto = repuesto.nombre,
@@ -267,35 +298,5 @@ class AlertasService(
                     }
                 }
         )
-    }
-
-    private fun cargarAlertasSolicitudes(
-        solicitudes: List<SolicitudMantenimientoModel>,
-        listaAlertas: MutableList<AlertaModel>
-    ) {
-        solicitudes.forEach { solicitud ->
-            val prioridad = if (solicitud.horasRestantes <= 10) "ALTA" else "MEDIA"
-            val mensaje = when {
-                solicitud.horasRestantes < 0 -> "La maquinaria ${solicitud.nombreMaquinaria} superó el intervalo de mantenimiento por ${kotlin.math.abs(solicitud.horasRestantes)} horas."
-                solicitud.horasRestantes == 0 -> "La maquinaria ${solicitud.nombreMaquinaria} alcanzó el límite de mantenimiento."
-                else -> "La maquinaria ${solicitud.nombreMaquinaria} tiene una solicitud pendiente. Faltan ${solicitud.horasRestantes} horas."
-            }
-
-            listaAlertas.add(
-                AlertaModel(
-                    uid = "${solicitud.uid}_SOLICITUD_MANTENIMIENTO",
-                    categoria = "MANTENIMIENTO",
-                    icono = "📋",
-                    titulo = "Solicitud de mantenimiento pendiente",
-                    mensaje = mensaje,
-                    tipo = "SOLICITUD_MANTENIMIENTO",
-                    prioridad = prioridad,
-                    fecha = solicitud.fechaRegistro,
-                    uidSolicitudMantenimiento = solicitud.uid,
-                    uidMaquinaria = solicitud.uidMaquinaria,
-                    nombreMaquinaria = solicitud.nombreMaquinaria
-                )
-            )
-        }
     }
 }

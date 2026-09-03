@@ -87,8 +87,8 @@ class UsuariosViewModel(application: Application) : AndroidViewModel(application
             nuevoEstado = nuevoEstado,
             onSuccess = {
                 _loading.value = false
-                // No es necesario llamar a listarUsuarios(), Room se actualizará vía SnapshotListener 
-                // o mediante la próxima descarga manual.
+                // Forzamos una descarga para actualizar Room y que la UI se refresque
+                listarUsuarios()
             },
             onError = { mensaje ->
                 _loading.value = false

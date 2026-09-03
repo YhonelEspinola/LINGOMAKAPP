@@ -2,8 +2,7 @@ package com.lingomak.lingomakapp.data.model
 
 data class BitacoraUsoModel(
     val registroUso: RegistroUsoMaquinariaModel,
-    val maquinaria: MaquinariaModel?,
-    val suministro: SuministroModel?
+    val maquinaria: MaquinariaModel?
 ) {
     // Helper properties for easy access in adapter/card
     val uid: String get() = registroUso.uid
@@ -23,7 +22,8 @@ data class BitacoraUsoModel(
     val contratista: String? get() = registroUso.contratista
     val ubicacion: String? get() = registroUso.ubicacion
     
-    val galonesCombustible: Double get() = suministro?.galonesCombustible ?: 0.0
-    val tipoCombustible: String? get() = suministro?.tipoCombustible
-    val tipoCarga: String? get() = suministro?.tipoCarga
+    val galonesCombustible: Double get() = registroUso.galonesCombustible
+    val galonesAceite: Double get() = registroUso.galonesAceite
+    val tipoCombustible: String get() = registroUso.tipoCombustible
+    val tipoCarga: String get() = registroUso.tipoCarga
 }

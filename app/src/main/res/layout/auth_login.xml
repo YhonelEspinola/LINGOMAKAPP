@@ -53,46 +53,38 @@
                     android:textAlignment="center"
                     android:layout_marginBottom="24dp"/>
 
-                <TextView
-                    android:id="@+id/tvCorreo"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Correo Corporativo"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="12sp"
-                    android:textStyle="bold"/>
-
-                <EditText
-                    android:id="@+id/etCorreo"
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
-                    android:layout_height="56dp"
-                    android:layout_marginTop="8dp"
-                    android:background="@drawable/bg_edit_text"
-                    android:hint="nombre@empresa.com"
-                    android:paddingHorizontal="16dp"
-                    android:inputType="textEmailAddress"
-                    android:textSize="15sp"/>
-
-                <TextView
-                    android:id="@+id/tvPassword"
-                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Contraseña"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="12sp"
-                    android:textStyle="bold"
-                    android:layout_marginTop="16dp"/>
+                    android:layout_marginBottom="16dp"
+                    android:hint="Correo Corporativo"
+                    app:startIconDrawable="@drawable/ic_mail">
 
-                <EditText
-                    android:id="@+id/etPassword"
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etCorreo"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textEmailAddress"
+                        android:textSize="15sp"/>
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
-                    android:layout_height="56dp"
-                    android:layout_marginTop="8dp"
-                    android:background="@drawable/bg_edit_text"
-                    android:hint="••••••••"
-                    android:paddingHorizontal="16dp"
-                    android:inputType="textPassword"
-                    android:textSize="15sp"/>
+                    android:layout_height="wrap_content"
+                    android:hint="Contraseña"
+                    app:endIconMode="password_toggle"
+                    app:endIconDrawable="@drawable/selector_password_toggle"
+                    app:startIconDrawable="@drawable/ic_lock">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etPassword"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textPassword"
+                        android:textSize="15sp"/>
+                </com.google.android.material.textfield.TextInputLayout>
 
                 <Button
                     android:id="@+id/btnLogin"

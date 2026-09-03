@@ -82,48 +82,51 @@ class MantenimientoPagerAdapter(
         }
 
         fun bind(position: Int) {
-            setupChips(position)
+            setupFilters(position)
             
-            // Configurar Colapsador de Filtros
-            val isExpanded = expandedFilters[position] ?: true
+            // 1. Preparar qué filtros se muestran según la página (internas siempre visibles dentro de su contenedor)
+            if (position == 0) {
+                binding.layoutFiltroFecha.visibility = View.GONE
+                binding.tilFiltroUsuario.visibility = View.GONE
+                binding.tilFiltroEstado.visibility = View.VISIBLE
+                binding.scrollEstado.visibility = View.GONE
+                setupPage0()
+            } else {
+                binding.layoutFiltroFecha.visibility = View.VISIBLE
+                binding.tilFiltroUsuario.visibility = View.VISIBLE
+                binding.tilFiltroEstado.visibility = View.GONE
+                binding.scrollEstado.visibility = View.VISIBLE
+                setupPage1()
+            }
+
+            val isExpanded = expandedFilters[position] ?: false
             actualizarUIPorExpansion(position, isExpanded)
 
             binding.btnToggleFiltros.setOnClickListener {
-                val currentlyExpanded = expandedFilters[position] ?: false
-                val newValue = !currentlyExpanded
+                val currentValue = expandedFilters[position] ?: false
+                val newValue = !currentValue
                 expandedFilters[position] = newValue
                 
-                binding.layoutFiltrosExpandible.visibility = if (newValue) View.VISIBLE else View.GONE
-                binding.ivChevronFiltros.animate().rotation(if (newValue) 0f else -180f).setDuration(200).start()
-                if (position == 1) {
-                    binding.layoutFiltroFecha.visibility = if (newValue) View.VISIBLE else View.GONE
+                actualizarUIPorExpansion(position, newValue)
+                binding.ivChevronFiltros.animate().rotation(if (newValue) 180f else 0f).setDuration(200).start()
+                
+                // Forzar despertar del selector en la pestaña de Historial
+                if (newValue && position == 1) {
+                    binding.selectorFechas.post {
+                        binding.selectorFechas.requestLayout()
+                        binding.selectorFechas.findViewById<androidx.viewpager2.widget.ViewPager2>(R.id.viewPager)?.requestLayout()
+                    }
                 }
-            }
-
-            if (position == 0) {
-                binding.layoutFiltroFecha.visibility = View.GONE
-                setupPage0()
-            } else {
-                // Si la página está expandida, mostramos el layout de fecha, si no, lo ocultamos
-                // pero setupPage1 debe ejecutarse para inicializar el listener
-                setupPage1()
-                if (!isExpanded) binding.layoutFiltroFecha.visibility = View.GONE
             }
         }
 
         private fun actualizarUIPorExpansion(position: Int, expanded: Boolean) {
             binding.layoutFiltrosExpandible.visibility = if (expanded) View.VISIBLE else View.GONE
-            binding.ivChevronFiltros.rotation = if (expanded) 0f else -180f
-            
-            // Ajuste especial para el historial: el layout de fecha es parte de layoutFiltrosExpandible
-            if (position == 1) {
-                binding.layoutFiltroFecha.visibility = if (expanded) View.VISIBLE else View.GONE
-            }
+            binding.ivChevronFiltros.rotation = if (expanded) 180f else 0f
         }
 
-        private fun setupChips(position: Int) {
+        private fun setupFilters(position: Int) {
             binding.chipGroupTipo.removeAllViews()
-            binding.chipGroupEstado.removeAllViews()
             
             // Setup Tipo Chips
             val tipos = listOf("TODOS", "PREVENTIVO", "CORRECTIVO")
@@ -145,31 +148,32 @@ class MantenimientoPagerAdapter(
                 applyFilters(position)
             }
 
-            // Setup Estado Chips
-            val states = if (position == 0) listOf("PENDIENTE", "EN_PROCESO", "VENCIDO") 
-                         else listOf("FINALIZADO", "CANCELADO")
-            
-            val currentEstado = if (position == 0) filterEstado0 else filterEstado1
-            
-            // Add "TODOS" for states
-            val chipTodos = createChip("TODOS", "TODOS")
-            if (currentEstado == "TODOS") chipTodos.isChecked = true
-            binding.chipGroupEstado.addView(chipTodos)
+            if (position == 0) {
+                // Estado Dropdown para "En Cola"
+                val states = listOf("TODOS", "PENDIENTE", "EN_PROCESO", "VENCIDO")
+                val adapter = ArrayAdapter(itemView.context, android.R.layout.simple_dropdown_item_1line, states.map { it.replace("_", " ") })
+                binding.spFiltroEstado.setAdapter(adapter)
+                binding.spFiltroEstado.setText(filterEstado0.replace("_", " "), false)
+                binding.spFiltroEstado.setOnItemClickListener { parent, _, pos, _ ->
+                    val selection = states[pos]
+                    filterEstado0 = selection
+                    applyFilters(0)
+                }
+            } else {
+                // Estado Chips para "Historial"
+                binding.chipGroupEstado.removeAllViews()
+                val states = listOf("TODOS", "FINALIZADO", "CANCELADO")
+                states.forEach { state ->
+                    val chip = createChip(state.replace("_", " "), state)
+                    if (filterEstado1 == state) chip.isChecked = true
+                    binding.chipGroupEstado.addView(chip)
+                }
 
-            states.forEach { state ->
-                val chip = createChip(state.replace("_", " "), state)
-                if (currentEstado == state) chip.isChecked = true
-                binding.chipGroupEstado.addView(chip)
-            }
-
-            binding.chipGroupEstado.setOnCheckedStateChangeListener { group, checkedIds ->
-                val chipId = checkedIds.firstOrNull()
-                val selection = if (chipId != null) {
-                    group.findViewById<Chip>(chipId).tag as String
-                } else "TODOS"
-                
-                if (position == 0) filterEstado0 = selection else filterEstado1 = selection
-                applyFilters(position)
+                binding.chipGroupEstado.setOnCheckedStateChangeListener { group, checkedIds ->
+                    val chipId = checkedIds.firstOrNull()
+                    filterEstado1 = if (chipId != null) group.findViewById<Chip>(chipId).tag as String else "TODOS"
+                    applyFilters(1)
+                }
             }
         }
 
@@ -240,11 +244,19 @@ class MantenimientoPagerAdapter(
 
             if (position == 1) {
                 filtered = filtered.filter { m ->
-                    val fecha = m.fechaRealizada.takeIf { it.isNotBlank() } ?: m.fechaRegistro
-                    val date = DateUtils.convertirFecha(fecha)
-                    if (date != null) date.time in historyFechaInicio..historyFechaFin else false
+                    // Priorizar fecha de finalización para el historial
+                    val fechaParaFiltrar = m.fechaRealizada.takeIf { it.isNotBlank() } ?: m.fechaRegistro
+                    val date = DateUtils.convertirFecha(fechaParaFiltrar)
+                    if (date != null) {
+                        // Normalizar a 00:00 para comparación de día puro
+                        val calReg = Calendar.getInstance().apply { 
+                            time = date
+                            set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0); set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0)
+                        }
+                        calReg.timeInMillis >= historyFechaInicio && calReg.timeInMillis <= historyFechaFin
+                    } else false
                 }
-                // Sort Descending for History
+                // Ordenar por la misma fecha de finalización
                 filtered = filtered.sortedByDescending { 
                     val fecha = it.fechaRealizada.takeIf { it.isNotBlank() } ?: it.fechaRegistro
                     DateUtils.convertirFecha(fecha)?.time ?: 0L

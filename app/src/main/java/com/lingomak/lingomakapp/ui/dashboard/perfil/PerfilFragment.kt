@@ -47,22 +47,16 @@ class PerfilFragment : Fragment() {
         }
 
         binding.btnCerrarSesion.setOnClickListener {
+            // Desuscripción en background para no bloquear el logout si falla la red
+            FirebaseMessaging.getInstance().unsubscribeFromTopic("administradores")
 
-            FirebaseMessaging.getInstance()
-                .unsubscribeFromTopic("administradores")
-                .addOnCompleteListener {
+            viewModel.cerrarSesion()
 
-                    viewModel.cerrarSesion()
-
-                    val intent = Intent(
-                        requireContext(),
-                        LoginActivity::class.java
-                    )
-
-                    startActivity(intent)
-
-                    requireActivity().finish()
-                }
+            val intent = Intent(requireContext(), LoginActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            }
+            startActivity(intent)
+            requireActivity().finish()
         }
 
         return binding.root

@@ -56,11 +56,36 @@ class DashboardOperarioActivity : AppCompatActivity() {
     private fun dispararSincronizacionInicial() {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                com.lingomak.lingomakapp.data.repository.RepuestoRepository(this@DashboardOperarioActivity).descargarCambiosDeFirestore()
-                com.lingomak.lingomakapp.data.repository.MaquinariaRepository(this@DashboardOperarioActivity).descargarMaquinariasDeFirestore()
-                com.lingomak.lingomakapp.data.repository.MantenimientoRepository(this@DashboardOperarioActivity).descargarCambiosDeFirestore()
-                com.lingomak.lingomakapp.data.repository.UserRepository(this@DashboardOperarioActivity).descargarUsuariosDeFirestore()
-                com.lingomak.lingomakapp.data.repository.ConfiguracionRepository(this@DashboardOperarioActivity).descargarCategoriasDeFirestore()
+                // Sincronizar todos los módulos principales para asegurar paridad de datos entre dispositivos
+                val repuestoRepo = com.lingomak.lingomakapp.data.repository.RepuestoRepository(this@DashboardOperarioActivity)
+                repuestoRepo.descargarCambiosDeFirestore()
+                repuestoRepo.iniciarEscuchaRepuestos()
+
+                val maquinariaRepo = com.lingomak.lingomakapp.data.repository.MaquinariaRepository(this@DashboardOperarioActivity)
+                maquinariaRepo.descargarMaquinariasDeFirestore()
+                maquinariaRepo.iniciarEscuchaMaquinaria()
+
+                val mantenimientoRepo = com.lingomak.lingomakapp.data.repository.MantenimientoRepository(this@DashboardOperarioActivity)
+                mantenimientoRepo.descargarCambiosDeFirestore()
+                mantenimientoRepo.iniciarEscuchaMantenimientos()
+
+                val userRepo = com.lingomak.lingomakapp.data.repository.UserRepository(this@DashboardOperarioActivity)
+                userRepo.descargarUsuariosDeFirestore()
+                userRepo.iniciarEscuchaUsuarios()
+
+                val configRepo = com.lingomak.lingomakapp.data.repository.ConfiguracionRepository(this@DashboardOperarioActivity)
+                configRepo.descargarCategoriasDeFirestore()
+                configRepo.iniciarEscuchaCategorias()
+                
+                // Módulos que faltaban (Bitácora, Repostajes y Movimientos)
+                val registroUsoRepo = com.lingomak.lingomakapp.data.repository.RegistroUsoMaquinariaRepository(this@DashboardOperarioActivity)
+                registroUsoRepo.descargarCambiosDeFirestore()
+                registroUsoRepo.iniciarEscuchaBitacora()
+
+                val movimientoRepo = com.lingomak.lingomakapp.data.repository.MovimientoRepository(this@DashboardOperarioActivity)
+                movimientoRepo.descargarTodosDesdeFirestore()
+                movimientoRepo.iniciarEscuchaMovimientos()
+
             } catch (e: Exception) {
                 // Silencioso
             }

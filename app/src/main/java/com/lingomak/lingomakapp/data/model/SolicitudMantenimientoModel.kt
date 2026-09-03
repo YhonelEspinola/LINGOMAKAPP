@@ -1,37 +1,29 @@
 package com.lingomak.lingomakapp.data.model
 
+import androidx.annotation.Keep
+
+@Keep
 data class SolicitudMantenimientoModel(
-
-    val uid: String = "",
-
-    val uidMaquinaria: String = "",
-    val codigoMaquinaria: String = "",
-    val nombreMaquinaria: String = "",
-    val tipoMaquinaria: String = "",
-
-    val uidOperario: String = "",
-    val nombreOperario: String = "",
-    val correoOperario: String = "",
-
-    val horometroActual: Int = 0,
-    val horometroUltimoMantenimiento: Int = 0,
-    val intervaloMantenimientoHoras: Int = 250,
-    val horasDesdeUltimoMantenimiento: Int = 0,
-    val horasRestantes: Int = 0,
-
-    val motivo: String = "",
-
-    val estadoSolicitud: String = "PENDIENTE_APROBACION",
-
-    val origen: String = "HOROMETRO_OPERARIO",
-
-    val fechaSugerida: String = "",
-
-    val fechaRegistro: String = "",
-
-    val revisadoPor: String = "",
-    val fechaRevision: String = "",
-    val motivoRechazo: String = "",
-    val uidMantenimientoGenerado: String = ""
-
+    var uid: String = "",
+    var uidMaquinaria: String = "",
+    var codigoMaquinaria: String = "",
+    var nombreMaquinaria: String = "",
+    var tipoMaquinaria: String = "",
+    var uidOperario: String = "",
+    var nombreOperario: String = "",
+    var correoOperario: String = "",
+    var horometroActual: Double = 0.0,
+    var horometroUltimoMantenimiento: Double = 0.0,
+    var intervaloMantenimientoHoras: Double = 0.0,
+    var horasDesdeUltimoMantenimiento: Double = 0.0,
+    var horasRestantes: Double = 0.0,
+    var motivo: String = "",
+    var estadoSolicitud: String = "PENDIENTE_APROBACION",
+    var origen: String = "AUTO_HOROMETRO",
+    var fechaSugerida: String = "",
+    var fechaRegistro: String = "",
+    var revisadoPor: String = "",
+    var fechaRevision: String = "",
+    var motivoRechazo: String = "",
+    var uidMantenimientoGenerado: String = ""
 )

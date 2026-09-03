@@ -1,6 +1,7 @@
 package com.lingomak.lingomakapp.ui.usuarios
 
 import android.os.Bundle
+import android.text.method.PasswordTransformationMethod
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -25,6 +26,10 @@ class AgregarUsuarioFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         _binding = FragmentAgregarUsuarioBinding.inflate(inflater,container, false)
+
+        // Forzar ocultación instantánea de caracteres
+        binding.etPasswordTemporal.transformationMethod = PasswordTransformationMethod()
+
         obtenerViewModel()
 
         configurarEventos()

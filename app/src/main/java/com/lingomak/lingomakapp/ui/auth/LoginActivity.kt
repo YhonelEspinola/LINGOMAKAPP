@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.widget.Toast
 
 import android.content.Intent
+import android.text.method.PasswordTransformationMethod
 import android.view.View
 import com.lingomak.lingomakapp.ui.dashboard.DashboardAdminActivity
 import com.lingomak.lingomakapp.ui.dashboard.DashboardOperarioActivity
@@ -26,6 +27,8 @@ class LoginActivity : AppCompatActivity() {
         binding = AuthLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        // Forzar ocultación instantánea de caracteres (eliminar previsualización)
+        binding.etPassword.transformationMethod = PasswordTransformationMethod()
 
         configurarEventos()
         observarViewModel()

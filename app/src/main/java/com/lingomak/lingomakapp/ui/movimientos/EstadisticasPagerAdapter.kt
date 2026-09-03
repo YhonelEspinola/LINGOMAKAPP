@@ -5,6 +5,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TableRow
 import android.widget.TextView
+import java.util.Locale
 import androidx.recyclerview.widget.RecyclerView
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.charts.PieChart
@@ -38,7 +39,7 @@ class EstadisticasPagerAdapter() : RecyclerView.Adapter<EstadisticasPagerAdapter
         }
     }
 
-    override fun getItemCount(): Int = 7
+    override fun getItemCount(): Int = 9
 
     inner class ViewHolder(val binding: ItemEstadisticaPageBinding) : RecyclerView.ViewHolder(binding.root) {
         
@@ -53,6 +54,8 @@ class EstadisticasPagerAdapter() : RecyclerView.Adapter<EstadisticasPagerAdapter
                 4 -> setupP5(data, isExpanded, onExpand)
                 5 -> setupP6(data)
                 6 -> setupP8(data)
+                7 -> setupP9(data)
+                8 -> setupP10(data)
             }
         }
 
@@ -185,28 +188,7 @@ class EstadisticasPagerAdapter() : RecyclerView.Adapter<EstadisticasPagerAdapter
             binding.layoutChartGenerico.visibility = View.VISIBLE
             binding.chartPieGenerico.visibility = View.VISIBLE
             
-            val entries = data.distribucionSalida.map { PieEntry(it.value.toFloat(), it.key) }
-            if (entries.isEmpty()) {
-                binding.tvEstadoVacioChart.visibility = View.VISIBLE
-                binding.chartPieGenerico.visibility = View.GONE
-            } else {
-                setupPieChart(binding.chartPieGenerico, entries, listOf(getColor(R.color.primary), getColor(R.color.brand_yellow)))
-            }
-        }
-
-        private fun setupP7(data: MovimientosEstadisticasViewModel.EstadisticasData) {
-            binding.tvTituloPagina.text = "Salidas con OM vs Sueltas"
-            binding.tvSubtituloPagina.apply {
-                text = "OM = Orden de Mantenimiento. Mide trazabilidad formal."
-                visibility = View.VISIBLE
-            }
-            binding.layoutChartGenerico.visibility = View.VISIBLE
-            binding.chartPieGenerico.visibility = View.VISIBLE
-            
-            val entries = mutableListOf<PieEntry>()
-            if (data.omVsSueltas.first > 0) entries.add(PieEntry(data.omVsSueltas.first.toFloat(), "Con OM"))
-            if (data.omVsSueltas.second > 0) entries.add(PieEntry(data.omVsSueltas.second.toFloat(), "Sin OM"))
-            
+            val entries = data.distribucionSalida.map { PieEntry(it.value.toFloat(), if(it.key == "CONSUMO_INTERNO") "Interno" else "Externo") }
             if (entries.isEmpty()) {
                 binding.tvEstadoVacioChart.visibility = View.VISIBLE
                 binding.chartPieGenerico.visibility = View.GONE
@@ -224,6 +206,24 @@ class EstadisticasPagerAdapter() : RecyclerView.Adapter<EstadisticasPagerAdapter
                 BarEntry(0f, data.costosComparativa.first.toFloat()),
                 BarEntry(1f, data.costosComparativa.second.toFloat())
             ), listOf(getColor(R.color.brand_yellow), getColor(R.color.primary)))
+        }
+
+        private fun setupP9(data: MovimientosEstadisticasViewModel.EstadisticasData) {
+            binding.tvTituloPagina.text = "Top 5 máquinas — menor consumo"
+            binding.tvSubtituloPagina.apply {
+                text = "Maquinarias con mejor rendimiento de combustible"
+                visibility = View.VISIBLE
+            }
+            setupTableDouble("Máquina", "Consumo", data.topMenorConsumo)
+        }
+
+        private fun setupP10(data: MovimientosEstadisticasViewModel.EstadisticasData) {
+            binding.tvTituloPagina.text = "Rendimiento — Horas por Operario"
+            binding.tvSubtituloPagina.apply {
+                text = "Total de horas trabajadas agrupadas por mes"
+                visibility = View.VISIBLE
+            }
+            setupTableRendimiento(data.rendimientoOperarios)
         }
 
         private fun setupBarChart(chart: BarChart, labels: List<String>, entries: List<BarEntry>, colors: List<Int>, rotateLabels: Boolean = false) {
@@ -321,6 +321,88 @@ class EstadisticasPagerAdapter() : RecyclerView.Adapter<EstadisticasPagerAdapter
                         text = value.toString()
                         setPadding(16, 12, 16, 12)
                         gravity = android.view.Gravity.END
+                        setTypeface(null, android.graphics.Typeface.BOLD)
+                        setTextColor(getColor(R.color.text_primary))
+                    }
+                    row.addView(tvName)
+                    row.addView(tvValue)
+                    table.addView(row)
+                    
+                    val divider = View(itemView.context).apply {
+                        layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 1)
+                        setBackgroundColor(getColor(R.color.border))
+                    }
+                    table.addView(divider)
+                }
+            }
+        }
+
+        private fun setupTableDouble(h1: String, h2: String, rows: List<Pair<String, Double>>) {
+            binding.layoutTablaGenerica.visibility = View.VISIBLE
+            binding.tvCol1Header.text = h1
+            binding.tvCol2Header.text = h2
+            
+            val table = binding.tableGenerica
+            val count = table.childCount
+            if (count > 2) table.removeViews(2, count - 2)
+            
+            if (rows.isEmpty()) {
+                binding.tvEstadoVacioTabla.text = "Sin datos suficientes"
+                binding.tvEstadoVacioTabla.visibility = View.VISIBLE
+            } else {
+                rows.forEach { (name, value) ->
+                    val row = TableRow(itemView.context).apply { setPadding(0, 4, 0, 4) }
+                    val tvName = TextView(itemView.context).apply {
+                        text = name
+                        layoutParams = TableRow.LayoutParams(0, -2, 1f)
+                        setPadding(16, 12, 16, 12)
+                        setTextColor(getColor(R.color.text_primary))
+                    }
+                    val tvValue = TextView(itemView.context).apply {
+                        text = String.format(Locale.getDefault(), "%.2f Gls/h", value)
+                        setPadding(16, 12, 16, 12)
+                        gravity = android.view.Gravity.END
+                        setTypeface(null, android.graphics.Typeface.BOLD)
+                        setTextColor(getColor(R.color.text_primary))
+                    }
+                    row.addView(tvName)
+                    row.addView(tvValue)
+                    table.addView(row)
+                    
+                    val divider = View(itemView.context).apply {
+                        layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 1)
+                        setBackgroundColor(getColor(R.color.border))
+                    }
+                    table.addView(divider)
+                }
+            }
+        }
+
+        private fun setupTableRendimiento(rows: List<com.lingomak.lingomakapp.data.repository.RendimientoOperarioMes>) {
+            binding.layoutTablaGenerica.visibility = View.VISIBLE
+            binding.tvCol1Header.text = "Operario | Mes"
+            binding.tvCol2Header.text = "Horas Totales"
+            
+            val table = binding.tableGenerica
+            val count = table.childCount
+            if (count > 2) table.removeViews(2, count - 2)
+            
+            if (rows.isEmpty()) {
+                binding.tvEstadoVacioTabla.text = "Sin datos suficientes"
+                binding.tvEstadoVacioTabla.visibility = View.VISIBLE
+            } else {
+                rows.forEach { item ->
+                    val row = TableRow(itemView.context).apply { setPadding(0, 4, 0, 4) }
+                    val tvName = TextView(itemView.context).apply {
+                        text = "${item.nombreOperario}\n${item.mes}"
+                        layoutParams = TableRow.LayoutParams(0, -2, 1f)
+                        setPadding(16, 12, 16, 12)
+                        setTextColor(getColor(R.color.text_primary))
+                    }
+                    val tvValue = TextView(itemView.context).apply {
+                        text = String.format(Locale.getDefault(), "%.1f h", item.totalHoras)
+                        setPadding(16, 12, 16, 12)
+                        gravity = android.view.Gravity.END or android.view.Gravity.CENTER_VERTICAL
                         setTypeface(null, android.graphics.Typeface.BOLD)
                         setTextColor(getColor(R.color.text_primary))
                     }

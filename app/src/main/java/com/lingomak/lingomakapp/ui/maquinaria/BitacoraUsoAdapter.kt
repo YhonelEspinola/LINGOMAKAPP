@@ -6,6 +6,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.lingomak.lingomakapp.data.model.BitacoraUsoModel
 import com.lingomak.lingomakapp.databinding.ItemBitacoraUsoBinding
 
+import com.lingomak.lingomakapp.utils.formatoHoras
+
 class BitacoraUsoAdapter(
     private var lista: List<BitacoraUsoModel>,
     private val onClick: (BitacoraUsoModel) -> Unit
@@ -33,12 +35,12 @@ class BitacoraUsoAdapter(
             binding.chipTipoMovimiento.text = m.tipoMovimiento.uppercase()
             binding.tvNombreMaquina.text = "${m.nombreMaquinaria} · ${m.marcaMaquinaria} · ${m.modeloMaquinaria}"
             binding.tvTrabajoRealizado.text = m.trabajoRealizado
-            binding.tvHorometrosRango.text = "${m.horometroAnterior} - ${m.horometroFinal}"
-            binding.tvTotalHoras.text = "${m.horasUso} h"
+            binding.tvHorometrosRango.text = "${m.horometroAnterior.formatoHoras()} - ${m.horometroFinal.formatoHoras()}"
+            binding.tvTotalHoras.text = "${m.horasUso.formatoHoras()} h"
             binding.tvOperario.text = m.operarioNombre
             
             if (m.galonesCombustible > 0) {
-                binding.tvRepostajeInfo.text = "Repostaje: ${m.galonesCombustible} Gls"
+                binding.tvRepostajeInfo.text = "Repostaje: ${m.galonesCombustible.formatoHoras()} Gls"
             } else {
                 binding.tvRepostajeInfo.text = "Repostaje: NO"
             }

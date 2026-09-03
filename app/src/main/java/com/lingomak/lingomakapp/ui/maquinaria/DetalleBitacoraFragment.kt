@@ -10,6 +10,8 @@ import com.lingomak.lingomakapp.R
 import com.lingomak.lingomakapp.data.model.BitacoraUsoModel
 import com.lingomak.lingomakapp.databinding.FragmentDetalleBitacoraBinding
 
+import com.lingomak.lingomakapp.utils.formatoHoras
+
 class DetalleBitacoraFragment : Fragment() {
 
     private var _binding: FragmentDetalleBitacoraBinding? = null
@@ -51,9 +53,9 @@ class DetalleBitacoraFragment : Fragment() {
         binding.tvNombreMaquinaDetalle.text = m.nombreMaquinaria
         binding.tvDetalleMaquina.text = "${m.marcaMaquinaria} · ${m.modeloMaquinaria} · ${m.codigoMaquinaria}"
         binding.tvTrabajoRealizadoDetalle.text = m.trabajoRealizado
-        binding.tvHorometroInicialDetalle.text = "${m.horometroAnterior} h"
-        binding.tvHorometroFinalDetalle.text = "${m.horometroFinal} h"
-        binding.tvHorasTotalDetalle.text = "Total: ${m.horasUso} horas de uso"
+        binding.tvHorometroInicialDetalle.text = "${m.horometroAnterior.formatoHoras()} h"
+        binding.tvHorometroFinalDetalle.text = "${m.horometroFinal.formatoHoras()} h"
+        binding.tvHorasTotalDetalle.text = "Total: ${m.horasUso.formatoHoras()} horas de uso"
         
         binding.tvOperarioDetalle.text = "Registrado por: ${m.operarioNombre}"
         
@@ -72,11 +74,11 @@ class DetalleBitacoraFragment : Fragment() {
         binding.tvUbicacionDetalle.text = "Ubicación: ${m.ubicacion ?: "--"}"
 
         // Repostaje
-        val tieneRepostaje = m.galonesCombustible > 0 || (m.suministro?.galonesAceite ?: 0.0) > 0
+        val tieneRepostaje = m.galonesCombustible > 0 || m.galonesAceite > 0
         binding.cardRepostajeDetalle.visibility = if (tieneRepostaje) View.VISIBLE else View.GONE
-        binding.tvCombustibleDetalle.text = "Combustible: ${m.galonesCombustible} Gls (${m.tipoCombustible ?: "Diesel"})"
-        binding.tvAceiteDetalle.text = "Aceite: ${m.suministro?.galonesAceite ?: 0.0} Gls"
-        binding.tvTipoCargaDetalle.text = "Tipo de Carga: ${m.tipoCarga ?: "Parcial"}"
+        binding.tvCombustibleDetalle.text = "Combustible: ${m.galonesCombustible.formatoHoras()} Gls (${m.tipoCombustible.ifEmpty { "Diesel" }})"
+        binding.tvAceiteDetalle.text = "Aceite: ${m.galonesAceite.formatoHoras()} Gls"
+        binding.tvTipoCargaDetalle.text = "Tipo de Carga: ${m.tipoCarga.ifEmpty { "Parcial" }}"
 
         binding.btnEditarActividad.setOnClickListener {
             abrirEdicion(m)
@@ -101,10 +103,16 @@ class DetalleBitacoraFragment : Fragment() {
             putString("ubicacion", m.ubicacion)
             putString("fechaRegistro", m.registroUso.fechaRegistro)
             
+            // Datos de Repostaje Unificados
+            putDouble("galonesCombustible", m.galonesCombustible)
+            putDouble("galonesAceite", m.galonesAceite)
+            putString("tipoCombustible", m.tipoCombustible)
+            putString("tipoCarga", m.tipoCarga)
+            
             // Datos de la máquina actual para validaciones
             putDouble("horometroActual", m.maquinaria?.horometroActual ?: m.horometroFinal)
             putDouble("horometroUltimoMantenimiento", m.maquinaria?.horometroUltimoMantenimiento ?: 0.0)
-            putInt("intervaloMantenimientoHoras", m.maquinaria?.intervaloMantenimientoHoras ?: 250)
+            putDouble("intervaloMantenimientoHoras", m.maquinaria?.intervaloMantenimientoHoras ?: 250.0)
             if (m.maquinaria?.capacidadTanqueGls != null) {
                 putDouble("capacidadTanqueGls", m.maquinaria.capacidadTanqueGls!!)
             }

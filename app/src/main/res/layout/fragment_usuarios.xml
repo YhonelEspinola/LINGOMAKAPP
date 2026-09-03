@@ -20,16 +20,20 @@
             android:paddingVertical="8dp"
             android:paddingEnd="16dp">
 
-            <EditText
-                android:id="@+id/etBuscarUsuarios"
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
-                android:layout_height="44dp"
-                android:background="@drawable/bg_edit_text"
-                android:hint="Buscar por nombre o correo"
-                android:paddingHorizontal="12dp"
-                android:textSize="13sp"
-                android:inputType="text"
-                android:singleLine="true" />
+                android:layout_height="wrap_content"
+                android:hint="Buscar por nombre o correo">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etBuscarUsuarios"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="text"
+                    android:textSize="13sp"
+                    android:singleLine="true" />
+            </com.google.android.material.textfield.TextInputLayout>
         </LinearLayout>
     </androidx.appcompat.widget.Toolbar>
 
@@ -93,11 +97,12 @@
             android:textSize="11sp"
             android:textStyle="bold" />
 
-        <HorizontalScrollView
+        <com.lingomak.lingomakapp.utils.SwipeableHorizontalScrollView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:scrollbars="none">
+            android:scrollbars="none"
+            android:fillViewport="true">
 
             <com.google.android.material.chip.ChipGroup
                 android:id="@+id/chipGroupRol"
@@ -138,7 +143,7 @@
                     android:textColor="@color/selector_chip_text" />
 
             </com.google.android.material.chip.ChipGroup>
-        </HorizontalScrollView>
+        </com.lingomak.lingomakapp.utils.SwipeableHorizontalScrollView>
 
         <TextView
             android:layout_width="wrap_content"
@@ -149,12 +154,13 @@
             android:textSize="11sp"
             android:textStyle="bold" />
 
-        <HorizontalScrollView
+        <com.lingomak.lingomakapp.utils.SwipeableHorizontalScrollView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:scrollbars="none"
-            android:paddingBottom="8dp">
+            android:paddingBottom="8dp"
+            android:fillViewport="true">
 
             <com.google.android.material.chip.ChipGroup
                 android:id="@+id/chipGroupEstado"
@@ -195,7 +201,7 @@
                     android:textColor="@color/selector_chip_text" />
 
             </com.google.android.material.chip.ChipGroup>
-        </HorizontalScrollView>
+        </com.lingomak.lingomakapp.utils.SwipeableHorizontalScrollView>
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView

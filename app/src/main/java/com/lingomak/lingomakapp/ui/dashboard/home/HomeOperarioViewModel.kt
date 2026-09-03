@@ -55,15 +55,13 @@ class HomeOperarioViewModel(application: Application) : AndroidViewModel(applica
         val movimientoCount = database.movimientoDao().obtenerPendientesDeSincronizarCount()
         val mantenimientoCount = database.mantenimientoDao().obtenerPendientesDeSincronizarCount()
         val registroUsoCount = database.registroUsoMaquinariaDao().obtenerPendientesDeSincronizarCount()
-        val solicitudCount = database.solicitudMantenimientoDao().obtenerPendientesDeSincronizarCount()
 
         fun update() {
             value = (repuestoCount.value ?: 0) +
                     (maquinariaCount.value ?: 0) +
                     (movimientoCount.value ?: 0) +
                     (mantenimientoCount.value ?: 0) +
-                    (registroUsoCount.value ?: 0) +
-                    (solicitudCount.value ?: 0)
+                    (registroUsoCount.value ?: 0)
         }
 
         addSource(repuestoCount) { update() }
@@ -71,6 +69,5 @@ class HomeOperarioViewModel(application: Application) : AndroidViewModel(applica
         addSource(movimientoCount) { update() }
         addSource(mantenimientoCount) { update() }
         addSource(registroUsoCount) { update() }
-        addSource(solicitudCount) { update() }
     }
 }

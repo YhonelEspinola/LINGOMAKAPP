@@ -9,6 +9,9 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import com.lingomak.lingomakapp.data.local.AppDatabase
 import com.lingomak.lingomakapp.data.local.entity.MovimientoEntity
@@ -190,6 +193,20 @@ class MovimientoRepository(private val context: Context) {
             }
         } catch (e: Exception) {
             // Ignorar en offline-first
+        }
+    }
+
+    fun iniciarEscuchaMovimientos() {
+        movimientosCollection.limit(100).addSnapshotListener { snapshots, e ->
+            if (e != null || snapshots == null) return@addSnapshotListener
+            
+            CoroutineScope(Dispatchers.IO).launch {
+                val remotos = snapshots.toObjects(MovimientoModel::class.java)
+                val entities = remotos.map { it.aEntity().copy(estadoSync = "SINCRONIZADO") }
+                movimientoDao.insertarLista(entities)
+                // Opcional: eliminar no presentes si queremos paridad total, 
+                // pero movimientos suele ser muy grande, así que limitamos.
+            }
         }
     }
 

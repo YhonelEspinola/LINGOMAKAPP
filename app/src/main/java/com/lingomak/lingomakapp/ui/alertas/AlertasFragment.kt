@@ -12,14 +12,12 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.google.android.material.chip.Chip
 import com.lingomak.lingomakapp.R
 import com.lingomak.lingomakapp.data.model.AlertaModel
 import com.lingomak.lingomakapp.data.model.MantenimientoModel
 import com.lingomak.lingomakapp.databinding.FragmentAlertasBinding
 import com.lingomak.lingomakapp.ui.mantenimiento.DetalleMantenimientoFragment
 import com.lingomak.lingomakapp.ui.mantenimiento.MantenimientoViewModel
-import com.lingomak.lingomakapp.ui.mantenimiento.SolicitudesMantenimientoFragment
 import com.lingomak.lingomakapp.ui.repuestos.DetalleRepuestoFragment
 import com.lingomak.lingomakapp.ui.repuestos.InventarioContainerFragment
 
@@ -64,57 +62,58 @@ class AlertasFragment : Fragment() {
     }
 
     private fun configurarFiltros() {
-        binding.cgCategorias.setOnCheckedStateChangeListener { _, checkedIds ->
-            val chipId = checkedIds.firstOrNull()
-            categoriaFiltro = when (chipId) {
-                R.id.chipMantenimiento -> "MANTENIMIENTO"
-                R.id.chipStock -> "INVENTARIO"
-                R.id.chipMovimientos -> "MOVIMIENTOS"
+        val categorias = listOf("Todas", "Mantenimiento", "Stock", "Movimientos")
+        val adapterCat = android.widget.ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, categorias)
+        binding.spFiltroCategoria.setAdapter(adapterCat)
+        binding.spFiltroCategoria.setText("Todas", false)
+        binding.spFiltroCategoria.setOnItemClickListener { parent, _, position, _ ->
+            val seleccion = parent.getItemAtPosition(position) as String
+            categoriaFiltro = when (seleccion) {
+                "Mantenimiento" -> "MANTENIMIENTO"
+                "Stock" -> "INVENTARIO"
+                "Movimientos" -> "MOVIMIENTOS"
                 else -> "Todas"
             }
             subtipoFiltro = null
             actualizarSubtipos()
             aplicarFiltros()
         }
+
+        binding.spFiltroSubtipo.setOnItemClickListener { parent, _, position, _ ->
+            val seleccion = parent.getItemAtPosition(position).toString()
+            subtipoFiltro = if (seleccion.startsWith("Todos los de")) {
+                null
+            } else {
+                val subtipos = obtenerSubtiposLista()
+                subtipos.find { it.replace("_", " ").equals(seleccion, ignoreCase = true) }
+            }
+            aplicarFiltros()
+        }
     }
 
-    private fun actualizarSubtipos() {
-        binding.cgSubtipos.removeAllViews()
-        val subtipos = when (categoriaFiltro) {
+    private fun obtenerSubtiposLista(): List<String> {
+        return when (categoriaFiltro) {
             "MANTENIMIENTO" -> listOf("VENCIDO", "EN_PROCESO", "PROXIMO", "MANTENIMIENTO_PENDIENTE", "SOLICITUD_MANTENIMIENTO")
             "INVENTARIO" -> listOf("STOCK_AGOTADO", "STOCK_CRITICO", "STOCK_BAJO")
             "MOVIMIENTOS" -> listOf("ALTO_CONSUMO", "SIN_ROTACION")
             else -> emptyList()
         }
-
-        if (subtipos.isEmpty()) {
-            binding.scrollSubtipos.visibility = View.GONE
-        } else {
-            binding.scrollSubtipos.visibility = View.VISIBLE
-            
-            // Agregar opción "Todos los de esta categoría"
-            val chipTodos = crearChipSubtipo("Todos los de $categoriaFiltro", null)
-            chipTodos.isChecked = true
-            binding.cgSubtipos.addView(chipTodos)
-
-            subtipos.forEach { tipo ->
-                binding.cgSubtipos.addView(crearChipSubtipo(tipo.replace("_", " "), tipo))
-            }
-        }
     }
 
-    private fun crearChipSubtipo(texto: String, tipoValor: String?): Chip {
-        return Chip(requireContext()).apply {
-            text = texto
-            isCheckable = true
-            setChipBackgroundColorResource(R.color.selector_chip_choice)
-            setTextColor(ContextCompat.getColorStateList(requireContext(), R.color.selector_chip_text))
-            setOnCheckedChangeListener { _, isChecked ->
-                if (isChecked) {
-                    subtipoFiltro = tipoValor
-                    aplicarFiltros()
-                }
-            }
+    private fun actualizarSubtipos() {
+        val subtiposRaw = obtenerSubtiposLista()
+
+        if (subtiposRaw.isEmpty()) {
+            binding.tilFiltroSubtipo.visibility = View.GONE
+        } else {
+            binding.tilFiltroSubtipo.visibility = View.VISIBLE
+            
+            val opciones = mutableListOf("Todos los de ${categoriaFiltro.lowercase().capitalize()}")
+            opciones.addAll(subtiposRaw.map { it.replace("_", " ").lowercase().capitalize() })
+            
+            val adapter = android.widget.ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, opciones)
+            binding.spFiltroSubtipo.setAdapter(adapter)
+            binding.spFiltroSubtipo.setText(opciones[0], false)
         }
     }
 
@@ -198,7 +197,13 @@ class AlertasFragment : Fragment() {
         when (alerta.tipo) {
 
             "SOLICITUD_MANTENIMIENTO" -> {
-                abrirSolicitudesMantenimiento()
+                val containerId = if (requireActivity() is com.lingomak.lingomakapp.ui.dashboard.DashboardAdminActivity)
+                    com.lingomak.lingomakapp.R.id.fragmentContainerAdmin else com.lingomak.lingomakapp.R.id.containerOperario
+
+                parentFragmentManager.beginTransaction()
+                    .replace(containerId, com.lingomak.lingomakapp.ui.mantenimiento.SolicitudesMantenimientoFragment())
+                    .addToBackStack(null)
+                    .commit()
             }
 
             "VENCIDO", "PROXIMO", "EN_PROCESO",
@@ -231,7 +236,7 @@ class AlertasFragment : Fragment() {
 
             "ALTO_CONSUMO", "SIN_ROTACION",
             "MOVIMIENTO_ANORMAL" -> {
-                abrirMovimientosDesdeAlerta(alerta)
+                abrirDetalleMovimientoDesdeAlerta(alerta)
             }
 
             else -> {
@@ -242,19 +247,6 @@ class AlertasFragment : Fragment() {
                 ).show()
             }
         }
-    }
-
-    private fun abrirSolicitudesMantenimiento() {
-
-        val fragment = SolicitudesMantenimientoFragment()
-
-        parentFragmentManager.beginTransaction()
-            .replace(
-                com.lingomak.lingomakapp.R.id.fragmentContainerAdmin,
-                fragment
-            )
-            .addToBackStack(null)
-            .commit()
     }
 
     private fun abrirDetalleMantenimientoDesdeAlerta(m: MantenimientoModel, alerta: AlertaModel) {
@@ -293,7 +285,7 @@ class AlertasFragment : Fragment() {
             .commit()
     }
 
-    private fun abrirMovimientosDesdeAlerta(alerta: AlertaModel) {
+    private fun abrirDetalleMovimientoDesdeAlerta(alerta: AlertaModel) {
         val fragment = InventarioContainerFragment()
         val bundle = Bundle()
         bundle.putInt("tab", 1)

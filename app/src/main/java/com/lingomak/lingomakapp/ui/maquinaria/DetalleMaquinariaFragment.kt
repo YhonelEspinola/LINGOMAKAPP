@@ -12,6 +12,7 @@ import com.lingomak.lingomakapp.R
 import com.lingomak.lingomakapp.data.model.MaquinariaModel
 import com.lingomak.lingomakapp.databinding.FragmentDetalleMaquinariaBinding
 import com.lingomak.lingomakapp.ui.dashboard.DashboardAdminActivity
+import com.lingomak.lingomakapp.utils.formatoHoras
 
 class DetalleMaquinariaFragment : Fragment() {
 
@@ -88,8 +89,28 @@ class DetalleMaquinariaFragment : Fragment() {
         binding.tvModeloDetalleMaquinaria.text = maquinaria.modelo
         binding.tvAnioDetalleMaquinaria.text = maquinaria.anio.toString()
         binding.tvPlacaDetalleMaquinaria.text = maquinaria.placaSerie
-        binding.tvHorometroDetalleMaquinaria.text = "${maquinaria.horometroActual} h"
-        binding.tvHorometroUltimoDetalleMaquinaria.text = "${maquinaria.horometroUltimoMantenimiento} h"
+        binding.tvHorometroDetalleMaquinaria.text = "${maquinaria.horometroActual.formatoHoras()} h"
+        binding.tvHorometroUltimoDetalleMaquinaria.text = "${maquinaria.horometroUltimoMantenimiento.formatoHoras()} h"
+
+        // Próximo mantenimiento
+        val horasDesdeUltimo = maquinaria.horometroActual - maquinaria.horometroUltimoMantenimiento
+        val horasRestantes = maquinaria.intervaloMantenimientoHoras - horasDesdeUltimo
+
+        when {
+            horasRestantes <= 20 -> {
+                binding.tvProximoMantenimientoDetalle.text = "Faltan ${horasRestantes.formatoHoras()} h para mantenimiento"
+                binding.tvProximoMantenimientoDetalle.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), R.color.danger))
+            }
+            horasRestantes <= 50 -> {
+                binding.tvProximoMantenimientoDetalle.text = "Faltan ${horasRestantes.formatoHoras()} h para mantenimiento"
+                binding.tvProximoMantenimientoDetalle.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), R.color.warning))
+            }
+            else -> {
+                binding.tvProximoMantenimientoDetalle.text = "Faltan ${horasRestantes.formatoHoras()} h para mantenimiento"
+                binding.tvProximoMantenimientoDetalle.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(), R.color.success))
+            }
+        }
+
         binding.tvUbicacionDetalleMaquinaria.text = maquinaria.ubicacionActual
         binding.tvObservacionesDetalleMaquinaria.text = maquinaria.observaciones.ifEmpty { "Sin observaciones registradas." }
 

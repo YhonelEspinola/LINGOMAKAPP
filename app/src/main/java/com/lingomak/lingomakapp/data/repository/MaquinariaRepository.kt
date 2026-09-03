@@ -10,6 +10,10 @@ import com.lingomak.lingomakapp.data.local.AppDatabase
 import com.lingomak.lingomakapp.data.local.entity.MaquinariaEntity
 import com.lingomak.lingomakapp.data.model.MaquinariaModel
 import com.lingomak.lingomakapp.data.worker.SincronizacionMaquinariaWorker
+import com.lingomak.lingomakapp.utils.DateUtils
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
 class MaquinariaRepository(context: Context) {
@@ -119,9 +123,13 @@ class MaquinariaRepository(context: Context) {
                 val docRemoto = maquinariasCollection.document(entity.uid).get().await()
                 
                 val fechaRemotaStr = docRemoto.getString("fechaActualizacion") ?: ""
-                val format = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+                val format = if (fechaRemotaStr.contains(":")) 
+                    java.text.SimpleDateFormat(DateUtils.FORMATO_PRECISO, java.util.Locale.getDefault())
+                    else java.text.SimpleDateFormat(DateUtils.FORMATO_ESTANDAR, java.util.Locale.getDefault())
+                
                 val timestampRemoto = try { format.parse(fechaRemotaStr)?.time ?: 0L } catch(e: Exception) { 0L }
 
+                // Si el remoto es estrictamente más nuevo (por fecha), no subimos el local (evita sobreescribir cambios externos)
                 if (docRemoto.exists() && timestampRemoto > entity.timestampLocal) {
                     maquinariaDao.marcarComoSincronizado(entity.uid)
                     continue
@@ -147,9 +155,15 @@ class MaquinariaRepository(context: Context) {
                 for (modelo in remotos) {
                     val local = maquinariaDao.obtenerPorUid(modelo.uid)
                     
-                    if (local != null && local.estadoSync != "SINCRONIZADO") {
-                        val format = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
-                        val timestampRemoto = try { format.parse(modelo.fechaActualizacion)?.time ?: 0L } catch(e: Exception) { 0L }
+                    val format = if (modelo.fechaActualizacion.contains(":")) 
+                        java.text.SimpleDateFormat(DateUtils.FORMATO_PRECISO, java.util.Locale.getDefault())
+                        else java.text.SimpleDateFormat(DateUtils.FORMATO_ESTANDAR, java.util.Locale.getDefault())
+                    
+                    val timestampRemoto = try { format.parse(modelo.fechaActualizacion)?.time ?: 0L } catch(e: Exception) { 0L }
+                    
+                    if (local != null) {
+                        // REGLA DE ORO: Si el local es más nuevo que el remoto, NO sobrescribir.
+                        // Esto protege cambios recién hechos que aún no se reflejan en el GET de Firestore
                         if (local.timestampLocal >= timestampRemoto) {
                             continue
                         }
@@ -161,6 +175,39 @@ class MaquinariaRepository(context: Context) {
             }
         } catch (e: Exception) {
             // Ignorar en offline
+        }
+    }
+
+    fun iniciarEscuchaMaquinaria() {
+        maquinariasCollection.addSnapshotListener { snapshots, e ->
+            if (e != null || snapshots == null) return@addSnapshotListener
+            
+            CoroutineScope(Dispatchers.IO).launch {
+                for (doc in snapshots.documentChanges) {
+                    val modelo = doc.document.toObject(MaquinariaModel::class.java)
+                    val local = maquinariaDao.obtenerPorUid(modelo.uid)
+                    
+                    val format = if (modelo.fechaActualizacion.contains(":")) 
+                        java.text.SimpleDateFormat(DateUtils.FORMATO_PRECISO, java.util.Locale.getDefault())
+                        else java.text.SimpleDateFormat(DateUtils.FORMATO_ESTANDAR, java.util.Locale.getDefault())
+                    
+                    val timestampRemoto = try { format.parse(modelo.fechaActualizacion)?.time ?: 0L } catch(ex: Exception) { 0L }
+                    
+                    if (local != null && local.estadoSync != "SINCRONIZADO") {
+                        // Respetamos cambios locales pendientes si el remoto es más antiguo
+                        if (local.timestampLocal >= timestampRemoto) {
+                            continue
+                        }
+                    }
+                    
+                    if (doc.type == com.google.firebase.firestore.DocumentChange.Type.REMOVED) {
+                        // Opcional: Podrías eliminarlo localmente si lo deseas
+                        // maquinariaDao.eliminarSincronizadosNoPresentes(listOf()) // No muy eficiente
+                    } else {
+                        maquinariaDao.insertarOActualizar(modelo.aEntity("SINCRONIZADO", System.currentTimeMillis()))
+                    }
+                }
+            }
         }
     }
 

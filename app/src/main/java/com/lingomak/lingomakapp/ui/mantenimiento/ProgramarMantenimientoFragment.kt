@@ -16,17 +16,19 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import kotlinx.coroutines.launch
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.firebase.auth.FirebaseAuth
 import com.lingomak.lingomakapp.R
 import com.lingomak.lingomakapp.data.model.MaquinariaModel
 import com.lingomak.lingomakapp.data.model.MantenimientoModel
 import com.lingomak.lingomakapp.data.model.UserModel
-import com.lingomak.lingomakapp.data.repository.SolicitudMantenimientoRepository
 import com.lingomak.lingomakapp.data.repository.UserRepository
 import com.lingomak.lingomakapp.databinding.FragmentProgramarMantenimientoBinding
 import com.lingomak.lingomakapp.ui.maquinaria.MaquinariaViewModel
+import com.lingomak.lingomakapp.utils.formatoHoras
 import com.yalantis.ucrop.UCrop
 import java.io.File
 import java.io.IOException
@@ -44,7 +46,6 @@ class ProgramarMantenimientoFragment : Fragment() {
     private val mantenimientoViewModel: MantenimientoViewModel by viewModels()
 
     private lateinit var userRepository: UserRepository
-    private val solicitudRepository = SolicitudMantenimientoRepository()
 
     private var listaMaquinarias: List<MaquinariaModel> = emptyList()
     private var listaOperarios: List<UserModel> = emptyList()
@@ -64,7 +65,7 @@ class ProgramarMantenimientoFragment : Fragment() {
     private var tipoMaquinariaSolicitud: String = ""
     private var motivoSolicitud: String = ""
     private var fechaSugerida: String = ""
-    private var horometroSolicitud: Int = 0
+    private var horometroSolicitud: Double = 0.0
 
     /*
      * Evita volver a cargar los datos si el observable de
@@ -206,8 +207,8 @@ class ProgramarMantenimientoFragment : Fragment() {
             .orEmpty()
 
         horometroSolicitud = arguments
-            ?.getInt("horometroProgramado", 0)
-            ?: 0
+            ?.getDouble("horometroProgramado", 0.0)
+            ?: 0.0
     }
 
     private fun vieneDesdeSolicitud(): Boolean {
@@ -326,15 +327,24 @@ class ProgramarMantenimientoFragment : Fragment() {
             "CORRECTIVO"
         )
 
-        binding.spTipoMantenimiento.adapter =
+        binding.spTipoMantenimiento.setAdapter(
             ArrayAdapter(
                 requireContext(),
-                android.R.layout.simple_spinner_dropdown_item,
+                android.R.layout.simple_list_item_1,
                 tipos
             )
+        )
     }
 
     private fun configurarEventos() {
+
+        binding.etHorometroProgramado.filters = arrayOf(com.lingomak.lingomakapp.utils.DecimalDigitsInputFilter(2))
+        binding.etCostoEstimado.filters = arrayOf(com.lingomak.lingomakapp.utils.DecimalDigitsInputFilter(2))
+
+        // Bloquear pegado de texto y teclado en campos de fecha
+        binding.etFechaProgramada.isLongClickable = false
+        binding.etFechaProgramada.isFocusable = false
+        binding.etFechaProgramada.keyListener = null
 
         binding.etFechaProgramada.setOnClickListener {
             mostrarDatePicker()
@@ -349,7 +359,7 @@ class ProgramarMantenimientoFragment : Fragment() {
         }
 
         binding.actvMaquinaria.setOnItemClickListener {
-                _, _, position, _ ->
+                parent, _, position, _ ->
 
             /*
              * Aunque el campo queda bloqueado cuando viene
@@ -360,23 +370,32 @@ class ProgramarMantenimientoFragment : Fragment() {
                 return@setOnItemClickListener
             }
 
-            val seleccion =
-                binding.actvMaquinaria.adapter
-                    .getItem(position)
-                    .toString()
+            // Usamos el parent (el adapter) para obtener el string exacto seleccionado
+            val seleccion = parent.getItemAtPosition(position).toString()
 
-            maquinariaSeleccionada =
-                listaMaquinarias.find {
-                    "${it.nombre} (${it.codigoMaquinaria})" ==
-                            seleccion
-                }
+            // Búsqueda más robusta: ignorando espacios y mayúsculas/minúsculas
+            maquinariaSeleccionada = listaMaquinarias.find {
+                val template = "${it.nombre} (${it.codigoMaquinaria})".trim()
+                template.equals(seleccion.trim(), ignoreCase = true)
+            }
 
             maquinariaSeleccionada?.let { maquinaria ->
-
+                // El horómetro programado ahora solo muestra el actual de la máquina y no es editable
                 binding.etHorometroProgramado.setText(
                     maquinaria.horometroActual.toString()
                 )
+                binding.etHorometroProgramado.isEnabled = false
+            } ?: run {
+                // Fallback: si no lo encuentra por el template exacto, intentar por código si el string lo contiene
+                maquinariaSeleccionada = listaMaquinarias.find { seleccion.contains(it.codigoMaquinaria) }
+                maquinariaSeleccionada?.let {
+                    binding.etHorometroProgramado.setText(it.horometroActual.toString())
+                    binding.etHorometroProgramado.isEnabled = false
+                }
             }
+
+            // Forzar actualización inmediata de la UI
+            binding.actvMaquinaria.clearFocus()
         }
 
         binding.actvResponsable.setOnItemClickListener {
@@ -530,13 +549,18 @@ class ProgramarMantenimientoFragment : Fragment() {
         }
 
         val horometroProgramado =
-            horometroTexto.toIntOrNull()
+            horometroTexto.toDoubleOrNull()
 
         if (horometroProgramado == null) {
 
             binding.etHorometroProgramado.error =
                 "Ingrese un horómetro válido"
 
+            return
+        }
+
+        if (horometroProgramado < maquinaria.horometroActual) {
+            binding.etHorometroProgramado.error = "El horómetro programado no puede ser menor al actual (${maquinaria.horometroActual})"
             return
         }
 
@@ -555,7 +579,7 @@ class ProgramarMantenimientoFragment : Fragment() {
                         "PREVENTIVO"
                     } else {
                         binding.spTipoMantenimiento
-                            .selectedItem
+                            .text
                             .toString()
                     },
 
@@ -568,7 +592,7 @@ class ProgramarMantenimientoFragment : Fragment() {
                 responsableUid = responsable.uid,
 
                 horometroProgramado = horometroProgramado,
-                horometroReal = 0,
+                horometroReal = 0.0,
 
                 costoEstimado =
                     binding.etCostoEstimado.text
@@ -672,57 +696,29 @@ class ProgramarMantenimientoFragment : Fragment() {
             return
         }
 
-        solicitudRepository.marcarComoConvertida(
-            uidSolicitud = uidSolicitud,
-            uidAdministrador = uidAdministrador,
-            uidMantenimientoGenerado = uidMantenimiento,
+        mostrarCargando(true)
 
-            onSuccess = {
+        val repositorySolicitud =
+            com.lingomak.lingomakapp.data.repository.SolicitudMantenimientoRepository(requireContext().applicationContext)
 
-                if (!isAdded || _binding == null) {
-                    return@marcarComoConvertida
-                }
-
-                mostrarCargando(false)
-
-                Toast.makeText(
-                    requireContext(),
-                    "Mantenimiento programado y solicitud aprobada",
-                    Toast.LENGTH_LONG
-                ).show()
-
-                /*
-                 * Al cambiar la solicitud a
-                 * CONVERTIDA_A_MANTENIMIENTO deja de cumplir
-                 * el filtro PENDIENTE_APROBACION y desaparece
-                 * automáticamente de las alertas.
-                 */
-                parentFragmentManager.popBackStack()
-            },
-
-            onError = { error ->
-
-                if (!isAdded || _binding == null) {
-                    return@marcarComoConvertida
-                }
-
-                mostrarCargando(false)
-
-                Toast.makeText(
-                    requireContext(),
-                    "El mantenimiento fue creado, pero no se pudo " +
-                            "actualizar la solicitud: $error",
-                    Toast.LENGTH_LONG
-                ).show()
-
-                /*
-                 * El mantenimiento ya fue guardado localmente,
-                 * por eso evitamos volver a ejecutar el registro
-                 * desde esta pantalla y crear un duplicado.
-                 */
-                parentFragmentManager.popBackStack()
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                repositorySolicitud.marcarComoConvertida(
+                    uidSolicitud = uidSolicitud,
+                    uidAdministrador = uidAdministrador,
+                    uidMantenimientoGenerado = uidMantenimiento
+                )
+            } catch (e: Exception) {
+                // El mantenimiento ya se creó correctamente; si falla marcar la
+                // solicitud como convertida, no bloqueamos el flujo del admin,
+                // pero sí lo dejamos en el log para depurar.
+                e.printStackTrace()
             }
-        )
+
+            mostrarCargando(false)
+            Toast.makeText(requireContext(), "Mantenimiento programado correctamente", Toast.LENGTH_LONG).show()
+            parentFragmentManager.popBackStack()
+        }
     }
 
     // ============================================================

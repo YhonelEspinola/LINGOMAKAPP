@@ -28,5 +28,11 @@ data class RegistroUsoMaquinariaModel (
     // Auditoría
     val modificadoPorUid: String? = null,
     val modificadoPorNombre: String? = null,
-    val fechaUltimaModificacion: String? = null
+    val fechaUltimaModificacion: String? = null,
+
+    // Datos de Repostaje Unificados
+    val galonesCombustible: Double = 0.0,
+    val galonesAceite: Double = 0.0,
+    val tipoCombustible: String = "",
+    val tipoCarga: String = "" // Completa o Parcial
 )

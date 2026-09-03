@@ -1,108 +1,113 @@
 package com.lingomak.lingomakapp.data.repository
 
+import android.content.Context
+import androidx.lifecycle.LiveData
+import androidx.lifecycle. map
 import com.google.firebase.firestore.FirebaseFirestore
+import com.lingomak.lingomakapp.data.local.AppDatabase
+import com.lingomak.lingomakapp.data.local.entity.aEntity
 import com.lingomak.lingomakapp.data.model.SolicitudMantenimientoModel
+import com.lingomak.lingomakapp.data.worker.SincronizacionSolicitudMantenimientoWorker
 import com.lingomak.lingomakapp.utils.DateUtils
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
-class SolicitudMantenimientoRepository {
+class SolicitudMantenimientoRepository(private val context: Context) {
 
-    private val database = FirebaseFirestore.getInstance()
+    private val db = FirebaseFirestore.getInstance()
+    private val coleccionSolicitudes = "solicitudes_mantenimiento"
+    private val database = AppDatabase.getInstance(context)
+    private val solicitudDao = database.solicitudMantenimientoDao()
 
-    private val coleccionSolicitudes =
-        "solicitudes_mantenimiento"
-
-    fun listarSolicitudesPendientes(
-        onSuccess: (List<SolicitudMantenimientoModel>) -> Unit,
-        onError: (String) -> Unit
-    ) {
-        database.collection(coleccionSolicitudes)
-            .whereEqualTo(
-                "estadoSolicitud",
-                "PENDIENTE_APROBACION"
-            )
-            .addSnapshotListener { snapshots, error ->
-
-                if (error != null) {
-                    onError(
-                        error.message
-                            ?: "Error al listar solicitudes"
-                    )
-                    return@addSnapshotListener
-                }
-
-                if (snapshots == null) {
-                    onSuccess(emptyList())
-                    return@addSnapshotListener
-                }
-
-                val solicitudes =
-                    snapshots.documents.mapNotNull { document ->
-
-                        document.toObject(
-                            SolicitudMantenimientoModel::class.java
-                        )
-                    }.sortedByDescending { solicitud ->
-                        solicitud.fechaRegistro
-                    }
-
-                onSuccess(solicitudes)
-            }
+    /**
+     * Lista en vivo (Room) de solicitudes pendientes de aprobación, para la
+     * pantalla de administración. Se alimenta de lo que ya sincroniza
+     * SincronizacionSolicitudMantenimientoWorker en segundo plano.
+     */
+    fun listarPendientesObservable(): LiveData<List<SolicitudMantenimientoModel>> {
+        return solicitudDao.obtenerPendientesObservable().map { lista ->
+            lista.map { it.aModel() }
+        }
     }
 
-    fun rechazarSolicitud(
+    suspend fun rechazarSolicitud(
         uidSolicitud: String,
         uidAdministrador: String,
-        motivoRechazo: String,
-        onSuccess: () -> Unit,
-        onError: (String) -> Unit
+        motivoRechazo: String
     ) {
-        val datosRevision = mapOf(
-            "estadoSolicitud" to "RECHAZADA",
-            "revisadoPor" to uidAdministrador,
-            "fechaRevision" to DateUtils.obtenerFechaActual(),
-            "motivoRechazo" to motivoRechazo
+        val existente = solicitudDao.obtenerPorUid(uidSolicitud)
+            ?: throw Exception("No se encontró la solicitud")
+
+        val actualizada = existente.copy(
+            estadoSolicitud = "RECHAZADA",
+            revisadoPor = uidAdministrador,
+            fechaRevision = DateUtils.obtenerFechaActual(),
+            motivoRechazo = motivoRechazo,
+            estadoSync = "PENDIENTE_ACTUALIZAR",
+            timestampLocal = System.currentTimeMillis()
         )
 
-        database.collection(coleccionSolicitudes)
-            .document(uidSolicitud)
-            .update(datosRevision)
-            .addOnSuccessListener {
-                onSuccess()
-            }
-            .addOnFailureListener { exception ->
-                onError(
-                    exception.message
-                        ?: "Error al rechazar la solicitud"
-                )
-            }
+        solicitudDao.insertarOActualizar(actualizada)
+        SincronizacionSolicitudMantenimientoWorker.encolar(context)
     }
 
-    fun marcarComoConvertida(
+    suspend fun marcarComoConvertida(
         uidSolicitud: String,
         uidAdministrador: String,
-        uidMantenimientoGenerado: String,
-        onSuccess: () -> Unit,
-        onError: (String) -> Unit
+        uidMantenimientoGenerado: String
     ) {
-        val datosRevision = mapOf(
-            "estadoSolicitud" to "CONVERTIDA_A_MANTENIMIENTO",
-            "revisadoPor" to uidAdministrador,
-            "fechaRevision" to DateUtils.obtenerFechaActual(),
-            "motivoRechazo" to "",
-            "uidMantenimientoGenerado" to uidMantenimientoGenerado
+        val existente = solicitudDao.obtenerPorUid(uidSolicitud)
+            ?: throw Exception("No se encontró la solicitud")
+
+        val actualizada = existente.copy(
+            estadoSolicitud = "CONVERTIDA_A_MANTENIMIENTO",
+            revisadoPor = uidAdministrador,
+            fechaRevision = DateUtils.obtenerFechaActual(),
+            motivoRechazo = "",
+            uidMantenimientoGenerado = uidMantenimientoGenerado,
+            estadoSync = "PENDIENTE_ACTUALIZAR",
+            timestampLocal = System.currentTimeMillis()
         )
 
-        database.collection(coleccionSolicitudes)
-            .document(uidSolicitud)
-            .update(datosRevision)
-            .addOnSuccessListener {
-                onSuccess()
+        solicitudDao.insertarOActualizar(actualizada)
+        SincronizacionSolicitudMantenimientoWorker.encolar(context)
+    }
+
+    suspend fun sincronizarPendientesConFirestore() {
+        val pendientes = solicitudDao.obtenerPendientesDeSincronizar()
+        for (entity in pendientes) {
+            try {
+                db.collection(coleccionSolicitudes).document(entity.uid).set(entity.aModel()).await()
+                solicitudDao.marcarComoSincronizado(entity.uid)
+            } catch (e: Exception) { }
+        }
+    }
+
+    suspend fun descargarSolicitudesDeFirestore() {
+        try {
+            val snapshot = db.collection(coleccionSolicitudes).get().await()
+            val remotos = snapshot.toObjects(SolicitudMantenimientoModel::class.java)
+
+            // Por simplicidad, descargamos y actualizamos localmente si no son sincronizados.
+            // Para solicitudes, usualmente el Admin las gestiona.
+            for (modelo in remotos) {
+                solicitudDao.insertarOActualizar(modelo.aEntity("SINCRONIZADO", System.currentTimeMillis()))
             }
-            .addOnFailureListener { exception ->
-                onError(
-                    exception.message
-                        ?: "Error al actualizar la solicitud"
-                )
+        } catch (e: Exception) { }
+    }
+
+    fun iniciarEscuchaSolicitudes() {
+        db.collection(coleccionSolicitudes).addSnapshotListener { snapshots, e ->
+            if (e != null || snapshots == null) return@addSnapshotListener
+            
+            CoroutineScope(Dispatchers.IO).launch {
+                for (doc in snapshots.documentChanges) {
+                    val modelo = doc.document.toObject(SolicitudMantenimientoModel::class.java)
+                    solicitudDao.insertarOActualizar(modelo.aEntity("SINCRONIZADO", System.currentTimeMillis()))
+                }
             }
+        }
     }
 }
